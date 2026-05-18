@@ -1,0 +1,133 @@
+{
+  "name": "harmonyos-dev-env",
+  "version": "1.0.0",
+  "description": "HarmonyOS PC development environment skill - complete build and installation guides for Python, Rust, Go, PyTorch, llama.cpp and more",
+  "description_cn": "HarmonyOS PC 开发环境技能包 - Python、Rust、Go、PyTorch、llama.cpp 等工具的完整构建和安装指南",
+  "author": "chenjh16",
+  "repository": "https://github.com/chenjh16/HarmonyOS-Dev-Env-Skill",
+  "platform": {
+    "name": "HarmonyOS",
+    "kernel": "HongMeng Kernel 1.12.0",
+    "arch": "aarch64",
+    "libc": "musl",
+    "compiler": "clang 15.0.4"
+  },
+  "tools": [
+    {
+      "name": "python",
+      "version": "3.12.8",
+      "category": "language",
+      "source": "https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tar.xz",
+      "build_guide": "tools/python/build.md",
+      "install_script": "tools/python/install.sh",
+      "install_dir": "$HOME/.local",
+      "features": ["pip", "extension modules", "numpy", "pillow", "lxml"]
+    },
+    {
+      "name": "rust",
+      "version": "1.95.0",
+      "category": "language",
+      "source": "https://static.rust-lang.org/dist/",
+      "build_guide": "tools/rust/build.md",
+      "install_script": "tools/rust/install.sh",
+      "install_dir": "$HOME/.rust",
+      "features": ["rustc", "cargo", "FFI", "official ohos target"]
+    },
+    {
+      "name": "go",
+      "version": "1.22.5",
+      "category": "language",
+      "source": "https://go.dev/dl/go1.22.5.linux-arm64.tar.gz",
+      "build_guide": "tools/go/build.md",
+      "install_script": "tools/go/install.sh",
+      "install_dir": "$HOME/Claude/go-build/go",
+      "features": ["go", "gofmt", "GOPROXY support"]
+    },
+    {
+      "name": "pytorch",
+      "version": "2.5.1",
+      "category": "ml-framework",
+      "source": "https://github.com/pytorch/pytorch (v2.5.1)",
+      "build_guide": "tools/pytorch/build.md",
+      "install_script": "tools/pytorch/install.sh",
+      "install_dir": "$HOME/.local/lib/python3.12/site-packages/torch",
+      "features": ["tensor ops", "nn modules", "autograd", "optimizers", "MNIST training"]
+    },
+    {
+      "name": "llama-cpp",
+      "version": "b9073",
+      "category": "ml-inference",
+      "source": "https://github.com/ggml-org/llama.cpp",
+      "build_guide": "tools/llama-cpp/build.md",
+      "install_script": "tools/llama-cpp/install.sh",
+      "install_dir": "$HOME/Claude/llama.cpp/build/bin",
+      "features": ["llama-cli", "llama-server", "NEON/SVE optimization", "Qwen3.5 support"]
+    },
+    {
+      "name": "mihomo",
+      "version": "Meta",
+      "category": "network",
+      "source": "https://github.com/MetaCubeX/mihomo (Meta branch)",
+      "build_guide": "tools/mihomo/build.md",
+      "install_script": "tools/mihomo/install.sh",
+      "install_dir": "$HOME/Claude/mihomo-build/bin",
+      "features": ["proxy", "HTTP/SOCKS5", "API control"]
+    },
+    {
+      "name": "eza",
+      "version": "0.23.4",
+      "category": "utility",
+      "source": "https://github.com/eza-community/eza",
+      "build_guide": "tools/eza/build.md",
+      "install_script": "tools/eza/install.sh",
+      "install_dir": "$HOME/Claude/eza-build/eza/target/release",
+      "features": ["modern ls", "colors", "icons", "tree view"]
+    },
+    {
+      "name": "bat",
+      "version": "0.26.1",
+      "category": "utility",
+      "source": "https://github.com/sharkdp/bat",
+      "build_guide": "tools/bat/build.md",
+      "install_script": "tools/bat/install.sh",
+      "install_dir": "$HOME/Claude/bat-build/bat/target/release",
+      "features": ["syntax highlighting", "cat replacement"]
+    },
+    {
+      "name": "starship",
+      "version": "1.25.1",
+      "category": "utility",
+      "source": "https://github.com/starship/starship",
+      "build_guide": "tools/starship/build.md",
+      "install_script": "tools/starship/install.sh",
+      "install_dir": "$HOME/Claude/starship-build/starship/target/release",
+      "features": ["cross-shell prompt", "customizable"]
+    }
+  ],
+  "core_issues": [
+    {
+      "name": "code-signing",
+      "description": "All ELF binaries must be signed before execution",
+      "guide": "docs/code-signing.md"
+    },
+    {
+      "name": "tmpdir",
+      "description": "/tmp is read-only, use $HOME/Claude/tmpdir",
+      "guide": "CLAUDE.md"
+    },
+    {
+      "name": "ld-library-path",
+      "description": "OpenSSL symbol version conflict when /usr/lib not first",
+      "guide": "docs/ld-library-path.md"
+    },
+    {
+      "name": "no-gcc",
+      "description": "Only clang available, no gcc",
+      "guide": "CLAUDE.md"
+    }
+  ],
+  "env_config": {
+    "shell_config": "config/.zshenv",
+    "claude_rules": ["CLAUDE.md", "CLAUDE.cn.md"]
+  }
+}

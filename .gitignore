@@ -1,0 +1,29 @@
+# Ignore generated files
+*.signed
+*.unsigned
+
+# Ignore backup files
+*.bak
+*.backup
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore macOS files
+.DS_Store
+
+# Ignore editor files
+*.swp
+*.swo
+*~
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# Ignore build artifacts
+build/
+dist/
+*.o
+*.obj
