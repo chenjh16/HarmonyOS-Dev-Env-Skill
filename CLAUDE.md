@@ -53,8 +53,9 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **bat**: v0.26.1 at `$HOME/Claude/bat-build/bat/target/release/`; `cat` clone with syntax highlighting
 - **starship**: v1.25.1 at `$HOME/Claude/starship-build/starship/target/release/`; cross-shell prompt
 - **Go**: v1.22.5 at `$HOME/Claude/go-build/go/`; use `GOPROXY=https://goproxy.cn,direct`; set `TMPDIR=$HOME/Claude/tmpdir`
-- **mihomo**: Clash Meta proxy at `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; config at `$HOME/Claude/mihomo-config/`; proxy port 7890, API port 9090
+- **mihomo**: Clash Meta proxy at `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; config at `$HOME/Claude/mihomo-config/`; proxy port 7890, API port 9090; supports GEOIP/GEOSITE intelligent routing
 - **PyTorch**: v2.5.1 at `$HOME/.local/lib/python3.12/site-packages/torch/`; fully functional on HarmonyOS (12 e2e tests passed); requires `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`
+- **Dropbear**: v2024.86 SSH server/client at `$HOME/.local/bin/`; `dropbear` (server), `dbclient` (client), `dropbearkey` (key generation); pubkey auth only (no password auth due to missing crypt())
 
 ### Third-party tools in PATH
 
@@ -64,6 +65,7 @@ All third-party toolchains are configured in `$HOME/.zshenv` and auto-loaded on 
 - eza: `$HOME/Claude/eza-build/eza/target/release` → `eza`
 - bat: `$HOME/Claude/bat-build/bat/target/release` → `bat`
 - starship: `$HOME/Claude/starship-build/starship/target/release` → `starship`
+- Dropbear: `$HOME/.local/bin` → `dropbear`, `dbclient`, `dropbearkey`, `dropbearconvert`
 - `LD_LIBRARY_PATH` includes `$HOME/.rust/lib`, `/system/lib64`, and llama.cpp bin dir
 - `SSL_CERT_FILE` set to `$HOME/.rust/cacert.pem` (for cargo crates.io access)
 - `TMPDIR` set to `$HOME/Claude/tmpdir` (because `/tmp` is read-only on HarmonyOS)
@@ -135,5 +137,6 @@ Detailed adaptation guides are available in the `docs/` directory:
 - [starship Adaptation](docs/starship-harmonyos.md) — Rust build, prompt config
 - [mihomo Adaptation](docs/mihomo-harmonyos.md) — Go toolchain, proxy config
 - [PyTorch Adaptation](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 compilation, 7 key adaptations, 12 e2e tests
+- [Dropbear SSH Adaptation](tools/dropbear/build.md) — Dropbear SSH server compilation, pubkey auth config, auto-start setup
 - [Code Signing Guide](docs/code-signing.md) — detailed code signing instructions
 - [LD_LIBRARY_PATH Guide](docs/ld-library-path.md) — dynamic library path configuration

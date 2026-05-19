@@ -107,12 +107,68 @@ chmod +x ~/Claude/mihomo-build/bin/mihomo-linux-arm64
 ~/Claude/mihomo-config/
 ```
 
-### 最小配置示例
+主要配置文件：
+- `merged.yaml` - 合并配置（推荐使用）
+- `config.yaml` - 单订阅配置
+- `minimal.yaml` - 最小配置示例
 
-由于 GeoIP MMDB 文件在 HarmonyOS 上加载有问题，使用不依赖 GeoIP 的简化配置：
+### GEOIP/GEOSITE 规则配置
+
+mihomo 支持 GEOIP 和 GEOSITE 规则，实现智能分流：
 
 ```yaml
-# ~/Claude/mihomo-config/minimal.yaml
+# GeoData 配置
+geodata-mode: true
+geox-url:
+  geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+  mmdb: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
+
+rules:
+  # 中国大陆直连
+  - GEOSITE,cn,DIRECT
+  - GEOIP,cn,DIRECT
+  # 内网地址直连
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  # 需要代理的服务
+  - GEOSITE,google,PROXY
+  - GEOSITE,github,PROXY
+  - GEOSITE,youtube,PROXY
+  - GEOSITE,twitter,PROXY
+  - GEOSITE,telegram,PROXY
+  - GEOSITE,openai,PROXY
+  - MATCH,PROXY
+```
+
+规则记录数：
+| 规则 | 记录数 |
+|------|--------|
+| GEOSITE cn | 113,431 |
+| GEOIP cn | 8,676 |
+| GEOSITE google | 1,113 |
+| GEOSITE github | 61 |
+
+### 下载 GEOIP/GEOSITE 数据文件
+
+```bash
+cd ~/Claude/mihomo-config
+
+# 下载 geoip.dat (约18MB)
+curl -L -o geoip.dat "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+
+# 下载 geosite.dat (约4MB)
+curl -L -o geosite.dat "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+
+# 下载 geoip.metadb (MMDB格式)
+curl -L -o geoip.metadb "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
+```
+
+### 完整配置示例
+
+```yaml
+# ~/Claude/mihomo-config/merged.yaml
 mixed-port: 7890
 allow-lan: true
 bind-address: "*"
@@ -120,6 +176,12 @@ mode: rule
 log-level: info
 ipv6: false
 external-controller: 0.0.0.0:9090
+
+geodata-mode: true
+geox-url:
+  geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
+  mmdb: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
 
 dns:
   enable: true
@@ -134,26 +196,32 @@ dns:
     - https://dns.alidns.com/dns-query
 
 proxies:
-  - name: "节点名称"
-    type: vmess
-    server: 服务器地址
-    port: 端口
-    uuid: 用户ID
-    alterId: 0
-    cipher: auto
+  - name: "HK-01"
+    type: vless
+    server: example.com
+    port: 16002
+    uuid: xxx-xxx-xxx
     network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: azure.microsoft.com
+    reality-opts:
+      public-key: xxxxxx
+    client-fingerprint: chrome
 
 proxy-groups:
   - name: PROXY
     type: select
     proxies:
-      - 节点名称
+      - HK-01
       - DIRECT
 
 rules:
-  - DOMAIN-SUFFIX,google.com,PROXY
-  - DOMAIN-SUFFIX,youtube.com,PROXY
-  - DOMAIN-SUFFIX,github.com,PROXY
+  - GEOSITE,cn,DIRECT
+  - GEOIP,cn,DIRECT
+  - GEOSITE,google,PROXY
+  - GEOSITE,github,PROXY
   - MATCH,PROXY
 ```
 
@@ -161,7 +229,15 @@ rules:
 
 ```bash
 cd ~/Claude/mihomo-config
-~/Claude/mihomo-build/bin/mihomo-linux-arm64 -d . -f minimal.yaml
+~/Claude/mihomo-build/bin/mihomo-linux-arm64 -d . -f merged.yaml
+```
+
+启动日志确认 GEOIP/GEOSITE 加载成功：
+```
+Load GeoSite rule: cn
+Finished initial GeoSite rule cn => DIRECT, records: 113431
+Load GeoIP rule: cn
+Finished initial GeoIP rule cn => DIRECT, records: 8676
 ```
 
 ### 端口说明

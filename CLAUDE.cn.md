@@ -53,8 +53,9 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **bat**: v0.26.1 位于 `$HOME/Claude/bat-build/bat/target/release/`; `cat` 替代品，带语法高亮
 - **starship**: v1.25.1 位于 `$HOME/Claude/starship-build/starship/target/release/`; 跨 shell 提示符
 - **Go**: v1.22.5 位于 `$HOME/Claude/go-build/go/`; 使用 `GOPROXY=https://goproxy.cn,direct`; 设置 `TMPDIR=$HOME/Claude/tmpdir`
-- **mihomo**: Clash Meta 代理位于 `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; 配置位于 `$HOME/Claude/mihomo-config/`; 代理端口 7890, API 端口 9090
+- **mihomo**: Clash Meta 代理位于 `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; 配置位于 `$HOME/Claude/mihomo-config/`; 代理端口 7890, API 端口 9090; 支持 GEOIP/GEOSITE 智能分流
 - **PyTorch**: v2.5.1 位于 `$HOME/.local/lib/python3.12/site-packages/torch/`; 在 HarmonyOS 上完全可用 (12项端到端测试通过); 需要 `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`
+- **Dropbear**: v2024.86 SSH 服务器/客户端位于 `$HOME/.local/bin/`; `dropbear` (服务器), `dbclient` (客户端), `dropbearkey` (密钥生成); 仅支持公钥认证（无密码认证，因缺少 crypt() 函数）
 
 ### PATH 中的第三方工具
 
@@ -64,6 +65,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - eza: `$HOME/Claude/eza-build/eza/target/release` → `eza`
 - bat: `$HOME/Claude/bat-build/bat/target/release` → `bat`
 - starship: `$HOME/Claude/starship-build/starship/target/release` → `starship`
+- Dropbear: `$HOME/.local/bin` → `dropbear`, `dbclient`, `dropbearkey`, `dropbearconvert`
 - `LD_LIBRARY_PATH` 包含 `$HOME/.rust/lib`, `/system/lib64` 和 llama.cpp bin 目录
 - `SSL_CERT_FILE` 设置为 `$HOME/.rust/cacert.pem` (用于 cargo crates.io 访问)
 - `TMPDIR` 设置为 `$HOME/Claude/tmpdir` (因为 HarmonyOS 上 `/tmp` 只读)
@@ -135,5 +137,6 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - [starship 适配记录](docs/starship-harmonyos.md) — Rust 项目编译、prompt 配置
 - [mihomo 适配记录](docs/mihomo-harmonyos.md) — Go 工具链、代理配置
 - [PyTorch 适配记录](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 编译、7个关键适配、12项端到端测试
+- [Dropbear SSH 适配记录](tools/dropbear/build.cn.md) — Dropbear SSH 服务器编译、公钥认证配置、自动启动设置
 - [代码签名指南](docs/code-signing.md) — 详细代码签名说明
 - [动态库路径指南](docs/ld-library-path.md) — 动态库路径配置

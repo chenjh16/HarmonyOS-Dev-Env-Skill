@@ -71,7 +71,7 @@
       "build_guide": "tools/mihomo/build.md",
       "install_script": "tools/mihomo/install.sh",
       "install_dir": "$HOME/Claude/mihomo-build/bin",
-      "features": ["proxy", "HTTP/SOCKS5", "API control"]
+      "features": ["proxy", "HTTP/SOCKS5", "API control", "GEOIP/GEOSITE rules", "intelligent routing"]
     },
     {
       "name": "eza",
@@ -102,6 +102,16 @@
       "install_script": "tools/starship/install.sh",
       "install_dir": "$HOME/Claude/starship-build/starship/target/release",
       "features": ["cross-shell prompt", "customizable"]
+    },
+    {
+      "name": "dropbear",
+      "version": "2024.86",
+      "category": "network",
+      "source": "https://matt.ucc.asn.au/dropbear/releases/dropbear-2024.86.tar.bz2",
+      "build_guide": "tools/dropbear/build.md",
+      "install_script": "tools/dropbear/install.sh",
+      "install_dir": "$HOME/.local/bin",
+      "features": ["SSH server", "SSH client", "pubkey auth only", "lightweight", "auto-start on login", "5 HarmonyOS patches"]
     }
   ],
   "core_issues": [
