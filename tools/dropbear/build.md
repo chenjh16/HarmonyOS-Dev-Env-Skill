@@ -510,16 +510,41 @@ fi
 //
 // IMPORTANT: In --jitless mode, native fetch exists but is broken (WebAssembly is undefined)
 // So we must check WebAssembly, not just fetch existence
+//
+// Also: node-fetch@2 Response.body lacks cancel() method (SDK requires it)
+// We need to wrap Response to add cancel() support
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly disabled (--jitless mode), polyfilling fetch with node-fetch...');
     try {
         // Use absolute path since preload runs before cwd is set
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
-        globalThis.fetch = nodeFetch;
+
+        // Wrap fetch to add cancel() support to Response.body
+        const originalFetch = nodeFetch;
+
+        globalThis.fetch = async function(url, opts) {
+            const response = await originalFetch(url, opts);
+
+            // Add cancel() method to body stream if missing
+            if (response.body && typeof response.body.cancel !== 'function') {
+                response.body.cancel = async function() {
+                    // node-fetch@2 uses Node.js Readable stream
+                    // Destroy the stream to cancel
+                    if (response.body.destroy) {
+                        response.body.destroy();
+                    }
+                };
+            }
+
+            return response;
+        };
+
+        // Copy other exports
         globalThis.Headers = nodeFetch.Headers;
         globalThis.Request = nodeFetch.Request;
         globalThis.Response = nodeFetch.Response;
+
         console.log('[SSH] fetch polyfill loaded successfully');
     } catch (e) {
         console.error('[SSH] Failed to load node-fetch:', e.message);
@@ -528,12 +553,24 @@ if (typeof WebAssembly === 'undefined') {
 }
 ```
 
-**Critical bug fix**: The original condition `typeof globalThis.fetch === 'undefined' || typeof WebAssembly === 'undefined'` was WRONG. In `--jitless` mode:
-- `globalThis.fetch` EXISTS (it's a function)
-- `WebAssembly` is UNDEFINED
-- Native fetch exists but fails silently when called (returns "fetch failed" TypeError)
+**Critical bug fixes**:
 
-The polyfill must check `WebAssembly === undefined` ONLY, not `fetch === undefined`. If you check both conditions, the native broken fetch is detected but not replaced, causing API calls to fail with 401 errors.
+1. **Polyfill condition**: The original condition `typeof globalThis.fetch === 'undefined' || typeof WebAssembly === 'undefined'` was WRONG. In `--jitless` mode:
+   - `globalThis.fetch` EXISTS (it's a function)
+   - `WebAssembly` is UNDEFINED
+   - Native fetch exists but fails silently when called (returns "fetch failed" TypeError)
+
+   The polyfill must check `WebAssembly === undefined` ONLY, not `fetch === undefined`.
+
+2. **ANTHROPIC_AUTH_TOKEN empty string**: Do NOT set `export ANTHROPIC_AUTH_TOKEN=''` (empty string).
+   - SDK checks `if (this.authToken == null)` to decide authentication method
+   - Empty string `''` is NOT `null`, so SDK sends `Authorization: Bearer ''`
+   - LiteLLM rejects empty Bearer token with 401 Unauthorized
+   - Solution: Use `unset ANTHROPIC_AUTH_TOKEN` instead of setting empty string
+
+3. **Response.body.cancel()**: node-fetch@2 Response.body is a Node.js Readable stream without `cancel()` method.
+   - SDK calls `streamResponse.body?.cancel()` to abort streaming
+   - Polyfill must wrap Response to add `cancel()` method
 
 **Additional notes**:
 - `--lite-mode` also disables WebAssembly, same issue as `--jitless`

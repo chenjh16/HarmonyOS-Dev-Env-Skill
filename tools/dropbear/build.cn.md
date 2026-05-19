@@ -475,16 +475,41 @@ fi
 // - 原生 fetch 虽然存在但调用时会失败（返回 "fetch failed" TypeError）
 //
 // 因此 polyfill 条件必须只检查 WebAssembly，不能检查 fetch 是否存在
+//
+// 另外：node-fetch@2 的 Response.body 没有 cancel() 方法（SDK 需要它）
+// 需要包装 Response 添加 cancel() 支持
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly 禁用 (--jitless 模式)，使用 node-fetch 替代 fetch...');
     try {
         // 使用绝对路径，因为 preload 在 cwd 设置前执行
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
-        globalThis.fetch = nodeFetch;
+
+        // 包装 fetch 添加 cancel() 支持到 Response.body
+        const originalFetch = nodeFetch;
+
+        globalThis.fetch = async function(url, opts) {
+            const response = await originalFetch(url, opts);
+
+            // 如果 body 没有 cancel() 方法则添加
+            if (response.body && typeof response.body.cancel !== 'function') {
+                response.body.cancel = async function() {
+                    // node-fetch@2 使用 Node.js Readable stream
+                    // destroy stream 来取消
+                    if (response.body.destroy) {
+                        response.body.destroy();
+                    }
+                };
+            }
+
+            return response;
+        };
+
+        // 复制其他导出
         globalThis.Headers = nodeFetch.Headers;
         globalThis.Request = nodeFetch.Request;
         globalThis.Response = nodeFetch.Response;
+
         console.log('[SSH] fetch polyfill 加载成功');
     } catch (e) {
         console.error('[SSH] node-fetch 加载失败:', e.message);
@@ -493,12 +518,24 @@ if (typeof WebAssembly === 'undefined') {
 }
 ```
 
-**关键修复**：原条件 `typeof globalThis.fetch === 'undefined' || typeof WebAssembly === 'undefined'` 是**错误的**。在 `--jitless` 模式下：
-- `globalThis.fetch` 存在（是个函数）
-- `WebAssembly` 不存在
-- 原生 fetch 存在但调用时静默失败（返回 "fetch failed" TypeError）
+**关键修复**：
 
-polyfill 必须只检查 `WebAssembly === undefined`，不能检查 `fetch === undefined`。如果同时检查两个条件，原生 fetch（损坏的）会被检测到但不被替换，导致 API 调用返回 401 错误。
+1. **Polyfill 条件**：原条件 `typeof globalThis.fetch === 'undefined' || typeof WebAssembly === 'undefined'` 是**错误的**。在 `--jitless` 模式下：
+   - `globalThis.fetch` 存在（是个函数）
+   - `WebAssembly` 不存在
+   - 原生 fetch 存在但调用时静默失败（返回 "fetch failed" TypeError）
+
+   polyfill 必须只检查 `WebAssembly === undefined`，不能检查 `fetch === undefined`。
+
+2. **ANTHROPIC_AUTH_TOKEN 空字符串**：不要设置 `export ANTHROPIC_AUTH_TOKEN=''`（空字符串）。
+   - SDK 检查 `if (this.authToken == null)` 来决定认证方式
+   - 空字符串 `''` 不是 `null`，所以 SDK 会发送 `Authorization: Bearer ''`
+   - LiteLLM 拒绝空的 Bearer token，返回 401 Unauthorized
+   - 解决方案：使用 `unset ANTHROPIC_AUTH_TOKEN` 替代设置空字符串
+
+3. **Response.body.cancel()**：node-fetch@2 的 Response.body 是 Node.js Readable stream，没有 `cancel()` 方法。
+   - SDK 调用 `streamResponse.body?.cancel()` 来中止流
+   - polyfill 必须包装 Response 添加 `cancel()` 方法
 
 **额外注意事项**：
 - `--lite-mode` 也禁用 WebAssembly，与 `--jitless` 问题相同
