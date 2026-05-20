@@ -230,3 +230,58 @@ cmake -S . -B build \
 5. **链接**：确保 `unicode-data.cpp` 等生成文件非空，删除过期 obj 强制重编译
 6. **运行时**：设置 `LD_LIBRARY_PATH` 包含 libomp.so 路径
 7. **下载**：使用 ModelScope 而非 HuggingFace CDN 下载模型文件
+
+---
+
+## 9. Qwen3.5-9B CoT 模型测试
+
+### 9.1 模型信息
+
+| 项目 | 数值 |
+|------|-------|
+| 模型 | Qwen3.5-9B Q4_K_M (5.5 GiB) |
+| 架构 | qwen35（混合 SSM+Attention）|
+| CoT 支持 | 使用 `mosphalous` 标签进行推理 |
+| 平台 | HarmonyOS aarch64，20 核 |
+
+### 9.2 推理预算参数
+
+CoT 模型（如 Qwen3.5-9B）需要 `--reasoning-budget` 来控制思考 token 分配：
+
+```bash
+llama-cli -m models/Qwen3.5-9B-Q4_K_M.gguf \
+  -p "你的提示词" \
+  -c 8192 \
+  -n 512 \
+  --reasoning-budget 128 \
+  -st --simple-io --no-warmup
+```
+
+**为什么 `--reasoning-budget` 关键**：
+- 不加此参数时，CoT 模型可能将 80-90% 的 `-n` 预算用于思考链
+- 结果：实际输出只剩几十个 token
+- 加上 `--reasoning-budget 128`，思考链被限制在约 128 token
+- 剩余预算用于可见响应
+
+### 9.3 9B 模型性能
+
+| 指标 | 数值 |
+|------|-------|
+| 提示词评估 | 24-31.7 tokens/s（加速构建）|
+| Token 生成 | 6.9-7.8 tokens/s |
+| 模型内存 | ~5.4 GiB |
+| 总内存 | ~9 GiB |
+
+### 9.4 模型质量测试
+
+全部 10 项质量测试通过：
+- 模型加载 ✓
+- 中文理解 ✓
+- 数学推理 ✓
+- 逻辑推导 ✓
+- 代码生成（LCS 动态规划）✓
+- 指令遵循 ✓
+- 日语 ✓
+- CoT 陷阱题（"17只羊，除了9只都死了" → 9只）✓
+- 世界知识（牛顿三定律）✓
+- 性能基准 ✓

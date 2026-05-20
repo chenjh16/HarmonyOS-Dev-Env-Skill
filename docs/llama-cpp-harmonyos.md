@@ -230,3 +230,58 @@ Compilation flags: `-mcpu=native+dotprod+i8mm+sve+nosme`
 5. **Link**: Ensure `unicode-data.cpp` etc generated files non-empty, delete stale obj force recompile
 6. **Runtime**: Set `LD_LIBRARY_PATH` include libomp.so path
 7. **Download**: Use ModelScope instead of HuggingFace CDN for model files
+
+---
+
+## 9. Qwen3.5-9B CoT Model Testing
+
+### 9.1 Model Information
+
+| Item | Value |
+|------|-------|
+| Model | Qwen3.5-9B Q4_K_M (5.5 GiB) |
+| Architecture | qwen35 (hybrid SSM+Attention) |
+| CoT Support | Uses `<think>` tags for reasoning |
+| Platform | HarmonyOS aarch64, 20 cores |
+
+### 9.2 Reasoning Budget Parameter
+
+CoT models like Qwen3.5-9B require `--reasoning-budget` to control thinking token allocation:
+
+```bash
+llama-cli -m models/Qwen3.5-9B-Q4_K_M.gguf \
+  -p "Your prompt here" \
+  -c 8192 \
+  -n 512 \
+  --reasoning-budget 128 \
+  -st --simple-io --no-warmup
+```
+
+**Why `--reasoning-budget` is critical**:
+- Without it, CoT models may spend 80-90% of `-n` budget on thinking chain
+- Result: very few tokens left for actual output
+- With `--reasoning-budget 128`, thinking is limited to ~128 tokens
+- Remaining budget available for visible response
+
+### 9.3 9B Model Performance
+
+| Metric | Value |
+|--------|-------|
+| Prompt eval | 24-31.7 tokens/s (accelerated build) |
+| Token generation | 6.9-7.8 tokens/s |
+| Model memory | ~5.4 GiB |
+| Total memory | ~9 GiB |
+
+### 9.4 Model Quality Tests
+
+All 10 quality tests passed:
+- Model loading ✓
+- Chinese understanding ✓
+- Math reasoning ✓
+- Logical deduction ✓
+- Code generation (LCS dynamic programming) ✓
+- Instruction following ✓
+- Japanese ✓
+- CoT trap questions ("17 sheep, all but 9 died" → 9) ✓
+- World knowledge (Newton's laws) ✓
+- Performance benchmark ✓
