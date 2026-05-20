@@ -130,11 +130,11 @@ HarmonyOS-Dev-Env-Skill/
 
 ### 1. 安装 Claude Code 规则文件
 
-将 `CLAUDE.md` 和 `CLAUDE.cn.md` 复制到 `~/.claude/` 目录，让 Claude Code 了解 HarmonyOS 平台特性：
+将 `rules/CLAUDE.md` 和 `rules/CLAUDE.cn.md` 复制到 `~/.claude/` 目录，让 Claude Code 了解 HarmonyOS 平台特性：
 
 ```bash
-cp CLAUDE.md ~/.claude/CLAUDE.md
-cp CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+cp rules/CLAUDE.md ~/.claude/CLAUDE.md
+cp rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
 ```
 
 ### 2. 配置 Shell 环境
