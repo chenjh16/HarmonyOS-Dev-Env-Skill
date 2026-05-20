@@ -314,21 +314,24 @@ nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
 
 ## Installing numpy
 
-For numpy, use the prebuilt wheel approach:
+For numpy, use the prebuilt wheel approach. **Note**: PyPI does not have `harmonyos_aarch64` platform, use `manylinux2014_aarch64` which is compatible:
 
 ```bash
-# Download numpy wheel for HarmonyOS
-pip download numpy --platform harmonyos_aarch64 --python-version 312 --only-binary=:all
+# Download numpy wheel for aarch64 (manylinux compatible)
+pip download numpy --platform manylinux2014_aarch64 --python-version 312 --only-binary=:all: --no-deps
 
-# Rename wheel for correct platform
-mv numpy-*.harmonyos_aarch64.whl numpy-*-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl
+# Install directly (no rename needed, manylinux wheel works on HarmonyOS)
+pip install numpy-*-manylinux2014_aarch64.whl --no-deps
 
-# Install
-pip install numpy-*-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl --no-deps
-
-# Sign extension modules
+# Sign all numpy extension modules (required for HarmonyOS)
 cd $HOME/.local/lib/python3.12/site-packages/numpy
-./scripts/sign-all.sh .
+find . -name "*.so" -exec /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec mv {}.signed {} \;
+```
+
+Alternatively, install directly from PyPI mirror:
+```bash
+pip install numpy --no-deps
+# Then sign extension modules as above
 ```
 
 ## Known Limitations

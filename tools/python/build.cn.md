@@ -314,21 +314,24 @@ nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
 
 ## 安装 numpy
 
-对于 numpy，使用预构建 wheel 包的方式：
+对于 numpy，使用预构建 wheel 包的方式。**注意**：PyPI 没有 `harmonyos_aarch64` 平台，使用兼容的 `manylinux2014_aarch64`：
 
 ```bash
-# 下载 HarmonyOS 版 numpy wheel 包
-pip download numpy --platform harmonyos_aarch64 --python-version 312 --only-binary=:all
+# 为 aarch64 下载 numpy wheel 包（manylinux 兼容）
+pip download numpy --platform manylinux2014_aarch64 --python-version 312 --only-binary=:all: --no-deps
 
-# 重命名 wheel 包以匹配正确的平台
-mv numpy-*.harmonyos_aarch64.whl numpy-*-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl
+# 直接安装（无需重命名，manylinux wheel 在 HarmonyOS 上可用）
+pip install numpy-*-manylinux2014_aarch64.whl --no-deps
 
-# 安装
-pip install numpy-*-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl --no-deps
-
-# 签名扩展模块
+# 签名所有 numpy 扩展模块（HarmonyOS 必需）
 cd $HOME/.local/lib/python3.12/site-packages/numpy
-./scripts/sign-all.sh .
+find . -name "*.so" -exec /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec mv {}.signed {} \;
+```
+
+或者直接从 PyPI 镜像安装：
+```bash
+pip install numpy --no-deps
+# 然后按上述方法签名扩展模块
 ```
 
 ## 已知限制
