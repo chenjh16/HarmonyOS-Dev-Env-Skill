@@ -99,23 +99,6 @@ All third-party toolchains are configured in `$HOME/.zshenv` and auto-loaded on 
 - Locale support is limited (no pt_BR, collate, ctype locales) — skip locale-dependent tests
 - musl libc differences: `__assert_fail` signature uses `int line` without `noexcept` (glibc uses `unsigned int` + `noexcept`)
 
-### Model Capability Matrix
-
-- **Opus-mapped model**: strongest backend coding and planning capability; NO vision capability
-- **Sonnet-mapped model**: strong coding and frontend capability; NO vision capability
-- **Haiku-mapped model**: has vision capability (can read images, screenshots, PNG/JPG); lighter reasoning
-
-**When delegating tasks via the Agent tool, choose the model based on task nature:**
-
-| Task type | Recommended model | Reason |
-|-----------|-------------------|--------|
-| Visual observation (screenshots, image analysis) | `model: "haiku"` | Only model with vision capability |
-| Backend coding, complex planning, architecture design | `model: "opus"` | Strongest backend & planning ability |
-| Frontend coding, general coding tasks | `model: "sonnet"` | Strong coding & frontend ability |
-| Simple research, file search, quick lookups | `model: "haiku"` | Lightweight, fast |
-
-This balances model load and leverages each model's strengths.
-
 ### Python Environment
 
 - **Python**: `$HOME/.local/bin/python3` (3.12.8) — single source, supports pip and extension module loading

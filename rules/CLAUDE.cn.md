@@ -99,23 +99,6 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - 本地化支持有限 (无 pt_BR, collate, ctype locale) — 跳过依赖 locale 的测试
 - musl libc 差异: `__assert_fail` 签名使用 `int line` 无 `noexcept` (glibc 使用 `unsigned int` + `noexcept`)
 
-### 模型能力矩阵
-
-- **Opus 映射模型**: 最强后端编码和规划能力; 无视觉能力
-- **Sonnet 映射模型**: 强编码和前端能力; 无视觉能力
-- **Haiku 映射模型**: 有视觉能力 (可读取图片、截图、PNG/JPG); 轻量推理
-
-**通过 Agent 工具委托任务时，根据任务性质选择模型:**
-
-| 任务类型 | 推荐模型 | 原因 |
-|----------|----------|------|
-| 视觉观察 (截图、图像分析) | `model: "haiku"` | 唯一有视觉能力的模型 |
-| 后端编码、复杂规划、架构设计 | `model: "opus"` | 最强后端与规划能力 |
-| 前端编码、通用编码任务 | `model: "sonnet"` | 强编码与前端能力 |
-| 简单研究、文件搜索、快速查找 | `model: "haiku"` | 轻量、快速 |
-
-这平衡了模型负载并利用各模型优势。
-
 ### Python 环境
 
 - **Python**: `$HOME/.local/bin/python3` (3.12.8) — 唯一源，支持 pip 和扩展模块加载
