@@ -44,6 +44,16 @@
       "features": ["go", "gofmt", "GOPROXY support"]
     },
     {
+      "name": "claude-code",
+      "version": "2.1.88-ohos.1",
+      "category": "ai-tool",
+      "source": "https://github.com/chenjh16/HarmonyOS-Claude-Code",
+      "build_guide": "docs/claude-code-harmonyos.md",
+      "install_script": "npm install -g claude-code-ohos.tgz",
+      "install_dir": "$(npm prefix -g)/bin",
+      "features": ["Agent mode", "TUI", "40+ tools", "MCP support", "HarmonyOS native", "ripgrep auto-signing", "SSH V8 crash workaround"]
+    },
+    {
       "name": "pytorch",
       "version": "2.5.1",
       "category": "ml-framework",
@@ -61,7 +71,7 @@
       "build_guide": "tools/llama-cpp/build.md",
       "install_script": "tools/llama-cpp/install.sh",
       "install_dir": "$HOME/Claude/llama.cpp/build/bin",
-      "features": ["llama-cli", "llama-server", "NEON/SVE optimization", "Qwen3.5 support"]
+      "features": ["llama-cli", "llama-server", "NEON/SVE optimization", "Qwen3.5 support", "9B CoT model"]
     },
     {
       "name": "mihomo",
@@ -147,6 +157,7 @@
     }
   ],
   "documentation": [
+    {"name": "Claude Code", "path": "docs/claude-code-harmonyos.md", "path_cn": "docs/claude-code-harmonyos.cn.md"},
     {"name": "Python Environment", "path": "docs/python-harmonyos.md", "path_cn": "docs/python-harmonyos.cn.md"},
     {"name": "Python Packages", "path": "docs/python-packages-harmonyos.md", "path_cn": "docs/python-packages-harmonyos.cn.md"},
     {"name": "llama.cpp", "path": "docs/llama-cpp-harmonyos.md", "path_cn": "docs/llama-cpp-harmonyos.cn.md"},

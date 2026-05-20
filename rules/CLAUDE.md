@@ -128,6 +128,7 @@ See [python-harmonyos.md](docs/python-harmonyos.md) for details.
 ### Adaptation Experience
 
 Detailed adaptation guides are available in the `docs/` directory:
+- [Claude Code for HarmonyOS](docs/claude-code-harmonyos.md) — AI programming assistant, npm package, SSH V8 crash workaround
 - [Python Environment Guide](docs/python-harmonyos.md) — installation, configuration, numpy/pillow/lxml setup
 - [Python Package Compatibility](docs/python-packages-harmonyos.md) — 34 packages tested, solutions for C/Rust extensions
 - [llama.cpp Adaptation](docs/llama-cpp-harmonyos.md) — build, NEON/SVE optimization, ModelScope model download
