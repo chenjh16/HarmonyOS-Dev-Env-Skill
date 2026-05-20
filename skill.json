@@ -123,7 +123,7 @@
     {
       "name": "tmpdir",
       "description": "/tmp is read-only, use $HOME/Claude/tmpdir",
-      "guide": "CLAUDE.md"
+      "guide": "rules/CLAUDE.md"
     },
     {
       "name": "ld-library-path",
@@ -133,7 +133,7 @@
     {
       "name": "linker-wrapper",
       "description": "SDK lld requires libxml2.so.16, use ld.bfd wrapper",
-      "guide": "CLAUDE.md"
+      "guide": "rules/CLAUDE.md"
     },
     {
       "name": "no-gcc",
@@ -161,7 +161,7 @@
   ],
   "env_config": {
     "shell_config": "config/.zshenv",
-    "claude_rules": ["CLAUDE.md", "CLAUDE.cn.md"],
+    "claude_rules": ["rules/CLAUDE.md", "rules/CLAUDE.cn.md"],
     "ssh_polyfill": "config/.claude/ssh-fetch-polyfill.js",
     "start_script": "config/.claude/start-claude.sh"
   }
