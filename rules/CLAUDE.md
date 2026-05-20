@@ -129,6 +129,7 @@ See [python-harmonyos.md](docs/python-harmonyos.md) for details.
 
 Detailed adaptation guides are available in the `docs/` directory:
 - [Claude Code for HarmonyOS](docs/claude-code-harmonyos.md) — AI programming assistant, npm package, SSH V8 crash workaround
+- [Node.js (DevNode-OH)](docs/nodejs-harmonyos.md) — Node.js installation, TLS/V8 issues, npm configuration
 - [Python Environment Guide](docs/python-harmonyos.md) — installation, configuration, numpy/pillow/lxml setup
 - [Python Package Compatibility](docs/python-packages-harmonyos.md) — 34 packages tested, solutions for C/Rust extensions
 - [llama.cpp Adaptation](docs/llama-cpp-harmonyos.md) — build, NEON/SVE optimization, ModelScope model download
@@ -141,3 +142,6 @@ Detailed adaptation guides are available in the `docs/` directory:
 - [Dropbear SSH Adaptation](docs/dropbear-harmonyos.md) — SSH server/client, 5 source patches, V8 JIT crash workaround
 - [Code Signing Guide](docs/code-signing.md) — detailed code signing instructions
 - [LD_LIBRARY_PATH Guide](docs/ld-library-path.md) — dynamic library path configuration
+- [SELinux Analysis](docs/selinux-analysis.md) — root cause of .so loading restrictions
+- [IPC Feasibility](docs/ipc-feasibility.md) — Native Child Process API analysis
+- [Troubleshooting Guide](docs/troubleshooting.md) — consolidated problem-solving reference

@@ -24,6 +24,16 @@
       "features": ["pip", "extension modules", "numpy", "pillow", "lxml"]
     },
     {
+      "name": "nodejs",
+      "version": "24.13.0",
+      "category": "language",
+      "source": "AppGallery DevNode-OH",
+      "build_guide": "docs/nodejs-harmonyos.md",
+      "install_script": "AppGallery install",
+      "install_dir": "/usr/lib/node_modules",
+      "features": ["node", "npm", "DevNode-OH native", "TLS workaround", "--jitless SSH"]
+    },
+    {
       "name": "rust",
       "version": "1.95.0",
       "category": "language",
@@ -158,6 +168,7 @@
   ],
   "documentation": [
     {"name": "Claude Code", "path": "docs/claude-code-harmonyos.md", "path_cn": "docs/claude-code-harmonyos.cn.md"},
+    {"name": "Node.js (DevNode-OH)", "path": "docs/nodejs-harmonyos.md", "path_cn": "docs/nodejs-harmonyos.cn.md"},
     {"name": "Python Environment", "path": "docs/python-harmonyos.md", "path_cn": "docs/python-harmonyos.cn.md"},
     {"name": "Python Packages", "path": "docs/python-packages-harmonyos.md", "path_cn": "docs/python-packages-harmonyos.cn.md"},
     {"name": "llama.cpp", "path": "docs/llama-cpp-harmonyos.md", "path_cn": "docs/llama-cpp-harmonyos.cn.md"},
@@ -169,7 +180,10 @@
     {"name": "starship", "path": "docs/starship-harmonyos.md", "path_cn": "docs/starship-harmonyos.cn.md"},
     {"name": "Dropbear SSH", "path": "docs/dropbear-harmonyos.md", "path_cn": "docs/dropbear-harmonyos.cn.md"},
     {"name": "Code Signing", "path": "docs/code-signing.md", "path_cn": "docs/code-signing.cn.md"},
-    {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md", "path_cn": "docs/ld-library-path.cn.md"}
+    {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md", "path_cn": "docs/ld-library-path.cn.md"},
+    {"name": "SELinux Analysis", "path": "docs/selinux-analysis.md", "path_cn": "docs/selinux-analysis.cn.md"},
+    {"name": "IPC Feasibility", "path": "docs/ipc-feasibility.md", "path_cn": "docs/ipc-feasibility.cn.md"},
+    {"name": "Troubleshooting", "path": "docs/troubleshooting.md", "path_cn": "docs/troubleshooting.cn.md"}
   ],
   "env_config": {
     "shell_config": "config/.zshenv",

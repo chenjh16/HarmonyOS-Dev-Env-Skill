@@ -21,6 +21,7 @@ HarmonyOS PC (HongMeng Kernel 1.12.0, aarch64) 是一个独特的开发平台，
 | 工具链 | 版本 | 状态 | 安装脚本 |
 |--------|------|------|----------|
 | Python | 3.12.8 | 完全可用 | `tools/python/install.sh` |
+| Node.js | 24.13.0 | 完全可用 | 应用市场 DevNode-OH |
 | Rust | 1.95.0 | 完全可用 | `tools/rust/install.sh` |
 | Go | 1.22.5 | 完全可用 | `tools/go/install.sh` |
 | PyTorch | 2.5.1 | 完全可用 | 见 `tools/pytorch/build.md` |
@@ -47,10 +48,13 @@ HarmonyOS-Dev-Env-Skill/
 │       ├── ssh-fetch-polyfill.js    # SSH V8 crash polyfill
 │       └── start-claude.sh           # Claude Code 启动脚本
 ├── scripts/
-│   └── sign-all.sh              # 批量签名脚本
+│   ├── sign-all.sh              # 批量签名脚本
+│   └── verify-env.sh            # 环境验证脚本
 ├── docs/                        # 适配指南文档 (双语)
 │   ├── claude-code-harmonyos.md     # Claude Code 适配
 │   ├── claude-code-harmonyos.cn.md
+│   ├── nodejs-harmonyos.md          # Node.js (DevNode-OH)
+│   ├── nodejs-harmonyos.cn.md
 │   ├── python-harmonyos.md          # Python 环境
 │   ├── python-harmonyos.cn.md
 │   ├── python-packages-harmonyos.md # 包兼容性报告
@@ -71,6 +75,16 @@ HarmonyOS-Dev-Env-Skill/
 │   ├── bat-harmonyos.cn.md
 │   ├── starship-harmonyos.md        # starship 提示符
 │   ├── starship-harmonyos.cn.md
+│   ├── code-signing.md              # 代码签名指南
+│   ├── code-signing.cn.md
+│   ├── ld-library-path.md           # 动态库路径配置
+│   ├── ld-library-path.cn.md
+│   ├── selinux-analysis.md          # SELinux 根因分析
+│   ├── selinux-analysis.cn.md
+│   ├── ipc-feasibility.md           # IPC 可行性分析
+│   ├── ipc-feasibility.cn.md
+│   ├── troubleshooting.md           # 故障排除指南
+│   └── troubleshooting.cn.md
 │   ├── code-signing.md              # 代码签名指南
 │   ├── code-signing.cn.md
 │   ├── ld-library-path.md           # 动态库路径配置
@@ -253,6 +267,7 @@ HarmonyOS PC (HongMeng Kernel 1.12.0, aarch64) is a unique development platform 
 | Toolchain | Version | Status | Install Script |
 |-----------|---------|--------|----------------|
 | Python | 3.12.8 | Fully functional | `tools/python/install.sh` |
+| Node.js | 24.13.0 | Fully functional | AppGallery DevNode-OH |
 | Rust | 1.95.0 | Fully functional | `tools/rust/install.sh` |
 | Go | 1.22.5 | Fully functional | `tools/go/install.sh` |
 | PyTorch | 2.5.1 | Fully functional | See `tools/pytorch/build.md` |
@@ -279,10 +294,13 @@ HarmonyOS-Dev-Env-Skill/
 │       ├── ssh-fetch-polyfill.js    # SSH V8 crash polyfill
 │       └── start-claude.sh           # Claude Code startup script
 ├── scripts/
-│   └── sign-all.sh              # Batch signing script
+│   ├── sign-all.sh              # Batch signing script
+│   └── verify-env.sh            # Environment verification script
 ├── docs/                        # Adaptation guides (bilingual)
 │   ├── claude-code-harmonyos.md     # Claude Code adaptation
 │   ├── claude-code-harmonyos.cn.md
+│   ├── nodejs-harmonyos.md          # Node.js (DevNode-OH)
+│   ├── nodejs-harmonyos.cn.md
 │   ├── python-harmonyos.md          # Python environment
 │   ├── python-harmonyos.cn.md
 │   ├── python-packages-harmonyos.md # Package compatibility report
@@ -306,7 +324,13 @@ HarmonyOS-Dev-Env-Skill/
 │   ├── code-signing.md              # Code signing guide
 │   ├── code-signing.cn.md
 │   ├── ld-library-path.md           # Library path config
-│   └── ld-library-path.cn.md
+│   ├── ld-library-path.cn.md
+│   ├── selinux-analysis.md          # SELinux root cause analysis
+│   ├── selinux-analysis.cn.md
+│   ├── ipc-feasibility.md           # IPC feasibility analysis
+│   ├── ipc-feasibility.cn.md
+│   ├── troubleshooting.md           # Troubleshooting guide
+│   └── troubleshooting.cn.md
 └── tools/                       # Build guides and install scripts
     ├── python/
     │   ├── build.md              # Complete build guide
@@ -438,6 +462,8 @@ See `docs/python-harmonyos.md` for complete workflow.
 
 | Document | Description |
 |----------|-------------|
+| `docs/claude-code-harmonyos.md` | Claude Code AI assistant |
+| `docs/nodejs-harmonyos.md` | Node.js (DevNode-OH) setup |
 | `docs/python-harmonyos.md` | Python environment setup |
 | `docs/python-packages-harmonyos.md` | 34 packages compatibility |
 | `docs/rust-harmonyos.md` | Rust toolchain installation |
@@ -447,8 +473,12 @@ See `docs/python-harmonyos.md` for complete workflow.
 | `docs/eza-harmonyos.md` | Modern ls replacement |
 | `docs/bat-harmonyos.md` | cat with syntax highlighting |
 | `docs/starship-harmonyos.md` | Cross-shell prompt |
+| `docs/dropbear-harmonyos.md` | SSH server/client setup |
 | `docs/code-signing.md` | Code signing guide |
 | `docs/ld-library-path.md` | Library path configuration |
+| `docs/selinux-analysis.md` | SELinux root cause analysis |
+| `docs/ipc-feasibility.md` | IPC feasibility analysis |
+| `docs/troubleshooting.md` | Troubleshooting guide |
 
 ## License
 

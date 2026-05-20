@@ -129,6 +129,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 
 详细适配指南位于 `docs/` 目录:
 - [Claude Code for HarmonyOS](docs/claude-code-harmonyos.cn.md) — AI 编程助手、npm 包安装、SSH V8 崩溃解决方案
+- [Node.js (DevNode-OH)](docs/nodejs-harmonyos.cn.md) — Node.js 安装、TLS/V8 问题、npm 配置
 - [Python 环境说明](docs/python-harmonyos.cn.md) — 安装位置、配置、numpy/pillow/lxml 安装
 - [Python 包兼容性报告](docs/python-packages-harmonyos.cn.md) — 34 个包测试结果，C/Rust 扩展解决方案
 - [llama.cpp 适配记录](docs/llama-cpp-harmonyos.cn.md) — 构建、NEON/SVE 优化、ModelScope 模型下载
@@ -141,3 +142,6 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - [Dropbear SSH 适配记录](docs/dropbear-harmonyos.cn.md) — SSH 服务器/客户端、5个源码补丁、V8 JIT 崩溃解决方案
 - [代码签名指南](docs/code-signing.cn.md) — 详细代码签名说明
 - [动态库路径指南](docs/ld-library-path.cn.md) — 动态库路径配置
+- [SELinux 根因分析](docs/selinux-analysis.cn.md) — .so 加载限制的根本原因
+- [IPC 可行性分析](docs/ipc-feasibility.cn.md) — Native Child Process API 分析
+- [故障排除指南](docs/troubleshooting.cn.md) — 综合问题解决参考
