@@ -147,17 +147,17 @@
     }
   ],
   "documentation": [
-    {"name": "Python Environment", "path": "docs/python-harmonyos.md"},
-    {"name": "Python Packages", "path": "docs/python-packages-harmonyos.md"},
-    {"name": "llama.cpp", "path": "docs/llama-cpp-harmonyos.md"},
-    {"name": "Rust", "path": "docs/rust-harmonyos.md"},
-    {"name": "PyTorch", "path": "docs/pytorch-harmonyos.md"},
-    {"name": "mihomo", "path": "docs/mihomo-harmonyos.md"},
-    {"name": "eza", "path": "docs/eza-harmonyos.md"},
-    {"name": "bat", "path": "docs/bat-harmonyos.md"},
-    {"name": "starship", "path": "docs/starship-harmonyos.md"},
-    {"name": "Code Signing", "path": "docs/code-signing.md"},
-    {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md"}
+    {"name": "Python Environment", "path": "docs/python-harmonyos.md", "path_cn": "docs/python-harmonyos.cn.md"},
+    {"name": "Python Packages", "path": "docs/python-packages-harmonyos.md", "path_cn": "docs/python-packages-harmonyos.cn.md"},
+    {"name": "llama.cpp", "path": "docs/llama-cpp-harmonyos.md", "path_cn": "docs/llama-cpp-harmonyos.cn.md"},
+    {"name": "Rust", "path": "docs/rust-harmonyos.md", "path_cn": "docs/rust-harmonyos.cn.md"},
+    {"name": "PyTorch", "path": "docs/pytorch-harmonyos.md", "path_cn": "docs/pytorch-harmonyos.cn.md"},
+    {"name": "mihomo", "path": "docs/mihomo-harmonyos.md", "path_cn": "docs/mihomo-harmonyos.cn.md"},
+    {"name": "eza", "path": "docs/eza-harmonyos.md", "path_cn": "docs/eza-harmonyos.cn.md"},
+    {"name": "bat", "path": "docs/bat-harmonyos.md", "path_cn": "docs/bat-harmonyos.cn.md"},
+    {"name": "starship", "path": "docs/starship-harmonyos.md", "path_cn": "docs/starship-harmonyos.cn.md"},
+    {"name": "Code Signing", "path": "docs/code-signing.md", "path_cn": "docs/code-signing.cn.md"},
+    {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md", "path_cn": "docs/ld-library-path.cn.md"}
   ],
   "env_config": {
     "shell_config": "config/.zshenv",
