@@ -160,12 +160,25 @@ Python 必须用 `-rdynamic` 编译才能加载扩展模块：
 
 | 工具 | 文档 | 主要特性 |
 |------|------|----------|
-| Python | `tools/python/build.md` | pip、numpy、扩展模块 |
-| Rust | `tools/rust/build.md` | 官方 ohos 目标、cargo、FFI |
+| Python | `docs/python-harmonyos.md` | pip、numpy、扩展模块、pillow、lxml |
+| Python Packages | `docs/python-packages-harmonyos.md` | 34个包兼容性报告 |
+| Rust | `docs/rust-harmonyos.md` | 官方 ohos 目标、cargo、FFI |
 | Go | `tools/go/build.md` | GOPROXY 支持 |
-| PyTorch | `tools/pytorch/build.md` | MNIST 训练验证 |
-| llama.cpp | `tools/llama-cpp/build.md` | NEON/SVE 优化、4x 加速 |
-| mihomo | `tools/mihomo/build.md` | HTTP/SOCKS5 代理 |
+| PyTorch | `docs/pytorch-harmonyos.md` | MNIST 训练验证 (92.4%) |
+| llama.cpp | `docs/llama-cpp-harmonyos.md` | NEON/SVE 优化、4x 加速 |
+| mihomo | `docs/mihomo-harmonyos.md` | HTTP/SOCKS5 代理、GEOIP/GEOSITE 智能分流 |
+| eza | `docs/eza-harmonyos.md` | 现代 ls、图标、Git 状态 |
+| bat | `docs/bat-harmonyos.md` | 语法高亮、cat 替代 |
+| starship | `docs/starship-harmonyos.md` | 跨 shell 提示符 |
+| Dropbear | `tools/dropbear/build.md` | SSH 服务器、公钥认证、V8 crash 解决方案 |
+
+## 核心问题文档
+
+| 问题 | 文档 | 说明 |
+|------|------|------|
+| 代码签名 | `docs/code-signing.md` | 所有 ELF 必须签名 |
+| LD_LIBRARY_PATH | `docs/ld-library-path.md` | /usr/lib 必须在最前面 |
+| 链接器封装 | `CLAUDE.md` | SDK lld 不工作，用 ld.bfd |
 
 ---
 
@@ -321,9 +334,25 @@ Python must be compiled with `-rdynamic` for extension module support:
 | Python Build | Py Symbols Exported | Extension Loading |
 |--------------|---------------------|-------------------|
 | System Python (static) | 0 | Permission denied |
-| Local Python (-rdynamic) | 948+ | SUCCESS |
+| Local Python (-rdynamic) | 1521 | SUCCESS |
 
-See `tools/python/build.md` for complete workflow.
+See `docs/python-harmonyos.md` for complete workflow.
+
+## Documentation Index
+
+| Document | Description |
+|----------|-------------|
+| `docs/python-harmonyos.md` | Python environment setup |
+| `docs/python-packages-harmonyos.md` | 34 packages compatibility |
+| `docs/rust-harmonyos.md` | Rust toolchain installation |
+| `docs/pytorch-harmonyos.md` | PyTorch v2.5.1 compilation |
+| `docs/llama-cpp-harmonyos.md` | llama.cpp with NEON/SVE |
+| `docs/mihomo-harmonyos.md` | Proxy client setup |
+| `docs/eza-harmonyos.md` | Modern ls replacement |
+| `docs/bat-harmonyos.md` | cat with syntax highlighting |
+| `docs/starship-harmonyos.md` | Cross-shell prompt |
+| `docs/code-signing.md` | Code signing guide |
+| `docs/ld-library-path.md` | Library path configuration |
 
 ## License
 

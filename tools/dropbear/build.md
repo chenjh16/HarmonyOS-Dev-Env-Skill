@@ -508,14 +508,11 @@ fi
 // But --jitless disables WebAssembly, breaking native fetch
 // This script polyfills fetch with node-fetch (based on http.request)
 //
-// IMPORTANT: In --jitless mode, native fetch exists but is broken (WebAssembly is undefined)
-// So we must check WebAssembly, not just fetch existence
-//
-// COMPATIBILITY FIXES:
-// 1. node-fetch@2 Response.body is Node.js Readable stream, lacks cancel() method
-// 2. node-fetch@2 Response.body is NOT Web ReadableStream (no pipeThrough/getReader)
-// 3. MCP SDK uses Web Streams API: body.pipeThrough(new TextDecoderStream)...
-// 4. Response.body is a getter property, must use Object.defineProperty to replace
+// CRITICAL BUG FIX (2026-05-20):
+// - Readable.toWeb() consumes the original Node stream, breaking text()/json()
+// - Solution: Use CustomResponse class that handles stream conversion lazily
+// - Override text()/json()/buffer() to read from original Node stream
+// - Override body getter to return Web ReadableStream when accessed directly
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly disabled (--jitless mode), polyfilling fetch with node-fetch...');

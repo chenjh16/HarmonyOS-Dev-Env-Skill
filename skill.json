@@ -111,7 +111,7 @@
       "build_guide": "tools/dropbear/build.md",
       "install_script": "tools/dropbear/install.sh",
       "install_dir": "$HOME/.local/bin",
-      "features": ["SSH server", "SSH client", "pubkey auth only", "lightweight", "auto-start on login", "5 HarmonyOS patches"]
+      "features": ["SSH server", "SSH client", "pubkey auth only", "lightweight", "auto-start on login", "5 HarmonyOS patches", "V8 crash workaround"]
     }
   ],
   "core_issues": [
@@ -127,17 +127,42 @@
     },
     {
       "name": "ld-library-path",
-      "description": "OpenSSL symbol version conflict when /usr/lib not first",
+      "description": "/usr/lib must come first to avoid OpenSSL symbol version conflict",
       "guide": "docs/ld-library-path.md"
+    },
+    {
+      "name": "linker-wrapper",
+      "description": "SDK lld requires libxml2.so.16, use ld.bfd wrapper",
+      "guide": "CLAUDE.md"
     },
     {
       "name": "no-gcc",
       "description": "Only clang available, no gcc",
       "guide": "CLAUDE.md"
+    },
+    {
+      "name": "ssh-v8-crash",
+      "description": "V8 JIT crashes in SSH PTY, use --jitless + node-fetch polyfill",
+      "guide": "tools/dropbear/build.md"
     }
+  ],
+  "documentation": [
+    {"name": "Python Environment", "path": "docs/python-harmonyos.md"},
+    {"name": "Python Packages", "path": "docs/python-packages-harmonyos.md"},
+    {"name": "llama.cpp", "path": "docs/llama-cpp-harmonyos.md"},
+    {"name": "Rust", "path": "docs/rust-harmonyos.md"},
+    {"name": "PyTorch", "path": "docs/pytorch-harmonyos.md"},
+    {"name": "mihomo", "path": "docs/mihomo-harmonyos.md"},
+    {"name": "eza", "path": "docs/eza-harmonyos.md"},
+    {"name": "bat", "path": "docs/bat-harmonyos.md"},
+    {"name": "starship", "path": "docs/starship-harmonyos.md"},
+    {"name": "Code Signing", "path": "docs/code-signing.md"},
+    {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md"}
   ],
   "env_config": {
     "shell_config": "config/.zshenv",
-    "claude_rules": ["CLAUDE.md", "CLAUDE.cn.md"]
+    "claude_rules": ["CLAUDE.md", "CLAUDE.cn.md"],
+    "ssh_polyfill": "config/.claude/ssh-fetch-polyfill.js",
+    "start_script": "config/.claude/start-claude.sh"
   }
 }
