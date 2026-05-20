@@ -476,44 +476,52 @@ fi
 //
 // 因此 polyfill 条件必须只检查 WebAssembly，不能检查 fetch 是否存在
 //
-// 另外：node-fetch@2 的 Response.body 没有 cancel() 方法（SDK 需要它）
-// 需要包装 Response 添加 cancel() 支持
+// 兼容性修复：
+// 1. node-fetch@2 Response.body 是 Node.js Readable stream，没有 cancel() 方法
+// 2. node-fetch@2 Response.body 不是 Web ReadableStream（没有 pipeThrough/getReader）
+// 3. MCP SDK 使用 Web Streams API: body.pipeThrough(new TextDecoderStream)...
+// 4. Response.body 是 getter 属性，必须用 Object.defineProperty 替换
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly 禁用 (--jitless 模式)，使用 node-fetch 替代 fetch...');
     try {
-        // 使用绝对路径，因为 preload 在 cwd 设置前执行
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
+        const { Readable } = require('stream');
 
-        // 包装 fetch 添加 cancel() 支持到 Response.body
         const originalFetch = nodeFetch;
 
         globalThis.fetch = async function(url, opts) {
             const response = await originalFetch(url, opts);
 
-            // 如果 body 没有 cancel() 方法则添加
-            if (response.body && typeof response.body.cancel !== 'function') {
-                response.body.cancel = async function() {
-                    // node-fetch@2 使用 Node.js Readable stream
-                    // destroy stream 来取消
-                    if (response.body.destroy) {
-                        response.body.destroy();
-                    }
+            // 转换 Node.js stream 为 Web ReadableStream（MCP SDK 需要）
+            if (response.body && !(response.body instanceof ReadableStream)) {
+                const webStream = Readable.toWeb(response.body);
+
+                // 添加 cancel() 方法（SDK 可能直接调用 body.cancel()）
+                webStream.cancel = async function(reason) {
+                    const reader = webStream.getReader();
+                    await reader.cancel(reason);
                 };
+
+                // 用 Object.defineProperty 替换 body（response.body 是 getter）
+                Object.defineProperty(response, 'body', {
+                    value: webStream,
+                    writable: true,
+                    configurable: true,
+                    enumerable: true
+                });
             }
 
             return response;
         };
 
-        // 复制其他导出
         globalThis.Headers = nodeFetch.Headers;
         globalThis.Request = nodeFetch.Request;
         globalThis.Response = nodeFetch.Response;
 
-        console.log('[SSH] fetch polyfill 加载成功');
+        console.log('[SSH] fetch polyfill 加载成功 (Web ReadableStream 兼容)');
     } catch (e) {
         console.error('[SSH] node-fetch 加载失败:', e.message);
-        // 失败时 fetch 调用会报错
     }
 }
 ```
@@ -531,6 +539,16 @@ if (typeof WebAssembly === 'undefined') {
    - SDK 检查 `if (this.authToken == null)` 来决定认证方式
    - 空字符串 `''` 不是 `null`，所以 SDK 会发送 `Authorization: Bearer ''`
    - LiteLLM 拒绝空的 Bearer token，返回 401 Unauthorized
+
+3. **Response.body Web ReadableStream 转换**（对 MCP 至关重要）：
+   - node-fetch@2 Response.body 是 Node.js Readable stream (PassThrough)，不是 Web ReadableStream
+   - MCP SDK 使用 Web Streams API: `body.pipeThrough(new TextDecoderStream).pipeThrough(new EventSourceParserStream).getReader()`
+   - Node.js stream 没有 `pipeThrough` 和 `getReader` 方法
+   - Response.body 是 getter 属性，直接赋值不生效
+   - 解决方案：使用 `Readable.toWeb(response.body)` + `Object.defineProperty` 转换并替换
+
+4. **Response.body.cancel()**：Web ReadableStream 的 reader 有 `cancel()`，但 SDK 可能直接调用 `body.cancel()`。
+   - 添加 `webStream.cancel = async function() { reader.cancel() }` 作为备用
    - 解决方案：使用 `unset ANTHROPIC_AUTH_TOKEN` 替代设置空字符串
 
 3. **Response.body.cancel()**：node-fetch@2 的 Response.body 是 Node.js Readable stream，没有 `cancel()` 方法。

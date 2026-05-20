@@ -511,44 +511,52 @@ fi
 // IMPORTANT: In --jitless mode, native fetch exists but is broken (WebAssembly is undefined)
 // So we must check WebAssembly, not just fetch existence
 //
-// Also: node-fetch@2 Response.body lacks cancel() method (SDK requires it)
-// We need to wrap Response to add cancel() support
+// COMPATIBILITY FIXES:
+// 1. node-fetch@2 Response.body is Node.js Readable stream, lacks cancel() method
+// 2. node-fetch@2 Response.body is NOT Web ReadableStream (no pipeThrough/getReader)
+// 3. MCP SDK uses Web Streams API: body.pipeThrough(new TextDecoderStream)...
+// 4. Response.body is a getter property, must use Object.defineProperty to replace
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly disabled (--jitless mode), polyfilling fetch with node-fetch...');
     try {
-        // Use absolute path since preload runs before cwd is set
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
+        const { Readable } = require('stream');
 
-        // Wrap fetch to add cancel() support to Response.body
         const originalFetch = nodeFetch;
 
         globalThis.fetch = async function(url, opts) {
             const response = await originalFetch(url, opts);
 
-            // Add cancel() method to body stream if missing
-            if (response.body && typeof response.body.cancel !== 'function') {
-                response.body.cancel = async function() {
-                    // node-fetch@2 uses Node.js Readable stream
-                    // Destroy the stream to cancel
-                    if (response.body.destroy) {
-                        response.body.destroy();
-                    }
+            // Convert Node.js stream to Web ReadableStream for MCP SDK compatibility
+            if (response.body && !(response.body instanceof ReadableStream)) {
+                const webStream = Readable.toWeb(response.body);
+
+                // Add cancel() method (SDK may call body.cancel() directly)
+                webStream.cancel = async function(reason) {
+                    const reader = webStream.getReader();
+                    await reader.cancel(reason);
                 };
+
+                // Replace body using Object.defineProperty (response.body is getter)
+                Object.defineProperty(response, 'body', {
+                    value: webStream,
+                    writable: true,
+                    configurable: true,
+                    enumerable: true
+                });
             }
 
             return response;
         };
 
-        // Copy other exports
         globalThis.Headers = nodeFetch.Headers;
         globalThis.Request = nodeFetch.Request;
         globalThis.Response = nodeFetch.Response;
 
-        console.log('[SSH] fetch polyfill loaded successfully');
+        console.log('[SSH] fetch polyfill loaded successfully (Web ReadableStream compatible)');
     } catch (e) {
         console.error('[SSH] Failed to load node-fetch:', e.message);
-        // Fallback: fetch will fail with cryptic error
     }
 }
 ```
@@ -568,9 +576,15 @@ if (typeof WebAssembly === 'undefined') {
    - LiteLLM rejects empty Bearer token with 401 Unauthorized
    - Solution: Use `unset ANTHROPIC_AUTH_TOKEN` instead of setting empty string
 
-3. **Response.body.cancel()**: node-fetch@2 Response.body is a Node.js Readable stream without `cancel()` method.
-   - SDK calls `streamResponse.body?.cancel()` to abort streaming
-   - Polyfill must wrap Response to add `cancel()` method
+3. **Response.body Web ReadableStream conversion** (CRITICAL for MCP):
+   - node-fetch@2 Response.body is a Node.js Readable stream (PassThrough), NOT Web ReadableStream
+   - MCP SDK uses Web Streams API: `body.pipeThrough(new TextDecoderStream).pipeThrough(new EventSourceParserStream).getReader()`
+   - Node.js stream lacks `pipeThrough` and `getReader` methods
+   - Response.body is a getter property, direct assignment doesn't work
+   - Solution: Use `Readable.toWeb(response.body)` + `Object.defineProperty` to convert and replace
+
+4. **Response.body.cancel()**: Web ReadableStream's reader has `cancel()`, but SDK may call `body.cancel()` directly.
+   - Add `webStream.cancel = async function() { reader.cancel() }` as fallback
 
 **Additional notes**:
 - `--lite-mode` also disables WebAssembly, same issue as `--jitless`
