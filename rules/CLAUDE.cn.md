@@ -128,15 +128,15 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 ### 适配经验
 
 详细适配指南位于 `docs/` 目录:
-- [Python 环境说明](docs/python-harmonyos.md) — 安装位置、配置、numpy 安装
-- [Python 包兼容性报告](docs/python-packages-harmonyos.md) — 包测试结果，C/Rust 扩展解决方案
-- [llama.cpp 适配记录](docs/llama-cpp-harmonyos.md) — 构建、链接、模型下载
-- [Rust 适配记录](docs/rust-harmonyos.md) — 工具链安装、签名、cargo 配置
-- [eza 适配记录](docs/eza-harmonyos.md) — Rust 项目编译、SSL 证书
-- [bat 适配记录](docs/bat-harmonyos.md) — Rust 项目编译、语法高亮
-- [starship 适配记录](docs/starship-harmonyos.md) — Rust 项目编译、prompt 配置
-- [mihomo 适配记录](docs/mihomo-harmonyos.md) — Go 工具链、代理配置
-- [PyTorch 适配记录](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 编译、7个关键适配、12项端到端测试
-- [Dropbear SSH 适配记录](tools/dropbear/build.cn.md) — Dropbear SSH 服务器编译、公钥认证配置、自动启动设置
-- [代码签名指南](docs/code-signing.md) — 详细代码签名说明
-- [动态库路径指南](docs/ld-library-path.md) — 动态库路径配置
+- [Python 环境说明](docs/python-harmonyos.cn.md) — 安装位置、配置、numpy/pillow/lxml 安装
+- [Python 包兼容性报告](docs/python-packages-harmonyos.cn.md) — 34 个包测试结果，C/Rust 扩展解决方案
+- [llama.cpp 适配记录](docs/llama-cpp-harmonyos.cn.md) — 构建、NEON/SVE 优化、ModelScope 模型下载
+- [Rust 适配记录](docs/rust-harmonyos.cn.md) — 工具链安装、签名、cargo 配置、FFI 互操作
+- [eza 适配记录](docs/eza-harmonyos.cn.md) — Rust 项目编译、SELinux/hmdfs 属性显示
+- [bat 适配记录](docs/bat-harmonyos.cn.md) — Rust 项目编译、语法高亮
+- [starship 适配记录](docs/starship-harmonyos.cn.md) — Rust 项目编译、errno 补丁、prompt 配置
+- [mihomo 适配记录](docs/mihomo-harmonyos.cn.md) — Go 工具链、代理配置、GEOIP/GEOSITE 分流规则
+- [PyTorch 适配记录](docs/pytorch-harmonyos.cn.md) — PyTorch v2.5.1 编译、7个关键适配、12项端到端测试、MNIST 训练
+- [Dropbear SSH 适配记录](docs/dropbear-harmonyos.cn.md) — SSH 服务器/客户端、5个源码补丁、V8 JIT 崩溃解决方案
+- [代码签名指南](docs/code-signing.cn.md) — 详细代码签名说明
+- [动态库路径指南](docs/ld-library-path.cn.md) — 动态库路径配置

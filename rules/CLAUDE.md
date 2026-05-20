@@ -128,15 +128,15 @@ See [python-harmonyos.md](docs/python-harmonyos.md) for details.
 ### Adaptation Experience
 
 Detailed adaptation guides are available in the `docs/` directory:
-- [Python Environment Guide](docs/python-harmonyos.md) — installation, configuration, numpy setup
-- [Python Package Compatibility](docs/python-packages-harmonyos.md) — packages tested, solutions for C/Rust extensions
-- [llama.cpp Adaptation](docs/llama-cpp-harmonyos.md) — build, linking, model download
-- [Rust Adaptation](docs/rust-harmonyos.md) — toolchain install, signing, cargo config
-- [eza Adaptation](docs/eza-harmonyos.md) — Rust build, SSL certificates
+- [Python Environment Guide](docs/python-harmonyos.md) — installation, configuration, numpy/pillow/lxml setup
+- [Python Package Compatibility](docs/python-packages-harmonyos.md) — 34 packages tested, solutions for C/Rust extensions
+- [llama.cpp Adaptation](docs/llama-cpp-harmonyos.md) — build, NEON/SVE optimization, ModelScope model download
+- [Rust Adaptation](docs/rust-harmonyos.md) — toolchain install, signing, cargo config, FFI interop
+- [eza Adaptation](docs/eza-harmonyos.md) — Rust build, SELinux/hmdfs attributes
 - [bat Adaptation](docs/bat-harmonyos.md) — Rust build, syntax highlighting
-- [starship Adaptation](docs/starship-harmonyos.md) — Rust build, prompt config
-- [mihomo Adaptation](docs/mihomo-harmonyos.md) — Go toolchain, proxy config
-- [PyTorch Adaptation](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 compilation, 7 key adaptations, 12 e2e tests
-- [Dropbear SSH Adaptation](tools/dropbear/build.md) — Dropbear SSH server compilation, pubkey auth config, auto-start setup
+- [starship Adaptation](docs/starship-harmonyos.md) — Rust build, errno patch, prompt config
+- [mihomo Adaptation](docs/mihomo-harmonyos.md) — Go toolchain, proxy config, GEOIP/GEOSITE rules
+- [PyTorch Adaptation](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 compilation, 7 key adaptations, 12 e2e tests, MNIST training
+- [Dropbear SSH Adaptation](docs/dropbear-harmonyos.md) — SSH server/client, 5 source patches, V8 JIT crash workaround
 - [Code Signing Guide](docs/code-signing.md) — detailed code signing instructions
 - [LD_LIBRARY_PATH Guide](docs/ld-library-path.md) — dynamic library path configuration

@@ -156,6 +156,7 @@
     {"name": "eza", "path": "docs/eza-harmonyos.md", "path_cn": "docs/eza-harmonyos.cn.md"},
     {"name": "bat", "path": "docs/bat-harmonyos.md", "path_cn": "docs/bat-harmonyos.cn.md"},
     {"name": "starship", "path": "docs/starship-harmonyos.md", "path_cn": "docs/starship-harmonyos.cn.md"},
+    {"name": "Dropbear SSH", "path": "docs/dropbear-harmonyos.md", "path_cn": "docs/dropbear-harmonyos.cn.md"},
     {"name": "Code Signing", "path": "docs/code-signing.md", "path_cn": "docs/code-signing.cn.md"},
     {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md", "path_cn": "docs/ld-library-path.cn.md"}
   ],

@@ -249,6 +249,18 @@ python3 mnist_train.py
 
 Model saved to: `$HOME/Claude/tmpdir/mnist_model.pt`
 
+## Usage
+
+PyTorch requires setting LD_LIBRARY_PATH before use:
+
+```bash
+export LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH
+python3 -c "import torch; print(torch.__version__)"
+# Output: 2.5.0a0+gita8d6afb
+```
+
+**Note**: This is already configured in `~/.zshenv` for automatic loading.
+
 ## Installation Structure
 
 ```

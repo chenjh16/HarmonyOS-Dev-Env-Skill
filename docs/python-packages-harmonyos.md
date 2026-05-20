@@ -14,8 +14,8 @@
 |----------|------|------|-------|
 | Core Python | 5/5 | 0 | pickle, datetime, ctypes, json, hashlib |
 | Data Processing | 4/4 | 0 | numpy, pyyaml, beautifulsoup4, sqlalchemy |
-| Image Processing | 1/1 | 0 | pillow (compiled libjpeg/libpng) |
-| XML Processing | 1/1 | 0 | lxml (compiled libxml2/libxslt) |
+| Image Processing | 1/1 | 0 | pillow 12.2.0 (compiled libjpeg/libpng) |
+| XML Processing | 1/1 | 0 | lxml 6.1.0 (compiled libxml2/libxslt) |
 | Web/HTTP | 4/4 | 0 | requests, urllib3, flask, werkzeug |
 | Templates | 2/2 | 0 | jinja2, markupsafe |
 | CLI/Utilities | 4/4 | 0 | click, six, colorama, tqdm |

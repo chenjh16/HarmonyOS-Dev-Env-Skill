@@ -14,8 +14,8 @@
 |----------|------|------|-------|
 | 核心 Python | 5/5 | 0 | pickle, datetime, ctypes, json, hashlib |
 | 数据处理 | 4/4 | 0 | numpy, pyyaml, beautifulsoup4, sqlalchemy |
-| 图像处理 | 1/1 | 0 | pillow (已编译 libjpeg/libpng) |
-| XML 处理 | 1/1 | 0 | lxml (已编译 libxml2/libxslt) |
+| 图像处理 | 1/1 | 0 | pillow 12.2.0 (已编译 libjpeg/libpng) |
+| XML 处理 | 1/1 | 0 | lxml 6.1.0 (已编译 libxml2/libxslt) |
 | Web/HTTP | 4/4 | 0 | requests, urllib3, flask, werkzeug |
 | 模板引擎 | 2/2 | 0 | jinja2, markupsafe |
 | CLI/工具 | 4/4 | 0 | click, six, colorama, tqdm |

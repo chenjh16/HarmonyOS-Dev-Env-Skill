@@ -14,11 +14,12 @@ Python 3.12.8 @ $HOME/.local/
 ```
 
 **关键特性**:
-- 使用 `-rdynamic` 编译，导出 1521 个 Py 符号
+- 使用 `-rdynamic` 编译，导出 1517 个 Py 符号
 - 可加载用户目录的签名 .so 扩展模块
 - pip 直接运行，无需 wrapper
-- pillow 11.3.0 图像处理可用
-- lxml 6.0.0 XML/XSLT处理可用
+- numpy 2.4.4 科学计算可用
+- pillow 12.2.0 图像处理可用
+- lxml 6.1.0 XML/XSLT处理可用
 
 ## Shell 配置
 
