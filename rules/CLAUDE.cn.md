@@ -12,6 +12,32 @@
 - `io.tmpfile()` (C 标准库 tmpfile) 在 HarmonyOS 上返回 NULL — 使用替代方案: 在可写目录中 fopen 然后 unlink
 - 用户主目录是 `$HOME/` (不是 /home/)
 
+### 代码签名 (关键)
+
+- **所有 ELF 二进制文件执行前必须签名** — 包括:
+  - 编译的 C/C++ 程序 (clang 输出)
+  - Go 编译的二进制
+  - Rust 编译的二进制
+  - Python 扩展模块 (.so 文件)
+  - 从源码构建的任何可执行文件
+
+**签名命令**:
+```bash
+/data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+  -inFile <未签名二进制> \
+  -outFile <已签名二进制> \
+  -signAlg SHA256withECDSA
+```
+
+开发/测试使用 `-selfSign 1`。生产环境需使用正式证书。
+
+**快速验证**: 签名后检查:
+```bash
+/data/service/hnp/bin/binary-sign-tool display-sign -inFile <二进制>
+```
+
+完整文档见 [code-signing.cn.md](docs/code-signing.cn.md)。
+
 ### 工具链 (无 gcc)
 
 - **CC**: `/data/service/hnp/bin/clang` (clang 15.0.4, aarch64-unknown-linux-ohos 目标)

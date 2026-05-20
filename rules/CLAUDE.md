@@ -12,6 +12,32 @@
 - `io.tmpfile()` (C stdlib tmpfile) returns NULL on HarmonyOS — use fallback: fopen in writable dir then unlink
 - User home is `$HOME/` (not /home/)
 
+### Code Signing (CRITICAL)
+
+- **All ELF binaries must be signed before execution** — this includes:
+  - Compiled C/C++ programs (clang output)
+  - Go compiled binaries
+  - Rust compiled binaries
+  - Python extension modules (.so files)
+  - Any executable you build from source
+
+**Signing command**:
+```bash
+/data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+  -inFile <unsigned-binary> \
+  -outFile <signed-binary> \
+  -signAlg SHA256withECDSA
+```
+
+For development/testing, use `-selfSign 1`. For production, use proper certificates.
+
+**Quick test**: After signing, verify:
+```bash
+/data/service/hnp/bin/binary-sign-tool display-sign -inFile <binary>
+```
+
+See [code-signing.md](docs/code-signing.md) for full documentation.
+
 ### Toolchain (no gcc available)
 
 - **CC**: `/data/service/hnp/bin/clang` (clang 15.0.4, aarch64-unknown-linux-ohos target)
