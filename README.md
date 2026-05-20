@@ -34,34 +34,82 @@ HarmonyOS PC (HongMeng Kernel 1.12.0, aarch64) 是一个独特的开发平台，
 
 ```
 HarmonyOS-Dev-Env-Skill/
-├── README.md                 # 本文件 (双语)
-├── skill.json                # Skill 定义文件
-├── CLAUDE.md                 # Claude Code 规则文件 (英文)
-├── CLAUDE.cn.md              # Claude Code 规则文件 (中文)
-├── config/
-│   └── .zshenv               # Shell 环境配置模板
-│   └── pip.conf              # pip 配置模板
+├── README.md                    # 本文件 (双语)
+├── skill.json                   # Skill 定义文件
+├── CLAUDE.md                    # 项目开发指南 (英文)
+├── CLAUDE.cn.md                 # 项目开发指南 (中文)
+├── rules/                       # 目标系统规则文件 (安装到 ~/.claude/)
+│   ├── CLAUDE.md                # HarmonyOS 平台规则 (英文)
+│   └── CLAUDE.cn.md             # HarmonyOS 平台规则 (中文)
+├── config/                      # 配置模板
+│   ├── .zshenv                  # Shell 环境配置
+│   └── .claude/
+│       ├── ssh-fetch-polyfill.js    # SSH V8 crash polyfill
+│       └── start-claude.sh           # Claude Code 启动脚本
 ├── scripts/
-│   └── sign-all.sh           # 批量签名脚本
-└── tools/                    # 各工具的构建指南和安装脚本
+│   └── sign-all.sh              # 批量签名脚本
+├── docs/                        # 适配指南文档 (双语)
+│   ├── claude-code-harmonyos.md     # Claude Code 适配
+│   ├── claude-code-harmonyos.cn.md
+│   ├── python-harmonyos.md          # Python 环境
+│   ├── python-harmonyos.cn.md
+│   ├── python-packages-harmonyos.md # 包兼容性报告
+│   ├── python-packages-harmonyos.cn.md
+│   ├── rust-harmonyos.md            # Rust 工具链
+│   ├── rust-harmonyos.cn.md
+│   ├── pytorch-harmonyos.md         # PyTorch 编译
+│   ├── pytorch-harmonyos.cn.md
+│   ├── llama-cpp-harmonyos.md       # llama.cpp 推理
+│   ├── llama-cpp-harmonyos.cn.md
+│   ├── mihomo-harmonyos.md          # mihomo 代理
+│   ├── mihomo-harmonyos.cn.md
+│   ├── dropbear-harmonyos.md        # Dropbear SSH
+│   ├── dropbear-harmonyos.cn.md
+│   ├── eza-harmonyos.md             # eza 文件列表
+│   ├── eza-harmonyos.cn.md
+│   ├── bat-harmonyos.md             # bat 语法高亮
+│   ├── bat-harmonyos.cn.md
+│   ├── starship-harmonyos.md        # starship 提示符
+│   ├── starship-harmonyos.cn.md
+│   ├── code-signing.md              # 代码签名指南
+│   ├── code-signing.cn.md
+│   ├── ld-library-path.md           # 动态库路径配置
+│   └── ld-library-path.cn.md
+└── tools/                       # 各工具的构建指南和安装脚本
     ├── python/
-    │   ├── build.md          # 完整构建指南
-    │   └── install.sh        # 一键安装脚本
+    │   ├── build.md              # 完整构建指南
+    │   ├── build.cn.md
+    │   └── install.sh            # 一键安装脚本
     ├── rust/
     │   ├── build.md
+    │   ├── build.cn.md
     │   └── install.sh
     ├── go/
-    │   ├── build.md
     │   └── install.sh
     ├── pytorch/
-    │   └── build.md          # PyTorch 编译详解
+    │   ├── build.md              # PyTorch 编译详解
+    │   └── build.cn.md
     ├── llama-cpp/
     │   ├── build.md
+    │   ├── build.cn.md
     │   └── install.sh
     ├── mihomo/
     │   ├── build.md
+    │   ├── build.cn.md
     │   └── install.sh
-    └── ...                   # 其他工具
+    ├── dropbear/
+    │   ├── build.md              # SSH 服务器构建
+    │   ├── build.cn.md
+    │   └── install.sh
+    ├── eza/
+    │   ├── build.md
+    │   └── build.cn.md
+    ├── bat/
+    │   ├── build.md
+    │   └── build.cn.md
+    └── starship/
+        ├── build.md
+        └── build.cn.md
 ```
 
 ## 快速开始
@@ -218,34 +266,82 @@ HarmonyOS PC (HongMeng Kernel 1.12.0, aarch64) is a unique development platform 
 
 ```
 HarmonyOS-Dev-Env-Skill/
-├── README.md                 # This file (bilingual)
-├── skill.json                # Skill definition file
-├── CLAUDE.md                 # Claude Code rules (English)
-├── CLAUDE.cn.md              # Claude Code rules (Chinese)
-├── config/
-│   └── .zshenv               # Shell config template
-│   └── pip.conf              # pip config template
+├── README.md                    # This file (bilingual)
+├── skill.json                   # Skill definition file
+├── CLAUDE.md                    # Project dev guide (English)
+├── CLAUDE.cn.md                 # Project dev guide (Chinese)
+├── rules/                       # Target system rules (install to ~/.claude/)
+│   ├── CLAUDE.md                # HarmonyOS platform rules (English)
+│   └── CLAUDE.cn.md             # HarmonyOS platform rules (Chinese)
+├── config/                      # Configuration templates
+│   ├── .zshenv                  # Shell environment config
+│   └── .claude/
+│       ├── ssh-fetch-polyfill.js    # SSH V8 crash polyfill
+│       └── start-claude.sh           # Claude Code startup script
 ├── scripts/
-│   └── sign-all.sh           # Batch signing script
-└── tools/                    # Build guides and install scripts
+│   └── sign-all.sh              # Batch signing script
+├── docs/                        # Adaptation guides (bilingual)
+│   ├── claude-code-harmonyos.md     # Claude Code adaptation
+│   ├── claude-code-harmonyos.cn.md
+│   ├── python-harmonyos.md          # Python environment
+│   ├── python-harmonyos.cn.md
+│   ├── python-packages-harmonyos.md # Package compatibility report
+│   ├── python-packages-harmonyos.cn.md
+│   ├── rust-harmonyos.md            # Rust toolchain
+│   ├── rust-harmonyos.cn.md
+│   ├── pytorch-harmonyos.md         # PyTorch compilation
+│   ├── pytorch-harmonyos.cn.md
+│   ├── llama-cpp-harmonyos.md       # llama.cpp inference
+│   ├── llama-cpp-harmonyos.cn.md
+│   ├── mihomo-harmonyos.md          # mihomo proxy
+│   ├── mihomo-harmonyos.cn.md
+│   ├── dropbear-harmonyos.md        # Dropbear SSH
+│   ├── dropbear-harmonyos.cn.md
+│   ├── eza-harmonyos.md             # eza file listing
+│   ├── eza-harmonyos.cn.md
+│   ├── bat-harmonyos.md             # bat syntax highlighting
+│   ├── bat-harmonyos.cn.md
+│   ├── starship-harmonyos.md        # starship prompt
+│   ├── starship-harmonyos.cn.md
+│   ├── code-signing.md              # Code signing guide
+│   ├── code-signing.cn.md
+│   ├── ld-library-path.md           # Library path config
+│   └── ld-library-path.cn.md
+└── tools/                       # Build guides and install scripts
     ├── python/
-    │   ├── build.md          # Complete build guide
-    │   └ install.sh          # One-click install script
+    │   ├── build.md              # Complete build guide
+    │   ├── build.cn.md
+    │   └── install.sh            # One-click install script
     ├── rust/
     │   ├── build.md
-    │   └ install.sh
+    │   ├── build.cn.md
+    │   └── install.sh
     ├── go/
-    │   ├── build.md
-    │   └ install.sh
+    │   └── install.sh
     ├── pytorch/
-    │   └ build.md            # PyTorch compilation details
+    │   ├── build.md              # PyTorch compilation details
+    │   └── build.cn.md
     ├── llama-cpp/
     │   ├── build.md
-    │   └ install.sh
+    │   ├── build.cn.md
+    │   └── install.sh
     ├── mihomo/
     │   ├── build.md
-    │   └ install.sh
-    └── ...                   # Other tools
+    │   ├── build.cn.md
+    │   └── install.sh
+    ├── dropbear/
+    │   ├── build.md              # SSH server build
+    │   ├── build.cn.md
+    │   └── install.sh
+    ├── eza/
+    │   ├── build.md
+    │   └── build.cn.md
+    ├── bat/
+    │   ├── build.md
+    │   └── build.cn.md
+    └── starship/
+        ├── build.md
+        └── build.cn.md
 ```
 
 ## Quick Start
@@ -255,8 +351,8 @@ HarmonyOS-Dev-Env-Skill/
 Copy rules files to `~/.claude/`:
 
 ```bash
-cp CLAUDE.md ~/.claude/CLAUDE.md
-cp CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+cp rules/CLAUDE.md ~/.claude/CLAUDE.md
+cp rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
 ```
 
 ### 2. Configure Shell Environment
