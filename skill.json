@@ -75,7 +75,7 @@
     },
     {
       "name": "llama-cpp",
-      "version": "b9073",
+      "version": "9073",
       "category": "ml-inference",
       "source": "https://github.com/ggml-org/llama.cpp",
       "build_guide": "tools/llama-cpp/build.md",

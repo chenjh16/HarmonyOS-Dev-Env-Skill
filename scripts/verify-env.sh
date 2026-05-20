@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/zsh
 # HarmonyOS Development Environment Verification Script
 # Validates all toolchain versions against skill.json
 
