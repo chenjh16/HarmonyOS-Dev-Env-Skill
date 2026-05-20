@@ -314,25 +314,35 @@ nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
 
 ## Installing numpy
 
-For numpy, use the prebuilt wheel approach. **Note**: PyPI does not have `harmonyos_aarch64` platform, use `manylinux2014_aarch64` which is compatible:
+For numpy, use the prebuilt HarmonyOS wheel approach. The wheel must be renamed to match pip's expected platform tag:
+
+**Prerequisite**: Obtain numpy wheel with `harmonyos_aarch64` platform tag. This is NOT available on PyPI - it comes from HarmonyOS-specific sources or must be built locally.
 
 ```bash
-# Download numpy wheel for aarch64 (manylinux compatible)
-pip download numpy --platform manylinux2014_aarch64 --python-version 312 --only-binary=:all: --no-deps
+# If you have numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl, rename it:
+cp numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl \
+   numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl
 
-# Install directly (no rename needed, manylinux wheel works on HarmonyOS)
-pip install numpy-*-manylinux2014_aarch64.whl --no-deps
+# Install with --no-deps
+pip install numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl --no-deps
 
-# Sign all numpy extension modules (required for HarmonyOS)
+# Rename and sign extension modules (wheel .so suffix differs from expected)
 cd $HOME/.local/lib/python3.12/site-packages/numpy
-find . -name "*.so" -exec /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec mv {}.signed {} \;
+find . -name "*.cpython-312.so" | while read f; do
+    new_name="${f%.so}-aarch64-linux-gnu.so"
+    cp "$f" "$new_name"
+    /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$new_name" "${new_name}.tmp"
+    /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+      -inFile "${new_name}.tmp" -outFile "$new_name" -signAlg SHA256withECDSA
+    rm "${new_name}.tmp"
+done
 ```
 
-Alternatively, install directly from PyPI mirror:
-```bash
-pip install numpy --no-deps
-# Then sign extension modules as above
-```
+**Key points**:
+1. HarmonyOS Python platform tag is `harmonyos_hongmeng_kernel_1_12_0_aarch64`
+2. Wheel must be renamed from `harmonyos_aarch64` to match this tag
+3. Extension suffix in wheel is `.cpython-312.so`, but Python expects `.cpython-312-aarch64-linux-gnu.so`
+4. All .so files must be code-signed
 
 ## Known Limitations
 

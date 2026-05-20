@@ -314,25 +314,35 @@ nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
 
 ## 安装 numpy
 
-对于 numpy，使用预构建 wheel 包的方式。**注意**：PyPI 没有 `harmonyos_aarch64` 平台，使用兼容的 `manylinux2014_aarch64`：
+对于 numpy，使用预构建 HarmonyOS wheel 包的方式。wheel 文件名需要重命名以匹配 pip 期望的平台标识：
+
+**前置条件**：获取带有 `harmonyos_aarch64` 平台标识的 numpy wheel。该 wheel **不在 PyPI 上**——来自 HarmonyOS 专用源或需本地构建。
 
 ```bash
-# 为 aarch64 下载 numpy wheel 包（manylinux 兼容）
-pip download numpy --platform manylinux2014_aarch64 --python-version 312 --only-binary=:all: --no-deps
+# 如果有 numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl，重命名：
+cp numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl \
+   numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl
 
-# 直接安装（无需重命名，manylinux wheel 在 HarmonyOS 上可用）
-pip install numpy-*-manylinux2014_aarch64.whl --no-deps
+# 用 --no-deps 安装
+pip install numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl --no-deps
 
-# 签名所有 numpy 扩展模块（HarmonyOS 必需）
+# 重命名并签名扩展模块（wheel 中 .so 后缀与期望不同）
 cd $HOME/.local/lib/python3.12/site-packages/numpy
-find . -name "*.so" -exec /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec mv {}.signed {} \;
+find . -name "*.cpython-312.so" | while read f; do
+    new_name="${f%.so}-aarch64-linux-gnu.so"
+    cp "$f" "$new_name"
+    /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$new_name" "${new_name}.tmp"
+    /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+      -inFile "${new_name}.tmp" -outFile "$new_name" -signAlg SHA256withECDSA
+    rm "${new_name}.tmp"
+done
 ```
 
-或者直接从 PyPI 镜像安装：
-```bash
-pip install numpy --no-deps
-# 然后按上述方法签名扩展模块
-```
+**关键要点**：
+1. HarmonyOS Python 平台标识是 `harmonyos_hongmeng_kernel_1_12_0_aarch64`
+2. wheel 必须从 `harmonyos_aarch64` 重命名以匹配此标识
+3. wheel 中扩展后缀是 `.cpython-312.so`，但 Python 期望 `.cpython-312-aarch64-linux-gnu.so`
+4. 所有 .so 文件必须代码签名
 
 ## 已知限制
 
