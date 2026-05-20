@@ -14,6 +14,87 @@ This guide documents the complete process for building Python 3.12.8 from source
 - Writable TMPDIR (HarmonyOS `/tmp` is read-only)
 - About 500MB disk space for build
 - **ld.bfd wrapper** (SDK's lld requires libxml2.so.16 which doesn't exist)
+- **clang wrapper** (configure test binaries need code signing to execute)
+
+## Critical: clang Wrapper for configure
+
+Configure generates test binaries (`conftest`) that must be code-signed before execution on HarmonyOS. Create wrapper scripts:
+
+```bash
+mkdir -p $HOME/Claude/bin
+
+# clang wrapper: auto-sign binaries + handle --print-multiarch
+cat > $HOME/Claude/bin/clang-wrapper << 'EOF'
+#!/bin/sh
+REAL_CLANG=/data/service/hnp/bin/clang
+SIGN_TOOL=/data/service/hnp/bin/binary-sign-tool
+
+# Handle --print-multiarch specially to match PLATFORM_TRIPLET
+if echo "$*" | grep -q -- "--print-multiarch"; then
+    echo "aarch64-linux-gnu"
+    exit 0
+fi
+
+"$REAL_CLANG" "$@"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+    OUTPUT=""
+    PREV=""
+    for arg in "$@"; do
+        if [ "$PREV" = "-o" ]; then
+            OUTPUT="$arg"
+            break
+        fi
+        case "$arg" in -o*) OUTPUT="${arg#-o}"; break ;; esac
+        PREV="$arg"
+    done
+    if [ -n "$OUTPUT" ] && [ -f "$OUTPUT" ]; then
+        if file "$OUTPUT" 2>/dev/null | grep -q "ELF"; then
+            "$SIGN_TOOL" sign -selfSign 1 -inFile "$OUTPUT" -outFile "$OUTPUT.signed" -signAlg SHA256withECDSA 2>/dev/null
+            if [ -f "$OUTPUT.signed" ]; then
+                mv "$OUTPUT.signed" "$OUTPUT"
+                chmod +x "$OUTPUT"
+            fi
+        fi
+    fi
+fi
+exit $EXIT_CODE
+EOF
+
+# clang++ wrapper (similar logic)
+cat > $HOME/Claude/bin/clang++-wrapper << 'EOF'
+#!/bin/sh
+REAL_CLANG=/data/service/hnp/bin/clang++
+SIGN_TOOL=/data/service/hnp/bin/binary-sign-tool
+
+"$REAL_CLANG" "$@"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+    OUTPUT=""
+    PREV=""
+    for arg in "$@"; do
+        if [ "$PREV" = "-o" ]; then OUTPUT="$arg"; break; fi
+        case "$arg" in -o*) OUTPUT="${arg#-o}"; break ;; esac
+        PREV="$arg"
+    done
+    if [ -n "$OUTPUT" ] && [ -f "$OUTPUT" ] && file "$OUTPUT" 2>/dev/null | grep -q "ELF"; then
+        "$SIGN_TOOL" sign -selfSign 1 -inFile "$OUTPUT" -outFile "$OUTPUT.signed" -signAlg SHA256withECDSA 2>/dev/null
+        [ -f "$OUTPUT.signed" ] && mv "$OUTPUT.signed" "$OUTPUT" && chmod +x "$OUTPUT"
+    fi
+fi
+exit $EXIT_CODE
+EOF
+
+chmod +x $HOME/Claude/bin/clang-wrapper $HOME/Claude/bin/clang++-wrapper
+```
+
+**Why --print-multiarch hack?**:
+- `clang --print-multiarch` returns `aarch64-linux-ohos`
+- Configure's preprocessor test detects `aarch64-linux-gnu`
+- Configure requires these to match, causing triplet error
+- Wrapper returns `aarch64-linux-gnu` to match the preprocessor result
 
 ## Critical: ld.bfd Wrapper
 
@@ -63,12 +144,16 @@ SYSROOT=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot
 LINKER_WRAPPER_DIR=$HOME/Claude/lib/linker_wrapper
 
 TMPDIR=$HOME/Claude/tmpdir \
-CC=/data/service/hnp/bin/clang \
+CC=$HOME/Claude/bin/clang-wrapper \
+CXX=$HOME/Claude/bin/clang++-wrapper \
 CFLAGS="--sysroot=$SYSROOT -B$LINKER_WRAPPER_DIR" \
+CXXFLAGS="--sysroot=$SYSROOT -B$LINKER_WRAPPER_DIR" \
 LDFLAGS="--sysroot=$SYSROOT -L$SYSROOT/usr/lib/aarch64-linux-ohos -rdynamic -B$LINKER_WRAPPER_DIR" \
 ./configure \
   --prefix=$HOME/.local \
-  --disable-shared
+  --disable-shared \
+  --host=aarch64-linux-gnu \
+  --build=aarch64-linux-gnu
 ```
 
 **Key parameters explained**:
@@ -76,6 +161,8 @@ LDFLAGS="--sysroot=$SYSROOT -L$SYSROOT/usr/lib/aarch64-linux-ohos -rdynamic -B$L
 - `-B$LINKER_WRAPPER_DIR`: **Critical** - bypass broken lld, use ld.bfd
 - `--sysroot`: HarmonyOS SDK sysroot path
 - `--disable-shared`: Build only executable, not libpython.so (HarmonyOS lacks libdl.so/libm.so)
+- `CC/CXX`: **Critical** - use wrapper scripts, not direct clang
+- `--host/--build`: Set triplet to `aarch64-linux-gnu` to avoid triplet mismatch
 
 ### Step 3: Fix pyconfig.h for missing HarmonyOS features
 

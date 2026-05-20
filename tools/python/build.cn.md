@@ -14,6 +14,87 @@
 - 可写的 TMPDIR（HarmonyOS 的 `/tmp` 是只读的）
 - 约 500MB 磁盘空间用于构建
 - **ld.bfd 包装器**（SDK 的 lld 需要 libxml2.so.16，但该文件不存在）
+- **clang 包装器**（configure 测试二进制需要代码签名才能执行）
+
+## 关键：clang 包装器用于 configure
+
+Configure 生成的测试二进制（`conftest`）必须在 HarmonyOS 上代码签名才能执行。创建包装脚本：
+
+```bash
+mkdir -p $HOME/Claude/bin
+
+# clang 包装器：自动签名二进制 + 处理 --print-multiarch
+cat > $HOME/Claude/bin/clang-wrapper << 'EOF'
+#!/bin/sh
+REAL_CLANG=/data/service/hnp/bin/clang
+SIGN_TOOL=/data/service/hnp/bin/binary-sign-tool
+
+# 特殊处理 --print-multiarch 以匹配 PLATFORM_TRIPLET
+if echo "$*" | grep -q -- "--print-multiarch"; then
+    echo "aarch64-linux-gnu"
+    exit 0
+fi
+
+"$REAL_CLANG" "$@"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+    OUTPUT=""
+    PREV=""
+    for arg in "$@"; do
+        if [ "$PREV" = "-o" ]; then
+            OUTPUT="$arg"
+            break
+        fi
+        case "$arg" in -o*) OUTPUT="${arg#-o}"; break ;; esac
+        PREV="$arg"
+    done
+    if [ -n "$OUTPUT" ] && [ -f "$OUTPUT" ]; then
+        if file "$OUTPUT" 2>/dev/null | grep -q "ELF"; then
+            "$SIGN_TOOL" sign -selfSign 1 -inFile "$OUTPUT" -outFile "$OUTPUT.signed" -signAlg SHA256withECDSA 2>/dev/null
+            if [ -f "$OUTPUT.signed" ]; then
+                mv "$OUTPUT.signed" "$OUTPUT"
+                chmod +x "$OUTPUT"
+            fi
+        fi
+    fi
+fi
+exit $EXIT_CODE
+EOF
+
+# clang++ 包装器（类似逻辑）
+cat > $HOME/Claude/bin/clang++-wrapper << 'EOF'
+#!/bin/sh
+REAL_CLANG=/data/service/hnp/bin/clang++
+SIGN_TOOL=/data/service/hnp/bin/binary-sign-tool
+
+"$REAL_CLANG" "$@"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+    OUTPUT=""
+    PREV=""
+    for arg in "$@"; do
+        if [ "$PREV" = "-o" ]; then OUTPUT="$arg"; break; fi
+        case "$arg" in -o*) OUTPUT="${arg#-o}"; break ;; esac
+        PREV="$arg"
+    done
+    if [ -n "$OUTPUT" ] && [ -f "$OUTPUT" ] && file "$OUTPUT" 2>/dev/null | grep -q "ELF"; then
+        "$SIGN_TOOL" sign -selfSign 1 -inFile "$OUTPUT" -outFile "$OUTPUT.signed" -signAlg SHA256withECDSA 2>/dev/null
+        [ -f "$OUTPUT.signed" ] && mv "$OUTPUT.signed" "$OUTPUT" && chmod +x "$OUTPUT"
+    fi
+fi
+exit $EXIT_CODE
+EOF
+
+chmod +x $HOME/Claude/bin/clang-wrapper $HOME/Claude/bin/clang++-wrapper
+```
+
+**为什么需要 --print-multiarch hack？**：
+- `clang --print-multiarch` 返回 `aarch64-linux-ohos`
+- Configure 的预处理器测试检测到 `aarch64-linux-gnu`
+- Configure 要求两者匹配，导致 triplet 错误
+- 包装器返回 `aarch64-linux-gnu` 以匹配预处理器结果
 
 ## 关键：ld.bfd 包装器
 
@@ -63,12 +144,16 @@ SYSROOT=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot
 LINKER_WRAPPER_DIR=$HOME/Claude/lib/linker_wrapper
 
 TMPDIR=$HOME/Claude/tmpdir \
-CC=/data/service/hnp/bin/clang \
+CC=$HOME/Claude/bin/clang-wrapper \
+CXX=$HOME/Claude/bin/clang++-wrapper \
 CFLAGS="--sysroot=$SYSROOT -B$LINKER_WRAPPER_DIR" \
+CXXFLAGS="--sysroot=$SYSROOT -B$LINKER_WRAPPER_DIR" \
 LDFLAGS="--sysroot=$SYSROOT -L$SYSROOT/usr/lib/aarch64-linux-ohos -rdynamic -B$LINKER_WRAPPER_DIR" \
 ./configure \
   --prefix=$HOME/.local \
-  --disable-shared
+  --disable-shared \
+  --host=aarch64-linux-gnu \
+  --build=aarch64-linux-gnu
 ```
 
 **关键参数说明**：
@@ -76,6 +161,8 @@ LDFLAGS="--sysroot=$SYSROOT -L$SYSROOT/usr/lib/aarch64-linux-ohos -rdynamic -B$L
 - `-B$LINKER_WRAPPER_DIR`：**关键** - 绕过损坏的 lld，使用 ld.bfd
 - `--sysroot`：HarmonyOS SDK sysroot 路径
 - `--disable-shared`：仅构建可执行文件，不构建 libpython.so（HarmonyOS 缺少 libdl.so/libm.so）
+- `CC/CXX`：**关键** - 使用包装脚本，不是直接 clang
+- `--host/--build`：设置三元组为 `aarch64-linux-gnu` 以避免三元组不匹配
 
 ### 步骤 3：修复 pyconfig.h 以解决 HarmonyOS 缺失的功能
 
