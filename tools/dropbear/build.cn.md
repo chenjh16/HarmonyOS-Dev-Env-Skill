@@ -484,6 +484,26 @@ fi
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly 禁用 (--jitless 模式)，使用 node-fetch 替代 fetch...');
+
+    // 从 .env 文件加载环境变量（SSH 远程执行不传递 shell 环境变量）
+    const fs = require('fs');
+    const envPath = process.env.HOME + '/.claude/.env';
+    if (fs.existsSync(envPath) && !process.env.ANTHROPIC_API_KEY) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const lines = envContent.split('\n');
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+                const [key, ...valueParts] = trimmed.split('=');
+                const value = valueParts.join('=');
+                if (key && value && key.startsWith('ANTHROPIC_')) {
+                    process.env[key] = value;
+                }
+            }
+        }
+        console.log('[SSH] 环境变量已从 .env 加载');
+    }
+
     try {
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
         const { Readable } = require('stream');
@@ -497,13 +517,11 @@ if (typeof WebAssembly === 'undefined') {
             if (response.body && !(response.body instanceof ReadableStream)) {
                 const webStream = Readable.toWeb(response.body);
 
-                // 添加 cancel() 方法（SDK 可能直接调用 body.cancel()）
                 webStream.cancel = async function(reason) {
                     const reader = webStream.getReader();
                     await reader.cancel(reason);
                 };
 
-                // 用 Object.defineProperty 替换 body（response.body 是 getter）
                 Object.defineProperty(response, 'body', {
                     value: webStream,
                     writable: true,
@@ -549,11 +567,12 @@ if (typeof WebAssembly === 'undefined') {
 
 4. **Response.body.cancel()**：Web ReadableStream 的 reader 有 `cancel()`，但 SDK 可能直接调用 `body.cancel()`。
    - 添加 `webStream.cancel = async function() { reader.cancel() }` 作为备用
-   - 解决方案：使用 `unset ANTHROPIC_AUTH_TOKEN` 替代设置空字符串
 
-3. **Response.body.cancel()**：node-fetch@2 的 Response.body 是 Node.js Readable stream，没有 `cancel()` 方法。
-   - SDK 调用 `streamResponse.body?.cancel()` 来中止流
-   - polyfill 必须包装 Response 添加 `cancel()` 方法
+5. **SSH 远程执行环境变量**（关键）：Shell `source ~/.claude/.env` 不传递变量到 Node.js。
+   - SSH 非交互式 shell 在独立进程中运行
+   - `source` 在 shell 中设置变量，但 Node.js 子进程不继承它们
+   - 结果：API 调用因 `ANTHROPIC_API_KEY` 未定义而返回 401
+   - 解决方案：polyfill 必须直接读取 `.env` 文件并设置 `process.env`
 
 **额外注意事项**：
 - `--lite-mode` 也禁用 WebAssembly，与 `--jitless` 问题相同

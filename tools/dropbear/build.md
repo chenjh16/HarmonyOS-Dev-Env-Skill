@@ -519,6 +519,26 @@ fi
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly disabled (--jitless mode), polyfilling fetch with node-fetch...');
+
+    // Load environment variables from .env file (SSH remote execution doesn't pass shell env)
+    const fs = require('fs');
+    const envPath = process.env.HOME + '/.claude/.env';
+    if (fs.existsSync(envPath) && !process.env.ANTHROPIC_API_KEY) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const lines = envContent.split('\n');
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+                const [key, ...valueParts] = trimmed.split('=');
+                const value = valueParts.join('=');
+                if (key && value && key.startsWith('ANTHROPIC_')) {
+                    process.env[key] = value;
+                }
+            }
+        }
+        console.log('[SSH] Environment loaded from .env');
+    }
+
     try {
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
         const { Readable } = require('stream');
@@ -532,13 +552,11 @@ if (typeof WebAssembly === 'undefined') {
             if (response.body && !(response.body instanceof ReadableStream)) {
                 const webStream = Readable.toWeb(response.body);
 
-                // Add cancel() method (SDK may call body.cancel() directly)
                 webStream.cancel = async function(reason) {
                     const reader = webStream.getReader();
                     await reader.cancel(reason);
                 };
 
-                // Replace body using Object.defineProperty (response.body is getter)
                 Object.defineProperty(response, 'body', {
                     value: webStream,
                     writable: true,
@@ -585,6 +603,12 @@ if (typeof WebAssembly === 'undefined') {
 
 4. **Response.body.cancel()**: Web ReadableStream's reader has `cancel()`, but SDK may call `body.cancel()` directly.
    - Add `webStream.cancel = async function() { reader.cancel() }` as fallback
+
+5. **SSH remote execution env vars** (CRITICAL): Shell `source ~/.claude/.env` doesn't pass vars to Node.js.
+   - SSH non-interactive shell runs in a separate process
+   - `source` sets vars in shell, but Node.js child process doesn't inherit them
+   - Result: API calls fail with 401 because `ANTHROPIC_API_KEY` is undefined
+   - Solution: Polyfill must read `.env` file directly and set `process.env` before fetch
 
 **Additional notes**:
 - `--lite-mode` also disables WebAssembly, same issue as `--jitless`
