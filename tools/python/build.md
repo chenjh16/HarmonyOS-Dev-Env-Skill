@@ -314,22 +314,25 @@ nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
 
 ## Installing numpy
 
-For numpy, use the prebuilt HarmonyOS wheel approach. The wheel must be renamed to match pip's expected platform tag:
+### Option 1: Prebuilt HarmonyOS Wheel
 
-**Prerequisite**: Obtain numpy wheel with `harmonyos_aarch64` platform tag. This is NOT available on PyPI - it comes from HarmonyOS-specific sources or must be built locally.
+For numpy, use a prebuilt HarmonyOS wheel. **IMPORTANT**: PyPI has NO `harmonyos_aarch64` wheels - all non-pure-Python packages require local rebuild.
+
+**Prerequisite**: Obtain numpy wheel from HarmonyOS-specific sources.
 
 ```bash
-# If you have numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl, rename it:
-cp numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl \
-   numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl
+# Wheel platform tag format (verified):
+# harmonyos_HongMeng_Kernel_1_12_0_aarch64 (preserves case, underscores for spaces/dots)
 
-# Install with --no-deps
-pip install numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl --no-deps
+# Install with --no-deps first
+pip install numpy-2.4.4-cp312-cp312-harmonyos_HongMeng_Kernel_1_12_0_aarch64.whl --no-deps
 
-# Rename and sign extension modules (wheel .so suffix differs from expected)
+# Fix extension module suffix (CRITICAL)
+# Python importlib expects .cpython-312-aarch64-linux-gnu.so
+# Wheel contains .cpython-312.so only
 cd $HOME/.local/lib/python3.12/site-packages/numpy
 find . -name "*.cpython-312.so" | while read f; do
-    new_name="${f%.so}-aarch64-linux-gnu.so"
+    new_name="${f%.cpython-312.so}.cpython-312-aarch64-linux-gnu.so"
     cp "$f" "$new_name"
     /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$new_name" "${new_name}.tmp"
     /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
@@ -338,11 +341,79 @@ find . -name "*.cpython-312.so" | while read f; do
 done
 ```
 
-**Key points**:
-1. HarmonyOS Python platform tag is `harmonyos_hongmeng_kernel_1_12_0_aarch64`
-2. Wheel must be renamed from `harmonyos_aarch64` to match this tag
-3. Extension suffix in wheel is `.cpython-312.so`, but Python expects `.cpython-312-aarch64-linux-gnu.so`
-4. All .so files must be code-signed
+### Option 2: Build from Source (numpy 2.x)
+
+numpy 2.x uses meson build system. Build dependencies: Cython>=3.0.6, meson-python>=0.18.0.
+
+```bash
+mkdir -p $HOME/Claude/skill-validation/numpy-build && cd $HOME/Claude/skill-validation/numpy-build
+
+# Download source
+curl -L -o numpy-2.4.6.tar.gz https://pypi.tuna.tsinghua.edu.cn/packages/source/numpy/numpy-2.4.6.tar.gz
+tar xf numpy-2.4.6.tar.gz
+cd numpy-2.4.6
+
+# Build with --no-build-isolation (uses global Cython/meson)
+TMPDIR=$HOME/Claude/tmpdir \
+CC=/data/service/hnp/bin/clang \
+CXX=/data/service/hnp/bin/clang++ \
+python3 -m pip wheel . --no-build-isolation --wheel-dir=$HOME/Claude/skill-validation/numpy-build
+
+# The generated wheel has incorrect filename (spaces in platform tag)
+# Fix: rename and update WHEEL metadata
+```
+
+**Post-build fixes required**:
+
+1. **Wheel filename**: Meson generates `harmonyos_hongmeng kernel 1_12_0_aarch64.whl` (with spaces)
+   - Rename to `harmonyos_HongMeng_Kernel_1_12_0_aarch64.whl`
+
+2. **WHEEL metadata**: Update Tag line in `.dist-info/WHEEL`:
+   ```
+   Tag: cp312-cp312-harmonyos_HongMeng_Kernel_1_12_0_aarch64
+   ```
+
+3. **Extension suffix**: Create `.cpython-312-aarch64-linux-gnu.so` copies:
+   ```bash
+   # Extract wheel
+   mkdir wheel_contents && unzip numpy-*.whl -d wheel_contents
+   
+   # Create correct suffix copies and sign
+   cd wheel_contents
+   find . -name "*.cpython-312.so" | while read f; do
+       new_name="${f%.cpython-312.so}.cpython-312-aarch64-linux-gnu.so"
+       cp "$f" "$new_name"
+       /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+         -inFile "$new_name" -outFile "$new_name.signed" -signAlg SHA256withECDSA
+       mv "$new_name.signed" "$new_name"
+   done
+   
+   # Regenerate RECORD, repack wheel
+   python3 -c "
+   import hashlib, base64, os
+   def sha256_digest(p):
+       h=hashlib.sha256()
+       with open(p,'rb') as f: h.update(f.read())
+       return base64.urlsafe_b64encode(h.digest()).rstrip(b'=').decode()
+   lines=[]
+   for root,dirs,files in os.walk('.'):
+       for f in files:
+           if f=='RECORD': continue
+           p=os.path.join(root,f)
+           lines.append(f'{p[2:]},sha256={sha256_digest(p)},{os.path.getsize(p)}')
+   lines.append('numpy-*.dist-info/RECORD,,')
+   with open('numpy-*.dist-info/RECORD','w') as f: f.write('\\n'.join(lines))
+   "
+   zip -r ../numpy-2.4.6-cp312-cp312-harmonyos_HongMeng_Kernel_1_12_0_aarch64.whl .
+   ```
+
+**Key findings from source build validation**:
+1. Platform tag format: `harmonyos_HongMeng_Kernel_1_12_0_aarch64` (preserve case, underscores)
+2. Python `sysconfig.get_platform()` returns `harmonyos-HongMeng Kernel 1.12.0-aarch64`
+3. Wheel spec: replace `-`, `.`, ` ` with `_` but preserve case
+4. Python `importlib.machinery.EXTENSION_SUFFIXES` expects `.cpython-312-aarch64-linux-gnu.so`
+5. All .so files need code signing before Python can load them
+6. All non-pure-Python packages require local rebuild (PyPI has no harmonyos wheels)
 
 ## Known Limitations
 

@@ -56,6 +56,11 @@ See [code-signing.md](docs/code-signing.md) for full documentation.
 - **LLDB**: `/data/service/hnp/bin/lldb`
 - No `gcc` is available — always use clang. Do NOT write Makefiles that default to gcc.
 - Clang triplet targets: `aarch64-unknown-linux-ohos-clang`, `armv7-unknown-linux-ohos-clang`
+- **`make -j` fails on HarmonyOS**: mkfifo returns "Operation not permitted" (jobserver uses mkfifo for parallel builds). Use Ninja instead.
+- **Do NOT use CMAKE_TOOLCHAIN_FILE with CMAKE_SYSTEM_NAME**: triggers CMake cross-compilation mode causing try_run() failures. Use lightweight toolchain file (only compilers + linker wrapper, no CMAKE_SYSTEM_NAME) or pass compiler flags directly.
+- **OpenBLAS/LAPACK**: Compile OpenBLAS v0.3.28 with NOFORTRAN=1; modify Makefile.prebuild for -B wrapper + code signing; create .so from .a; set LAPACK_LIBRARIES and LAPACK_FOUND explicitly in CMake
+- **Sleef NATIVE_BUILD_DIR**: Modify sleef CMakeLists.txt add_host_executable to use NATIVE_BUILD_DIR when provided, even without CMAKE_CROSSCOMPILING
+- **CMake 4.1.2 ldd**: CMake 4.1.2 runs ldd after linking; copy ldd wrapper to ~/.local/bin/ldd
 
 **CRITICAL**: SDK's lld linker requires `libxml2.so.16` which doesn't exist on HarmonyOS. You MUST use ld.bfd instead by creating a wrapper:
 
@@ -80,8 +85,8 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **starship**: v1.25.1 at `$HOME/Claude/starship-build/starship/target/release/`; cross-shell prompt
 - **Go**: v1.22.5 at `$HOME/Claude/go-build/go/`; use `GOPROXY=https://goproxy.cn,direct`; set `TMPDIR=$HOME/Claude/tmpdir`
 - **mihomo**: Clash Meta proxy at `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; config at `$HOME/Claude/mihomo-config/`; proxy port 7890, API port 9090; supports GEOIP/GEOSITE intelligent routing
-- **PyTorch**: v2.5.1 at `$HOME/.local/lib/python3.12/site-packages/torch/`; fully functional on HarmonyOS (12 e2e tests passed); requires `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`
-- **Dropbear**: v2024.86 SSH server/client at `$HOME/.local/bin/`; `dropbear` (server), `dbclient` (client), `dropbearkey` (key generation); pubkey auth only (no password auth due to missing crypt())
+- **PyTorch**: v2.5.1 at `$HOME/.local/lib/python3.12/site-packages/torch/`; **15/15 e2e tests passed** (all functional: NumPy fixed via post-build patch, LAPACK enabled via OpenBLAS + supplement.so); requires `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`; build must use Ninja (not `make -j` which fails due to mkfifo); do NOT use CMAKE_TOOLCHAIN_FILE with CMAKE_SYSTEM_NAME; use lightweight toolchain file; OpenBLAS v0.3.28 at `$HOME/.local/lib/libopenblas.so`; `libtorch_supplement.so` provides 3 hidden symbols (decref/incref/invoke_parallel); patchelf needed to fix NEEDED path prefixes
+- **Dropbear**: v2024.86 SSH server/client at `$HOME/.local/bin/`; `dropbear` (server), `dbclient` (client), `dropbearkey` (key generation); pubkey auth only (no password auth due to missing crypt()); any non-system username accepted (chenh, user, currentUser, UID all work — single-user device); **must use `-e` flag** (passes env vars to child sessions); PTY interactive sessions limited (TIOCSCTTY fails on HarmonyOS)
 
 ### Third-party tools in PATH
 
@@ -147,7 +152,7 @@ Detailed adaptation guides are available in the `docs/` directory:
 - [bat Adaptation](docs/bat-harmonyos.md) — Rust build, syntax highlighting
 - [starship Adaptation](docs/starship-harmonyos.md) — Rust build, errno patch, prompt config
 - [mihomo Adaptation](docs/mihomo-harmonyos.md) — Go toolchain, proxy config, GEOIP/GEOSITE rules
-- [PyTorch Adaptation](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 compilation, 7 key adaptations, 12 e2e tests, MNIST training
+- [PyTorch Adaptation](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 compilation, 15 key adaptations, **15/15 e2e tests all passed** (NumPy + LAPACK fixed), MNIST training
 - [Dropbear SSH Adaptation](docs/dropbear-harmonyos.md) — SSH server/client, 5 source patches, V8 JIT crash workaround
 - [Code Signing Guide](docs/code-signing.md) — detailed code signing instructions
 - [LD_LIBRARY_PATH Guide](docs/ld-library-path.md) — dynamic library path configuration

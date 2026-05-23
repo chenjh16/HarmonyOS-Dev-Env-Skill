@@ -226,7 +226,7 @@ Python 必须用 `-rdynamic` 编译才能加载扩展模块：
 | Python Packages | `docs/python-packages-harmonyos.md` | 34个包兼容性报告 |
 | Rust | `docs/rust-harmonyos.md` | 官方 ohos 目标、cargo、FFI |
 | Go | `tools/go/build.md` | GOPROXY 支持 |
-| PyTorch | `docs/pytorch-harmonyos.md` | MNIST 训练验证 (92.4%) |
+| PyTorch | `docs/pytorch-harmonyos.md` | 15/15 e2e 测试通过、LAPACK 启用、MNIST 训练验证 (92.4%) |
 | llama.cpp | `docs/llama-cpp-harmonyos.md` | NEON/SVE 优化、4x 加速 |
 | mihomo | `docs/mihomo-harmonyos.md` | HTTP/SOCKS5 代理、GEOIP/GEOSITE 智能分流 |
 | eza | `docs/eza-harmonyos.md` | 现代 ls、图标、Git 状态 |
@@ -467,7 +467,7 @@ See `docs/python-harmonyos.md` for complete workflow.
 | `docs/python-harmonyos.md` | Python environment setup |
 | `docs/python-packages-harmonyos.md` | 34 packages compatibility |
 | `docs/rust-harmonyos.md` | Rust toolchain installation |
-| `docs/pytorch-harmonyos.md` | PyTorch v2.5.1 compilation |
+| `docs/pytorch-harmonyos.md` | PyTorch v2.5.1 (15/15 tests, LAPACK enabled) |
 | `docs/llama-cpp-harmonyos.md` | llama.cpp with NEON/SVE |
 | `docs/mihomo-harmonyos.md` | Proxy client setup |
 | `docs/eza-harmonyos.md` | Modern ls replacement |

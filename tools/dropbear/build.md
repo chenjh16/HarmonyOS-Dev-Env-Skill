@@ -125,23 +125,36 @@ make -f makefile.unix \
 
 ### 6. Create options.h
 
-Copy from `src/default_options.h` and modify:
-- Set `DROPBEAR_SVR_PASSWORD_AUTH 0` (no crypt())
-- Set `DROPBEAR_CLI_PASSWORD_AUTH 0`
-- Update key paths for `~/.local/etc/dropbear/`
+**Important**: Include order matters! `default_options.h` must be included FIRST, then override macros with `#undef` and `#define`.
+
+Also, `config.h` must be included at the very beginning so that `HAVE_STRUCT_*` definitions are available for `fake-rfc2553.h` checks (preventing structure redefinition conflicts with system headers).
 
 ```bash
 cat > src/options.h << 'EOF'
 #ifndef DROPBEAR_OPTIONS_H
 #define DROPBEAR_OPTIONS_H
+
+/* Include config.h first for HAVE_* definitions */
 #include "config.h"
 
-/* Copy all content from default_options.h, then override */
-#define DROPBEAR_SVR_PASSWORD_AUTH 0
-#define DROPBEAR_CLI_PASSWORD_AUTH 0
-#define RSA_PRIV_FILENAME "~/.local/etc/dropbear/dropbear_rsa_host_key"
-
+/* Include default options first */
 #include "default_options.h"
+
+/* Override for HarmonyOS - disable password auth (no crypt()) */
+#undef DROPBEAR_SVR_PASSWORD_AUTH
+#define DROPBEAR_SVR_PASSWORD_AUTH 0
+
+#undef DROPBEAR_CLI_PASSWORD_AUTH  
+#define DROPBEAR_CLI_PASSWORD_AUTH 0
+
+/* Key paths */
+#undef RSA_PRIV_FILENAME
+#define RSA_PRIV_FILENAME "~/.local/etc/dropbear/dropbear_rsa_host_key"
+#undef ECDSA_PRIV_FILENAME
+#define ECDSA_PRIV_FILENAME "~/.local/etc/dropbear/dropbear_ecdsa_host_key"
+#undef ED25519_PRIV_FILENAME
+#define ED25519_PRIV_FILENAME "~/.local/etc/dropbear/dropbear_ed25519_host_key"
+
 #include "sysoptions.h"
 #endif
 EOF
@@ -202,30 +215,42 @@ Five source files need to be patched:
 
 #### Patch 1: `src/common-session.c` - User Lookup Fallback
 
-Add fallback for `getpwnam()` failure to support HarmonyOS users not in passwd:
+Add fallback for `getpwnam()` failure to accept any non-system username as the device user:
 
 ```c
 // In fill_passwd() function, after line "pw = getpwnam(username);"
 pw = getpwnam(username);
 if (!pw) {
-    /* HarmonyOS fallback: if getpwnam fails, check if username matches current UID */
+    /* HarmonyOS fallback: /etc/passwd has minimal entries (root, bin,
+     * system services). The actual device user has a numeric UID and
+     * is not listed by any human-readable name. Since this is a single-
+     * user device, accept any username not in the system UID range
+     * (0-9999) as referring to the current device user. */
     char uid_str[32];
     snprintf(uid_str, sizeof(uid_str), "%u", getuid());
-    if (strcmp(username, uid_str) == 0 || strcmp(username, "currentUser") == 0) {
-        /* Create a fake passwd entry for the current user */
-        ses.authstate.pw_uid = getuid();
-        ses.authstate.pw_gid = getgid();
-        ses.authstate.pw_name = m_strdup(uid_str);
-        ses.authstate.pw_dir = m_strdup(getenv("HOME") ? getenv("HOME") : "/storage/Users/currentUser");
-        ses.authstate.pw_shell = m_strdup(getenv("SHELL") ? getenv("SHELL") : "/usr/bin/zsh");
-        ses.authstate.pw_passwd = m_strdup("!!");
+    /* Reject system usernames (root, bin, system, etc.) —
+     * these have UIDs < 10000 and should not get device-user access */
+    long uid_check = strtol(username, NULL, 10);
+    if (strcmp(username, "root") == 0 || strcmp(username, "bin") == 0
+        || strcmp(username, "system") == 0
+        || (username[0] != '\0' && uid_check > 0 && uid_check < 10000)) {
+        /* This is a known system user that doesn't exist — reject */
         return;
     }
+    /* Accept any other username as the device user */
+    ses.authstate.pw_uid = getuid();
+    ses.authstate.pw_gid = getgid();
+    ses.authstate.pw_name = m_strdup(uid_str);
+    ses.authstate.pw_dir = m_strdup(getenv("HOME") ? getenv("HOME") : "/storage/Users/currentUser");
+    ses.authstate.pw_shell = m_strdup(getenv("SHELL") ? getenv("SHELL") : "/usr/bin/zsh");
+    ses.authstate.pw_passwd = m_strdup("!!");
     return;
 }
 ```
 
-**Explanation**: When SSH client connects with username `20020106` (the process UID), `getpwnam()` fails because HarmonyOS doesn't have this user in `/etc/passwd`. The patch creates a synthetic passwd entry using the current process's UID/GID and HOME/SHELL environment variables.
+**Explanation**: HarmonyOS `/etc/passwd` has minimal entries (root, bin, system services). The actual device user has a numeric UID (e.g., 20020106) and is not listed by any human-readable name. Since HarmonyOS is a single-user device, the patch accepts any username that doesn't match a system account as referring to the current device user. This means SSH clients can connect with any arbitrary username (e.g., `chenh`, `user`, `currentUser`, `20020106`) — all will be treated as the same device user.
+
+**Security note**: System usernames (root, bin, system) and numeric UIDs below 10000 are explicitly rejected to prevent unauthorized access to system accounts that shouldn't exist.
 
 **Important**: Shell must be set to `$SHELL` (typically `/usr/bin/zsh` on HarmonyOS), not `/bin/sh`. Using `/bin/sh` causes SSH sessions to skip `.zshenv` PATH configuration, breaking npm/claude commands.
 
@@ -295,18 +320,24 @@ pty_setowner(pw, chansess->tty);
 
 #### Patch 5: `src/loginrec.c` - Login Record Fallback
 
-When recording login sessions, `login_init_entry()` calls `getpwnam()`. Add fallback:
+When recording login sessions, `login_init_entry()` calls `getpwnam()`. Add fallback that accepts any non-system username:
 
 ```c
 // In login_init_entry() function, around line 278
 pw = getpwnam(li->username);
 if (pw == NULL) {
-    /* HarmonyOS fallback: use authstate uid if getpwnam fails */
-    if (ses.authstate.pw_name && strcmp(li->username, ses.authstate.pw_name) == 0) {
-        li->uid = ses.authstate.pw_uid;
-    } else {
-        dropbear_exit("login_init_entry: Cannot find user \"%s\"", li->username);
+    /* HarmonyOS fallback: use authstate uid if getpwnam fails.
+     * On HarmonyOS, the actual device user is not in /etc/passwd,
+     * so getpwnam() always fails. We accept any non-system username
+     * as the current device user (same logic as common-session.c). */
+    long uid_check = strtol(li->username, NULL, 10);
+    if (strcmp(li->username, "root") == 0 || strcmp(li->username, "bin") == 0
+        || strcmp(li->username, "system") == 0
+        || (li->username[0] != '\0' && uid_check > 0 && uid_check < 10000)) {
+        dropbear_exit("login_init_entry: Cannot find system user \"%s\"",
+                li->username);
     }
+    li->uid = ses.authstate.pw_uid;
 } else {
     li->uid = pw->pw_uid;
 }
@@ -314,7 +345,7 @@ if (pw == NULL) {
 
 **Note**: This requires adding `#include "session.h"` or declaring `extern struct sshsession ses;` in loginrec.c.
 
-**Explanation**: Login recording (utmp/wtmp) requires user UID lookup. On HarmonyOS, `getpwnam()` fails, so we use the UID from authstate.
+**Explanation**: Login recording (utmp/wtmp) requires user UID lookup. On HarmonyOS, `getpwnam()` fails for all device user names. The old patch only matched `pw_name` (UID string "20020106") which didn't match SSH usernames like "chenh" or "user", causing `dropbear_exit()` and segfault. The updated patch uses the same logic as common-session.c — accept any non-system username as the device user.
 
 #### After Patching - Rebuild
 
@@ -331,10 +362,13 @@ make dropbear
 
 ```bash
 # Start server on port 2222 (foreground, with logging)
-dropbear -p 2222 -F -E
+# IMPORTANT: -e flag passes parent environment to child sessions
+# This is critical on HarmonyOS because SSH sessions need LD_LIBRARY_PATH,
+# PATH, and other environment variables that .zshenv restores
+dropbear -p 2222 -e -F -E
 
-# Start server in background (default port 2222)
-dropbear -p 2222
+# Start server in background (default port 2222, with -e for env passthrough)
+dropbear -p 2222 -e
 
 # Connect as client (use numeric UID as username)
 dbclient 20020106@localhost -p 2222
@@ -344,18 +378,19 @@ dbclient 20020106@localhost -p 2222
 
 ### Connecting from Remote Machines
 
-Due to HarmonyOS's non-standard user system, SSH connections must use the numeric UID as username:
+Due to HarmonyOS's single-user device model, any non-system username can be used for SSH login. All usernames map to the same device user:
 
 ```bash
-# Get your UID on HarmonyOS
-echo $UID  # e.g., 20020106
+# Connect from remote machine - any username works
+ssh -p 2222 chenh@<HarmonyOS-IP>
+ssh -p 2222 user@<HarmonyOS-IP>
+ssh -p 2222 currentUser@<HarmonyOS-IP>
 
-# Connect from remote machine
+# Numeric UID also works
 ssh -p 2222 20020106@<HarmonyOS-IP>
-
-# Example with actual values
-ssh -p 2222 20020106@10.1.35.63
 ```
+
+**Why any username works**: HarmonyOS `/etc/passwd` has minimal entries. The source code patch (Patch 1) accepts any non-system username as the device user, since there's only one real user on the device. System usernames (root, bin, system) are rejected.
 
 **Setup Steps**:
 
@@ -409,9 +444,10 @@ HarmonyOS lacks systemd/cron, but you can auto-start SSH on shell login:
 1. **No password authentication** - HarmonyOS lacks `crypt()` function
 2. **Pubkey auth only** - Users must set up SSH keys manually
 3. **Limited locale support** - May affect some functionality
-4. **Numeric username required** - Must use UID (e.g., `20020106`) instead of human-readable username
+4. **Any non-system username accepted** - All usernames (except root/bin/system) map to the same device user
 5. **Source patches required** - Five source files must be modified for HarmonyOS compatibility
-6. **PTY controlling tty warning** - `ioctl(TIOCSCTTY)` may fail due to HarmonyOS PTY limitations, but basic shell functionality works
+6. **PTY controlling tty limitation** - `ioctl(TIOCSCTTY)` fails on HarmonyOS (returns I/O error). Interactive SSH sessions (shell with PTY) may have limited job control. Command execution mode (`ssh user@host command`) works correctly.
+7. **Must use `-e` flag** - The `-e` flag (pass parent environment to child) is critical on HarmonyOS because SSH child processes need LD_LIBRARY_PATH, PATH, and other variables. Without `-e`, `clearenv()` wipes all environment variables before setting only a minimal set (PATH=/usr/bin:/bin).
 
 ## Troubleshooting
 
@@ -433,7 +469,7 @@ Log shows: `Login attempt for nonexistent user from ...`
 
 **Cause**: User not found in `/etc/passwd` because HarmonyOS doesn't use traditional user database.
 
-**Solution**: Apply `common-session.c` patch (Step 10) to provide fallback passwd entry for current UID.
+**Solution**: Apply `common-session.c` patch (Patch 1 in Step 10) which accepts any non-system username as the device user. After patching, usernames like `chenh`, `user`, `currentUser`, or numeric UID all work.
 
 ### "must be owned by user or root, and not writable by group or others"
 
@@ -449,8 +485,9 @@ Log shows: `/storage/Users/currentUser must be owned by user or root...`
 
 **Check**:
 1. Public key format is correct in `~/.ssh/authorized_keys`
-2. Using correct username (numeric UID like `20020106`)
+2. Using a non-system username (any name works except root/bin/system)
 3. All five source patches applied and dropbear rebuilt
+4. Key matches one of the entries in `~/.ssh/authorized_keys`
 
 ### V8/Node.js Crash in SSH Sessions (errno=ENOMEM)
 

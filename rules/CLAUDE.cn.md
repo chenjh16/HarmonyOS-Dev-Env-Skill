@@ -56,6 +56,11 @@
 - **LLDB**: `/data/service/hnp/bin/lldb`
 - 没有 `gcc` — 始终使用 clang。不要编写默认使用 gcc 的 Makefile。
 - Clang 三元组目标: `aarch64-unknown-linux-ohos-clang`, `armv7-unknown-linux-ohos-clang`
+- **`make -j` 在 HarmonyOS 上失败**: mkfifo 返回"Operation not permitted"（jobserver 使用 mkfifo 进行并行构建）。请使用 Ninja。
+- **不要使用 CMAKE_TOOLCHAIN_FILE 配合 CMAKE_SYSTEM_NAME**: 会触发 CMake 交叉编译模式导致 try_run() 失败。使用轻量级工具链文件（仅编译器+链接器封装，无 CMAKE_SYSTEM_NAME）或直接传递编译器标志。
+- **OpenBLAS/LAPACK**: 编译 OpenBLAS v0.3.28（NOFORTRAN=1）；修改 Makefile.prebuild 添加 -B 封装+代码签名；从 .a 创建 .so；在 CMake 中显式设置 LAPACK_LIBRARIES 和 LAPACK_FOUND
+- **Sleef NATIVE_BUILD_DIR**: 修改 sleef CMakeLists.txt 的 add_host_executable，在 NATIVE_BUILD_DIR 提供时使用，即使无 CMAKE_CROSSCOMPILING
+- **CMake 4.1.2 ldd**: CMake 4.1.2 链接后运行 ldd；将 ldd 封装复制到 ~/.local/bin/ldd
 
 **关键**: SDK 的 lld 需要不存在于 HarmonyOS 的 `libxml2.so.16`。必须用 ld.bfd 替代：
 
@@ -80,8 +85,8 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **starship**: v1.25.1 位于 `$HOME/Claude/starship-build/starship/target/release/`; 跨 shell 提示符
 - **Go**: v1.22.5 位于 `$HOME/Claude/go-build/go/`; 使用 `GOPROXY=https://goproxy.cn,direct`; 设置 `TMPDIR=$HOME/Claude/tmpdir`
 - **mihomo**: Clash Meta 代理位于 `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; 配置位于 `$HOME/Claude/mihomo-config/`; 代理端口 7890, API 端口 9090; 支持 GEOIP/GEOSITE 智能分流
-- **PyTorch**: v2.5.1 位于 `$HOME/.local/lib/python3.12/site-packages/torch/`; 在 HarmonyOS 上完全可用 (12项端到端测试通过); 需要 `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`
-- **Dropbear**: v2024.86 SSH 服务器/客户端位于 `$HOME/.local/bin/`; `dropbear` (服务器), `dbclient` (客户端), `dropbearkey` (密钥生成); 仅支持公钥认证（无密码认证，因缺少 crypt() 函数）
+- **PyTorch**: v2.5.1 位于 `$HOME/.local/lib/python3.12/site-packages/torch/`; **15/15 端到端测试全部通过**（NumPy 通过增量补丁修复，LAPACK 通过 OpenBLAS + supplement.so 启用）; 需要 `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`; 构建必须使用 Ninja；不要使用 CMAKE_TOOLCHAIN_FILE 配合 CMAKE_SYSTEM_NAME；使用轻量级工具链文件；OpenBLAS v0.3.28 位于 `$HOME/.local/lib/libopenblas.so`; `libtorch_supplement.so` 提供 3 个隐藏符号；patchelf 修复 NEEDED 路径前缀
+- **Dropbear**: v2024.86 SSH 服务器/客户端位于 `$HOME/.local/bin/`; `dropbear` (服务器), `dbclient` (客户端), `dropbearkey` (密钥生成); 仅支持公钥认证（无密码认证，因缺少 crypt() 函数）；接受任何非系统用户名（chenh, user, currentUser, UID 均可——单用户设备）；**必须使用 `-e` 参数**（将环境变量传递给子会话）；PTY 交互式会话受限（TIOCSCTTY 在 HarmonyOS 上失败）
 
 ### PATH 中的第三方工具
 
@@ -147,7 +152,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - [bat 适配记录](docs/bat-harmonyos.cn.md) — Rust 项目编译、语法高亮
 - [starship 适配记录](docs/starship-harmonyos.cn.md) — Rust 项目编译、errno 补丁、prompt 配置
 - [mihomo 适配记录](docs/mihomo-harmonyos.cn.md) — Go 工具链、代理配置、GEOIP/GEOSITE 分流规则
-- [PyTorch 适配记录](docs/pytorch-harmonyos.cn.md) — PyTorch v2.5.1 编译、7个关键适配、12项端到端测试、MNIST 训练
+- [PyTorch 适配记录](docs/pytorch-harmonyos.cn.md) — PyTorch v2.5.1 编译、15个关键适配、15/15 端到端测试全部通过（NumPy + LAPACK 已修复）、MNIST 训练
 - [Dropbear SSH 适配记录](docs/dropbear-harmonyos.cn.md) — SSH 服务器/客户端、5个源码补丁、V8 JIT 崩溃解决方案
 - [代码签名指南](docs/code-signing.cn.md) — 详细代码签名说明
 - [动态库路径指南](docs/ld-library-path.cn.md) — 动态库路径配置

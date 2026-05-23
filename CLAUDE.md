@@ -85,6 +85,15 @@ When documenting tool adaptations, always cover:
 4. **Linker Wrapper**: SDK's lld broken, use ld.bfd wrapper
 5. **No gcc**: Only clang available
 6. **SSH V8 Crash**: Use --jitless + node-fetch polyfill
+7. **SSH `-e` Flag**: Dropbear must be started with `-e` flag to pass env vars (LD_LIBRARY_PATH, PATH) to child sessions
+8. **make -j fails**: mkfifo returns "Operation not permitted" — use Ninja for parallel builds
+9. **No CMAKE_TOOLCHAIN_FILE**: Do NOT use CMAKE_TOOLCHAIN_FILE with CMAKE_SYSTEM_NAME=Linux — it triggers cross-compilation mode causing try_run() failures; use lightweight toolchain file (only compilers + linker wrapper, no CMAKE_SYSTEM_NAME) or pass compiler flags directly
+10. **OpenBLAS/LAPACK**: Compile OpenBLAS v0.3.28 with NOFORTRAN=1 (f2c LAPACK); modify Makefile.prebuild for -B wrapper + code signing; create .so from .a; set LAPACK_LIBRARIES and LAPACK_FOUND explicitly in CMake
+11. **Sleef NATIVE_BUILD_DIR fix**: Modify sleef CMakeLists.txt add_host_executable to use NATIVE_BUILD_DIR when provided, even without CMAKE_CROSSCOMPILING — avoids circular signing dependency
+12. **NumPy post-build fix**: If NumPy not found during CMake, recompile tensor_numpy.cpp with -DUSE_NUMPY and relink libtorch_python.so — no full rebuild needed
+13. **CMake 4.1.2 ldd in PATH**: CMake 4.1.2 runs ldd after linking executables; copy ldd wrapper to ~/.local/bin/ldd
+14. **PyTorch visibility hidden + supplement.so**: PyTorch compiles with `-fvisibility=hidden`, hiding `RefcountedMapAllocator::decref/incref` and `at::internal::invoke_parallel` from libtorch_cpu.so's dynamic symbol table. Create `libtorch_supplement.so` with stub implementations, add as NEEDED dependency via `patchelf --add-needed`
+15. **NEEDED path prefix fix**: Ninja-built libraries use "lib/" prefix in NEEDED entries (e.g. `lib/libtorch_cpu.so`). Use `patchelf --replace-needed` to strip prefix and `--set-rpath` to set `$ORIGIN:$HOME/.local/lib`
 
 ## Related Documentation
 

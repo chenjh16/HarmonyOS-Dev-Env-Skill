@@ -170,6 +170,13 @@ Clang on HarmonyOS `clang -dumpmachine` returns `aarch64-unknown-linux-ohos`, ma
 
 ### 8.4 Acceleration Build CMake Configuration
 
+**Important**: Do NOT add `-B$LINKER_WRAPPER_DIR` to `CMAKE_C_FLAGS` for accelerated builds! This parameter affects CMake's `try_run` test programs, causing ARM feature detection to fail (test programs need to execute correctly to detect CPU features).
+
+The ld.bfd wrapper is only needed during linking phase. If linking fails with `libxml2.so.16 not found` error, add linker flags:
+```bash
+  -DCMAKE_EXE_LINKER_FLAGS="-B$HOME/Claude/lib/linker_wrapper"
+```
+
 ```bash
 cmake -S . -B build \
   -GNinja \
@@ -196,6 +203,7 @@ Key changes:
 - `GGML_NATIVE=ON` (was OFF) → enables `-mcpu=native` + feature detection
 - `GGML_LLAMAFILE=ON` → enables llamafile SGEMM optimization kernels
 - No longer need `GGML_CPU_ARM_ARCH` manual setting (`GGML_NATIVE=ON` auto-detects)
+- **Do NOT use linker wrapper in `CMAKE_C_FLAGS`** to avoid affecting try_run tests
 
 ### 8.5 Detected ARM Features
 

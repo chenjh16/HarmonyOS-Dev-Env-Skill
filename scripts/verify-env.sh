@@ -159,12 +159,26 @@ echo "--- Optional Tools ---"
 PYTHON=$HOME/.local/bin/python3
 if [ -x "$PYTHON" ]; then
     TORCH_VERSION=$($PYTHON -c "import torch; print(torch.__version__)" 2>/dev/null || echo "not installed")
-    if [ "$TORCH_VERSION" = "2.5.1" ]; then
-        pass "PyTorch 2.5.1"
+    if [ "$TORCH_VERSION" = "2.5.0a0+gita8d6afb" ]; then
+        pass "PyTorch v2.5.1 ($TORCH_VERSION)"
+        # Check LAPACK support
+        LAPACK=$($PYTHON -c "import torch; m=torch.randn(3,3); torch.det(m); print('OK')" 2>/dev/null || echo "FAIL")
+        if [ "$LAPACK" = "OK" ]; then
+            pass "PyTorch LAPACK enabled (torch.det() works)"
+        else
+            warn "PyTorch LAPACK not working (torch.det() fails)"
+        fi
+        # Check NumPy support
+        NUMPY=$($PYTHON -c "import numpy,torch; torch.from_numpy(numpy.array([1.0])); print('OK')" 2>/dev/null || echo "FAIL")
+        if [ "$NUMPY" = "OK" ]; then
+            pass "PyTorch NumPy support (torch.from_numpy() works)"
+        else
+            warn "PyTorch NumPy not working"
+        fi
     elif [ "$TORCH_VERSION" = "not installed" ]; then
         warn "PyTorch not installed"
     else
-        warn "PyTorch $TORCH_VERSION (expected 2.5.1)"
+        warn "PyTorch $TORCH_VERSION (expected 2.5.0a0+gita8d6afb)"
     fi
 fi
 

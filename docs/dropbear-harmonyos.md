@@ -29,11 +29,11 @@ Five source files require patching:
 
 | File | Issue | Patch |
 |------|-------|-------|
-| `src/common-session.c` | `getpwnam()` fails | Fallback to current UID |
+| `src/common-session.c` | `getpwnam()` fails | Accept any non-system username as device user |
 | `src/svr-auth.c` | Shell validation fails | Skip `/etc/shells` check |
 | `src/svr-authpubkey.c` | Permission check fails | Skip file ownership check |
 | `src/svr-chansession.c` | PTY allocation fails | Reuse authstate passwd |
-| `src/loginrec.c` | Login recording fails | Use authstate UID |
+| `src/loginrec.c` | Login recording fails | Accept any non-system username (same logic as common-session) |
 
 ### 2. No crypt() Function
 
@@ -121,20 +121,30 @@ dropbearkey -t ed25519 -f ~/.local/etc/dropbear/dropbear_ed25519_host_key
 ### Manual Start
 
 ```bash
-# Foreground with logging
-dropbear -p 2222 -F -E
+# Foreground with logging (-e passes parent env to child sessions)
+dropbear -p 2222 -e -F -E
 
-# Background
-dropbear -p 2222
+# Background (with -e for env passthrough)
+dropbear -p 2222 -e
 ```
+
+**CRITICAL**: The `-e` flag passes the parent process's environment variables (LD_LIBRARY_PATH, PATH, etc.) to SSH child sessions. Without `-e`, `clearenv()` wipes all environment variables before setting only minimal defaults (PATH=/usr/bin:/bin), breaking SSH sessions on HarmonyOS.
 
 ### Connect
 
-Use numeric UID as username:
+Any non-system username works (HarmonyOS is a single-user device):
 ```bash
+# Any username works
+ssh -p 2222 chenh@localhost
+ssh -p 2222 user@localhost
+ssh -p 2222 currentUser@localhost
+
+# Numeric UID also works
 dbclient 20020106@localhost -p 2222
-# From remote: ssh -p 2222 20020106@<HarmonyOS-IP>
+# From remote: ssh -p 2222 chenh@<HarmonyOS-IP>
 ```
+
+**Note**: Interactive SSH sessions (shell with PTY) have a known limitation — `ioctl(TIOCSCTTY)` fails on HarmonyOS, resulting in no controlling tty. This means limited job control in interactive sessions. Command execution mode (`ssh user@host command`) works correctly.
 
 ### Auto-start on Login
 
@@ -154,16 +164,17 @@ Disable with: `export NO_AUTOSTART_SSH=1`
 ## Known Limitations
 
 1. **No password authentication** - HarmonyOS lacks `crypt()`
-2. **Numeric username required** - Use UID (e.g., `20020106`)
+2. **Any non-system username accepted** - All usernames (except root/bin/system) map to the same device user
 3. **Five source patches required** - Must modify source files
-4. **PTY TIOCSCTTY warning** - May fail but basic shell works
-5. **V8 JIT crash** - Node.js apps need `--jitless` + polyfill
+4. **PTY TIOCSCTTY fails** - Interactive sessions have no controlling tty (HarmonyOS kernel limitation); command execution works fine
+5. **Must use `-e` flag** - Environment passthrough critical for SSH child sessions
+6. **V8 JIT crash** - Node.js apps need `--jitless` + polyfill
 
 ## Troubleshooting
 
 ### "Login attempt for nonexistent user"
 
-Apply `common-session.c` patch for passwd fallback.
+Apply `common-session.c` and `loginrec.c` patches. Both now accept any non-system username as the device user. After patching, usernames like `chenh`, `user`, `currentUser`, or numeric UID all work.
 
 ### "must be owned by user or root"
 

@@ -314,22 +314,25 @@ nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
 
 ## 安装 numpy
 
-对于 numpy，使用预构建 HarmonyOS wheel 包的方式。wheel 文件名需要重命名以匹配 pip 期望的平台标识：
+### 方式一：预构建 HarmonyOS wheel
 
-**前置条件**：获取带有 `harmonyos_aarch64` 平台标识的 numpy wheel。该 wheel **不在 PyPI 上**——来自 HarmonyOS 专用源或需本地构建。
+对于 numpy，使用预构建的 HarmonyOS wheel。**重要提示**：PyPI 没有 `harmonyos_aarch64` wheel——所有非纯 Python 包需要本地重建。
+
+**前置条件**：从 HarmonyOS 专用源获取 numpy wheel。
 
 ```bash
-# 如果有 numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl，重命名：
-cp numpy-2.4.4-cp312-cp312-harmonyos_aarch64.whl \
-   numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl
+# wheel 平台标识格式（已验证）：
+# harmonyos_HongMeng_Kernel_1_12_0_aarch64（保留大小写，空格/点号用下划线替代）
 
-# 用 --no-deps 安装
-pip install numpy-2.4.4-cp312-cp312-harmonyos_hongmeng_kernel_1_12_0_aarch64.whl --no-deps
+# 先用 --no-deps 安装
+pip install numpy-2.4.4-cp312-cp312-harmonyos_HongMeng_Kernel_1_12_0_aarch64.whl --no-deps
 
-# 重命名并签名扩展模块（wheel 中 .so 后缀与期望不同）
+# 修复扩展模块后缀（关键）
+# Python importlib 期望 .cpython-312-aarch64-linux-gnu.so
+# wheel 仅包含 .cpython-312.so
 cd $HOME/.local/lib/python3.12/site-packages/numpy
 find . -name "*.cpython-312.so" | while read f; do
-    new_name="${f%.so}-aarch64-linux-gnu.so"
+    new_name="${f%.cpython-312.so}.cpython-312-aarch64-linux-gnu.so"
     cp "$f" "$new_name"
     /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$new_name" "${new_name}.tmp"
     /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
@@ -338,11 +341,79 @@ find . -name "*.cpython-312.so" | while read f; do
 done
 ```
 
-**关键要点**：
-1. HarmonyOS Python 平台标识是 `harmonyos_hongmeng_kernel_1_12_0_aarch64`
-2. wheel 必须从 `harmonyos_aarch64` 重命名以匹配此标识
-3. wheel 中扩展后缀是 `.cpython-312.so`，但 Python 期望 `.cpython-312-aarch64-linux-gnu.so`
-4. 所有 .so 文件必须代码签名
+### 方式二：从源码构建（numpy 2.x）
+
+numpy 2.x 使用 meson 构建系统。构建依赖：Cython>=3.0.6，meson-python>=0.18.0。
+
+```bash
+mkdir -p $HOME/Claude/skill-validation/numpy-build && cd $HOME/Claude/skill-validation/numpy-build
+
+# 下载源码
+curl -L -o numpy-2.4.6.tar.gz https://pypi.tuna.tsinghua.edu.cn/packages/source/numpy/numpy-2.4.6.tar.gz
+tar xf numpy-2.4.6.tar.gz
+cd numpy-2.4.6
+
+# 用 --no-build-isolation 构建（使用全局 Cython/meson）
+TMPDIR=$HOME/Claude/tmpdir \
+CC=/data/service/hnp/bin/clang \
+CXX=/data/service/hnp/bin/clang++ \
+python3 -m pip wheel . --no-build-isolation --wheel-dir=$HOME/Claude/skill-validation/numpy-build
+
+# 生成的 wheel 文件名格式错误（平台标识含空格）
+# 修复：重命名并更新 WHEEL 元数据
+```
+
+**构建后需要的修复**：
+
+1. **wheel 文件名**：Meson 生成 `harmonyos_hongmeng kernel 1_12_0_aarch64.whl`（含空格）
+   - 重命名为 `harmonyos_HongMeng_Kernel_1_12_0_aarch64.whl`
+
+2. **WHEEL 元数据**：更新 `.dist-info/WHEEL` 中的 Tag 行：
+   ```
+   Tag: cp312-cp312-harmonyos_HongMeng_Kernel_1_12_0_aarch64
+   ```
+
+3. **扩展后缀**：创建 `.cpython-312-aarch64-linux-gnu.so` 副本：
+   ```bash
+   # 解压 wheel
+   mkdir wheel_contents && unzip numpy-*.whl -d wheel_contents
+   
+   # 创建正确后缀副本并签名
+   cd wheel_contents
+   find . -name "*.cpython-312.so" | while read f; do
+       new_name="${f%.cpython-312.so}.cpython-312-aarch64-linux-gnu.so"
+       cp "$f" "$new_name"
+       /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+         -inFile "$new_name" -outFile "$new_name.signed" -signAlg SHA256withECDSA
+       mv "$new_name.signed" "$new_name"
+   done
+   
+   # 重新生成 RECORD，打包 wheel
+   python3 -c "
+   import hashlib, base64, os
+   def sha256_digest(p):
+       h=hashlib.sha256()
+       with open(p,'rb') as f: h.update(f.read())
+       return base64.urlsafe_b64encode(h.digest()).rstrip(b'=').decode()
+   lines=[]
+   for root,dirs,files in os.walk('.'):
+       for f in files:
+           if f=='RECORD': continue
+           p=os.path.join(root,f)
+           lines.append(f'{p[2:]},sha256={sha256_digest(p)},{os.path.getsize(p)}')
+   lines.append('numpy-*.dist-info/RECORD,,')
+   with open('numpy-*.dist-info/RECORD','w') as f: f.write('\\n'.join(lines))
+   "
+   zip -r ../numpy-2.4.6-cp312-cp312-harmonyos_HongMeng_Kernel_1_12_0_aarch64.whl .
+   ```
+
+**源码构建验证的关键发现**：
+1. 平台标识格式：`harmonyos_HongMeng_Kernel_1_12_0_aarch64`（保留大小写，用下划线）
+2. Python `sysconfig.get_platform()` 返回 `harmonyos-HongMeng Kernel 1.12.0-aarch64`
+3. wheel 规范：将 `-`、`.`、空格替换为 `_`，但保留大小写
+4. Python `importlib.machinery.EXTENSION_SUFFIXES` 期望 `.cpython-312-aarch64-linux-gnu.so`
+5. 所有 .so 文件需代码签名才能被 Python 加载
+6. 所有非纯 Python 包需本地重建（PyPI 没有 harmonyos wheel）
 
 ## 已知限制
 

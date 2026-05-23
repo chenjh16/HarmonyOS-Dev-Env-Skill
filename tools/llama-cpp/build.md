@@ -188,6 +188,10 @@ Clang 在 HarmonyOS 上 `clang -dumpmachine` 返回 `aarch64-unknown-linux-ohos`
 
 ### 8.4 加速构建 CMake 配置
 
+**重要提示**：加速构建**不要**在 `CMAKE_C_FLAGS` 中添加 `-B$LINKER_WRAPPER_DIR`！这个参数会影响 CMake 的 `try_run` 测试程序，导致 ARM 特性检测失败（测试程序需要正确执行才能检测 CPU 特性）。
+
+ld.bfd wrapper 只在链接阶段需要，可以通过设置 `CMAKE_LINKER` 或在 `CMAKE_EXE_LINKER_FLAGS` 中配置（如果链接失败才需要）。
+
 ```bash
 cmake -S . -B build \
   -GNinja \
@@ -210,10 +214,16 @@ cmake -S . -B build \
   -DGGML_CCACHE=OFF
 ```
 
+如果链接阶段报错 `libxml2.so.16 not found`，添加 linker flags：
+```bash
+  -DCMAKE_EXE_LINKER_FLAGS="-B$HOME/Claude/lib/linker_wrapper"
+```
+
 关键变更：
 - `GGML_NATIVE=ON`（原来是 OFF）→启用 `-mcpu=native` + 特性检测
 - `GGML_LLAMAFILE=ON` →启用 llamafile SGEMM 优化内核
 - 不再需要 `GGML_CPU_ARM_ARCH` 手动设置（`GGML_NATIVE=ON` 自动检测）
+- **不在 `CMAKE_C_FLAGS` 中使用 linker wrapper**，避免影响 try_run 测试
 
 ### 8.5 检测到的 ARM 特性
 

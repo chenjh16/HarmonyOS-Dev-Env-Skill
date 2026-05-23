@@ -115,14 +115,44 @@ cd ..
 
 ### 6. 创建 options.h
 
-从 `src/default_options.h` 复制并修改：
-- 设置 `DROPBEAR_SVR_PASSWORD_AUTH 0`（无 crypt()）
-- 设置 `DROPBEAR_CLI_PASSWORD_AUTH 0`
-- 更新密钥路径为 `~/.local/etc/dropbear/`
+**重要**：include 顺序很重要！必须先包含 `default_options.h`，然后用 `#undef` 和 `#define` 覆盖宏。
+
+此外，`config.h` 必须在最开头包含，这样 `HAVE_STRUCT_*` 定义才能用于 `fake-rfc2553.h` 的检查（防止结构与系统头文件重复定义冲突）。
+
+```bash
+cat > src/options.h << 'EOF'
+#ifndef DROPBEAR_OPTIONS_H
+#define DROPBEAR_OPTIONS_H
+
+/* 先包含 config.h 以获取 HAVE_* 定义 */
+#include "config.h"
+
+/* 先包含默认选项 */
+#include "default_options.h"
+
+/* HarmonyOS 覆盖 - 禁用密码认证（无 crypt()）*/
+#undef DROPBEAR_SVR_PASSWORD_AUTH
+#define DROPBEAR_SVR_PASSWORD_AUTH 0
+
+#undef DROPBEAR_CLI_PASSWORD_AUTH  
+#define DROPBEAR_CLI_PASSWORD_AUTH 0
+
+/* 密钥路径 */
+#undef RSA_PRIV_FILENAME
+#define RSA_PRIV_FILENAME "~/.local/etc/dropbear/dropbear_rsa_host_key"
+#undef ECDSA_PRIV_FILENAME
+#define ECDSA_PRIV_FILENAME "~/.local/etc/dropbear/dropbear_ecdsa_host_key"
+#undef ED25519_PRIV_FILENAME
+#define ED25519_PRIV_FILENAME "~/.local/etc/dropbear/dropbear_ed25519_host_key"
+
+#include "sysoptions.h"
+#endif
+EOF
+```
 
 ### 7. 创建 Makefile
 
-使用项目中的 Makefile 或手动创建。
+使用项目中的 Makefile 或手动创建。完整 Makefile 参考 `tools/dropbear/build.md` 附录。
 
 ### 8. 签名二进制文件
 
@@ -157,30 +187,41 @@ HarmonyOS 使用非传统的用户管理系统：
 
 #### 补丁 1：`src/common-session.c` - 用户查找 Fallback
 
-为 `getpwnam()` 失败添加 fallback，支持不在 passwd 中的用户：
+为 `getpwnam()` 失败添加 fallback，接受任何非系统用户名作为设备用户：
 
 ```c
 // 在 fill_passwd() 函数中，"pw = getpwnam(username);" 之后添加
 pw = getpwnam(username);
 if (!pw) {
-    /* HarmonyOS fallback: 如果 getpwnam 失败，检查用户名是否匹配当前 UID */
+    /* HarmonyOS fallback: /etc/passwd 只有最少的条目（root, bin,
+     * 系统服务）。实际设备用户使用数字 UID，不在 passwd 中。
+     * 由于是单用户设备，接受任何不在系统 UID 范围（0-9999）
+     * 内的用户名作为当前设备用户。 */
     char uid_str[32];
     snprintf(uid_str, sizeof(uid_str), "%u", getuid());
-    if (strcmp(username, uid_str) == 0 || strcmp(username, "currentUser") == 0) {
-        /* 为当前用户创建虚拟 passwd entry */
-        ses.authstate.pw_uid = getuid();
-        ses.authstate.pw_gid = getgid();
-        ses.authstate.pw_name = m_strdup(uid_str);
-        ses.authstate.pw_dir = m_strdup(getenv("HOME") ? getenv("HOME") : "/storage/Users/currentUser");
-        ses.authstate.pw_shell = m_strdup(getenv("SHELL") ? getenv("SHELL") : "/usr/bin/zsh");
-        ses.authstate.pw_passwd = m_strdup("!!");
+    /* 拒绝系统用户名（root, bin, system 等）——
+     * 这些 UID < 10000，不应获得设备用户访问权限 */
+    long uid_check = strtol(username, NULL, 10);
+    if (strcmp(username, "root") == 0 || strcmp(username, "bin") == 0
+        || strcmp(username, "system") == 0
+        || (username[0] != '\0' && uid_check > 0 && uid_check < 10000)) {
+        /* 这是已知系统用户但不存在——拒绝 */
         return;
     }
+    /* 接受任何其他用户名作为设备用户 */
+    ses.authstate.pw_uid = getuid();
+    ses.authstate.pw_gid = getgid();
+    ses.authstate.pw_name = m_strdup(uid_str);
+    ses.authstate.pw_dir = m_strdup(getenv("HOME") ? getenv("HOME") : "/storage/Users/currentUser");
+    ses.authstate.pw_shell = m_strdup(getenv("SHELL") ? getenv("SHELL") : "/usr/bin/zsh");
+    ses.authstate.pw_passwd = m_strdup("!!");
     return;
 }
 ```
 
-**解释**：SSH 客户端使用用户名 `20020106`（进程 UID）连接时，`getpwnam()` 失败，因为 HarmonyOS 的 `/etc/passwd` 中没有这个用户。补丁使用当前进程的 UID/GID 和 HOME/SHELL 环境变量创建合成 passwd entry。
+**解释**：HarmonyOS `/etc/passwd` 只有极少的条目（root, bin, 系统服务）。实际设备用户使用数字 UID（如 20020106），没有任何人类可读的用户名。由于 HarmonyOS 是单用户设备，补丁接受任何不匹配系统账户的用户名作为当前设备用户。这意味着 SSH 客户端可以使用任意用户名（如 `chenh`、`user`、`currentUser`、`20020106`）连接——所有都会被视为同一个设备用户。
+
+**安全说明**：系统用户名（root, bin, system）和数字 UID < 10000 被明确拒绝，以防止对不应存在的系统账户的未授权访问。
 
 **重要**：Shell 必须设置为 `$SHELL`（HarmonyOS 上通常是 `/usr/bin/zsh`），而不是 `/bin/sh`。使用 `/bin/sh` 会导致 SSH 会话跳过 `.zshenv` 的 PATH 配置，导致 npm/claude 命令无法使用。
 
@@ -250,18 +291,24 @@ pty_setowner(pw, chansess->tty);
 
 #### 补丁 5：`src/loginrec.c` - 登录记录 Fallback
 
-记录登录会话时，`login_init_entry()` 调用 `getpwnam()`。添加 fallback：
+记录登录会话时，`login_init_entry()` 调用 `getpwnam()`。添加接受任何非系统用户名的 fallback：
 
 ```c
 // 在 login_init_entry() 函数中，约第 278 行
 pw = getpwnam(li->username);
 if (pw == NULL) {
-    /* HarmonyOS fallback: 如果 getpwnam 失败，使用 authstate uid */
-    if (ses.authstate.pw_name && strcmp(li->username, ses.authstate.pw_name) == 0) {
-        li->uid = ses.authstate.pw_uid;
-    } else {
-        dropbear_exit("login_init_entry: Cannot find user \"%s\"", li->username);
+    /* HarmonyOS fallback: 如果 getpwnam 失败，接受任何非系统用户名。
+     * HarmonyOS 的实际设备用户不在 /etc/passwd 中，所以 getpwnam()
+     * 总是失败。我们接受任何非系统用户名作为当前设备用户
+     * （与 common-session.c 使用相同逻辑）。 */
+    long uid_check = strtol(li->username, NULL, 10);
+    if (strcmp(li->username, "root") == 0 || strcmp(li->username, "bin") == 0
+        || strcmp(li->username, "system") == 0
+        || (li->username[0] != '\0' && uid_check > 0 && uid_check < 10000)) {
+        dropbear_exit("login_init_entry: Cannot find system user \"%s\"",
+                li->username);
     }
+    li->uid = ses.authstate.pw_uid;
 } else {
     li->uid = pw->pw_uid;
 }
@@ -269,7 +316,7 @@ if (pw == NULL) {
 
 **注意**：需要在 loginrec.c 中添加 `#include "session.h"` 或声明 `extern struct sshsession ses;`。
 
-**解释**：登录记录（utmp/wtmp）需要用户 UID 查找。在 HarmonyOS 上，`getpwnam()` 失败，所以使用 authstate 中的 UID。
+**解释**：登录记录（utmp/wtmp）需要用户 UID 查找。在 HarmonyOS 上，`getpwnam()` 对所有设备用户名都会失败。旧补丁只匹配 `pw_name`（UID 字符串 "20020106"），不匹配 SSH 用户名如 "chenh" 或 "user"，导致 `dropbear_exit()` 和段错误。更新后的补丁使用与 common-session.c 相同的逻辑——接受任何非系统用户名作为设备用户。
 
 #### 补丁后重新编译
 
@@ -299,18 +346,19 @@ dbclient 20020106@localhost -p 2222
 
 ### 从远程机器连接
 
-由于 HarmonyOS 的非标准用户系统，SSH 连接必须使用数字 UID 作为用户名：
+由于 HarmonyOS 的单用户设备模型，任何非系统用户名都可以用于 SSH 登录。所有用户名映射到同一个设备用户：
 
 ```bash
-# 在 HarmonyOS 上获取你的 UID
-echo $UID  # 例如，20020106
+# 从远程机器连接 - 任何用户名都可以
+ssh -p 2222 chenh@<HarmonyOS-IP>
+ssh -p 2222 user@<HarmonyOS-IP>
+ssh -p 2222 currentUser@<HarmonyOS-IP>
 
-# 从远程机器连接
+# 数字 UID 也可以
 ssh -p 2222 20020106@<HarmonyOS-IP>
-
-# 使用实际值的示例
-ssh -p 2222 20020106@10.1.35.63
 ```
+
+**为什么任何用户名都可以**：HarmonyOS `/etc/passwd` 只有极少的条目。源代码补丁（补丁 1）接受任何非系统用户名作为设备用户，因为设备上只有一个真实用户。系统用户名（root, bin, system）会被拒绝。
 
 **设置步骤**：
 
@@ -364,9 +412,10 @@ HarmonyOS 没有 systemd/cron，但可以在 shell 登录时自动启动 SSH：
 1. **无密码认证** - HarmonyOS 缺少 `crypt()` 函数
 2. **仅公钥认证** - 用户必须手动设置 SSH 密钥
 3. **有限的 locale 支持** - 可能影响某些功能
-4. **必须使用数字用户名** - 必须使用 UID（如 `20020106`）而非人类可读的用户名
+4. **接受任何非系统用户名** - 所有用户名（除了 root/bin/system）映射到同一个设备用户
 5. **需要源码补丁** - 必须修改五个源文件以支持 HarmonyOS
-6. **PTY 控制终端警告** - `ioctl(TIOCSCTTY)` 可能因 HarmonyOS PTY 限制而失败，但基本 shell 功能正常
+6. **PTY 控制终端限制** - `ioctl(TIOCSCTTY)` 在 HarmonyOS 上失败（返回 I/O 错误）。交互式 SSH 会话（带 PTY 的 shell）可能没有完整的作业控制。命令执行模式（`ssh user@host command`）正常工作。
+7. **必须使用 `-e` 参数** - `-e` 参数（传递父进程环境到子进程）在 HarmonyOS 上非常关键，因为 SSH 子进程需要 LD_LIBRARY_PATH、PATH 等变量。没有 `-e` 时，`clearenv()` 会在设置最小环境前清除所有环境变量（PATH=/usr/bin:/bin）。
 
 ## 故障排除
 
@@ -388,7 +437,7 @@ HarmonyOS 有 `/dev/urandom` 但没有 `getrandom()` 系用调用。在 config.h
 
 **原因**：用户在 `/etc/passwd` 中找不到，因为 HarmonyOS 不使用传统用户数据库。
 
-**解决方案**：应用 `common-session.c` 补丁（第 10 步），为当前 UID 提供 fallback passwd entry。
+**解决方案**：应用 `common-session.c` 补丁（补丁 1，第 10 步），该补丁接受任何非系统用户名作为设备用户。补丁后，`chenh`、`user`、`currentUser` 或数字 UID 等用户名均可使用。
 
 ### "must be owned by user or root, and not writable by group or others"
 
@@ -404,8 +453,9 @@ HarmonyOS 有 `/dev/urandom` 但没有 `getrandom()` 系用调用。在 config.h
 
 **检查**：
 1. `~/.ssh/authorized_keys` 中的公钥格式正确
-2. 使用正确的用户名（数字 UID 如 `20020106`）
+2. 使用非系统用户名（任何名称都可以，除了 root/bin/system）
 3. 所有五个源码补丁已应用且 dropbear 已重新编译
+4. 密钥与 `~/.ssh/authorized_keys` 中的某一条匹配
 
 ### PTY allocation request failed / shell request failed
 

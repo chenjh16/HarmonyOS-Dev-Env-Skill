@@ -29,11 +29,11 @@ HarmonyOS 使用非传统的用户管理：
 
 | 文件 | 问题 | 补丁 |
 |------|------|------|
-| `src/common-session.c` | `getpwnam()` 失败 | 回退到当前 UID |
+| `src/common-session.c` | `getpwnam()` 失败 | 接受任何非系统用户名作为设备用户 |
 | `src/svr-auth.c` | Shell 验证失败 | 跳过 `/etc/shells` 检查 |
 | `src/svr-authpubkey.c` | 权限检查失败 | 跳过文件所有权检查 |
 | `src/svr-chansession.c` | PTY 分配失败 | 重用 authstate passwd |
-| `src/loginrec.c` | 登录记录失败 | 使用 authstate UID |
+| `src/loginrec.c` | 登录记录失败 | 接受任何非系统用户名（与 common-session 相同逻辑） |
 
 ### 2. 无 crypt() 函数
 
@@ -121,20 +121,30 @@ dropbearkey -t ed25519 -f ~/.local/etc/dropbear/dropbear_ed25519_host_key
 ### 手动启动
 
 ```bash
-# 前台运行带日志
-dropbear -p 2222 -F -E
+# 前台运行带日志（-e 将父进程环境传递给子会话）
+dropbear -p 2222 -e -F -E
 
-# 后台运行
-dropbear -p 2222
+# 后台运行（使用 -e 传递环境）
+dropbear -p 2222 -e
 ```
+
+**重要**：`-e` 参数将父进程的环境变量（LD_LIBRARY_PATH、PATH 等）传递给 SSH 子会话。没有 `-e` 时，`clearenv()` 会清除所有环境变量，只设置最小默认值（PATH=/usr/bin:/bin），导致 HarmonyOS 上的 SSH 会话异常。
 
 ### 连接
 
-使用数字 UID 作为用户名：
+任何非系统用户名都可以使用（HarmonyOS 是单用户设备）：
 ```bash
+# 任何用户名都可以
+ssh -p 2222 chenh@localhost
+ssh -p 2222 user@localhost
+ssh -p 2222 currentUser@localhost
+
+# 数字 UID 也可以
 dbclient 20020106@localhost -p 2222
-# 从远程连接: ssh -p 2222 20020106@<HarmonyOS-IP>
+# 从远程连接: ssh -p 2222 chenh@<HarmonyOS-IP>
 ```
+
+**注意**：交互式 SSH 会话（带 PTY 的 shell）有一个已知限制——`ioctl(TIOCSCTTY)` 在 HarmonyOS 上失败，导致没有控制终端。这意味着交互式会话中作业控制受限。命令执行模式（`ssh user@host command`）正常工作。
 
 ### 登录时自动启动
 
@@ -154,16 +164,17 @@ fi
 ## 已知限制
 
 1. **无密码认证** - HarmonyOS 缺少 `crypt()`
-2. **需要数字用户名** - 使用 UID（如 `20020106`）
+2. **接受任何非系统用户名** - 所有用户名（除了 root/bin/system）映射到同一个设备用户
 3. **需要五个源码补丁** - 必须修改源文件
-4. **PTY TIOCSCTTY 警告** - 可能失败但基本 shell 可用
-5. **V8 JIT 崩溃** - Node.js 应用需要 `--jitless` + polyfill
+4. **PTY TIOCSCTTY 失败** - 交互式会话没有控制终端（HarmonyOS 内核限制）；命令执行模式正常
+5. **必须使用 `-e` 参数** - 环境传递对 SSH 子会话至关重要
+6. **V8 JIT 崩溃** - Node.js 应用需要 `--jitless` + polyfill
 
 ## 故障排除
 
 ### "Login attempt for nonexistent user"
 
-应用 `common-session.c` 补丁提供 passwd 回退。
+应用 `common-session.c` 和 `loginrec.c` 补丁。两者现在都接受任何非系统用户名作为设备用户。补丁后，`chenh`、`user`、`currentUser` 或数字 UID 等用户名均可使用。
 
 ### "must be owned by user or root"
 

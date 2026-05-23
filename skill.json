@@ -71,7 +71,7 @@
       "build_guide": "tools/pytorch/build.md",
       "install_script": "tools/pytorch/install.sh",
       "install_dir": "$HOME/.local/lib/python3.12/site-packages/torch",
-      "features": ["tensor ops", "nn modules", "autograd", "optimizers", "MNIST training"]
+      "features": ["tensor ops", "nn modules", "autograd", "optimizers", "LAPACK enabled", "NumPy support", "15/15 e2e tests", "MNIST training"]
     },
     {
       "name": "llama-cpp",
