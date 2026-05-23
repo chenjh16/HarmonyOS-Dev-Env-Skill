@@ -14,7 +14,7 @@ Python 3.12.8 @ $HOME/.local/
 ```
 
 **关键特性**:
-- 使用 `-rdynamic` 编译，导出 1517 个 Py 符号
+- 使用 `-rdynamic` 编译，导出 948+ Py 符号（1521 总导出符号）
 - 可加载用户目录的签名 .so 扩展模块
 - pip 直接运行，无需 wrapper
 - numpy 2.4.4 科学计算可用
@@ -178,7 +178,9 @@ pip wheel 中的 .so 文件可能依赖 `libpython3.12.so.1.0`，本地静态编
 
 ```bash
 nm -D ~/.local/bin/python3 | grep " T " | grep Py | wc -l
-# 输出: 1517
+# 输出: 948+ (以 Py 开头的公开 API 符号)
+nm -D ~/.local/bin/python3 | grep " T " | wc -l
+# 输出: 1521 (全部导出符号，含 _Py 内部符号)
 ```
 
 ### Q: bcrypt/greenlet 等包编译失败怎么办？

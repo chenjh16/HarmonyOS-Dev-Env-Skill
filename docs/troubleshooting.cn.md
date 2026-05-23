@@ -168,7 +168,7 @@ ImportError: dlopen() failed: Permission denied
 binary-sign-tool sign -selfSign 1 -inFile module.so -outFile module-signed.so -signAlg SHA256withECDSA
 ```
 
-2. 确保 Python 用 `-rdynamic` 编译 (导出 1517 符号):
+2. 确保 Python 用 `-rdynamic` 编译 (导出 948+ Py 符号，1521 总导出):
 ```bash
 python3 -c "import ctypes; print(len([s for s in dir(ctypes.pythonapi) if not s.startswith('_')]))"
 ```
@@ -330,7 +330,7 @@ export LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_L
 
 **解决方案**: 启用 NEON/SVE 优化:
 ```bash
-llama-cli -m model.gguf -p "prompt" -ngl 99 -sm sleed
+llama-cli -m model.gguf -p "prompt" -ngl 0 -sm seed
 ```
 
 **问题**: CoT 模型不推理

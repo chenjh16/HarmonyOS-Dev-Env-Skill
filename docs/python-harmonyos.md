@@ -2,26 +2,26 @@
 
 ## Python Installation
 
-**唯一源**: `$HOME/.local/bin/python3` (Python 3.12.8)
+**Single source**: `$HOME/.local/bin/python3` (Python 3.12.8)
 
 ```
 Python 3.12.8 @ $HOME/.local/
-├── bin/python3          # 主程序（-rdynamic 编译）
-├── lib/python3.12/      # 标准库
-│   ├── lib-dynload/     # 扩展模块（需签名）
-│   └── site-packages/   # pip 安装包
-└── include/python3.12/  # 头文件（编译扩展用）
+├── bin/python3          # Main binary (compiled with -rdynamic)
+├── lib/python3.12/      # Standard library
+│   ├── lib-dynload/     # Extension modules (must be signed)
+│   └── site-packages/   # pip packages
+└── include/python3.12/  # Headers (for compiling extensions)
 ```
 
-**关键特性**:
-- 使用 `-rdynamic` 编译，导出 1517 个 Py 符号
-- 可加载用户目录的签名 .so 扩展模块
-- pip 直接运行，无需 wrapper
-- numpy 2.4.4 科学计算可用
-- pillow 12.2.0 图像处理可用
-- lxml 6.1.0 XML/XSLT处理可用
+**Key features**:
+- Compiled with `-rdynamic`, exports 948+ Py symbols (1521 total exported symbols)
+- Can load signed .so extension modules from user directories
+- pip runs directly, no wrapper needed
+- numpy 2.4.4 scientific computing available
+- pillow 12.2.0 image processing available
+- lxml 6.1.0 XML/XSLT processing available
 
-## Shell 配置
+## Shell Configuration
 
 `~/.zshenv`:
 ```bash
@@ -30,9 +30,9 @@ export TMPDIR="$HOME/Claude/tmpdir"
 export LD_LIBRARY_PATH="$HOME/.local/lib:/system/lib64"
 ```
 
-**注意**: `$HOME/.local/lib` 已包含在 LD_LIBRARY_PATH 中，lxml 和其他动态库扩展可正常加载。
+**Note**: `$HOME/.local/lib` is included in LD_LIBRARY_PATH, so lxml and other dynamic library extensions load correctly.
 
-## pip 配置
+## pip Configuration
 
 `~/.pip/pip.conf`:
 ```
@@ -40,20 +40,20 @@ export LD_LIBRARY_PATH="$HOME/.local/lib:/system/lib64"
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-## 包安装状态
+## Package Installation Status
 
-| 包类型 | 可用性 | 说明 |
-|--------|--------|------|
-| 纯 Python | ✅ | pip install 直接可用 |
-| numpy | ✅ | 需要 wheel 重命名 + 签名 |
-| C/C++ 扩展 | ✅ | 设置 CC/CXX 环境变量 |
-| Rust 扩展 | ✅ | 设置 CC/CXX 环境变量 |
-| pillow | ✅ | 编译 libjpeg/libpng 源码 |
-| lxml | ✅ | 编译 libxml2/libxslt 源码，需 LD_LIBRARY_PATH |
+| Package Type | Availability | Notes |
+|--------------|-------------|-------|
+| Pure Python | ✅ | pip install works directly |
+| numpy | ✅ | Requires wheel rename + signing |
+| C/C++ extensions | ✅ | Set CC/CXX environment variables |
+| Rust extensions | ✅ | Set CC/CXX environment variables |
+| pillow | ✅ | Compile libjpeg/libpng from source |
+| lxml | ✅ | Compile libxml2/libxslt from source, requires LD_LIBRARY_PATH |
 
-## C/C++/Rust 扩展包安装
+## C/C++/Rust Extension Package Installation
 
-pip 构建 C/C++/Rust 扩展时需要设置编译器环境变量:
+When pip builds C/C++/Rust extensions, set compiler environment variables:
 
 ```bash
 export CC=/data/service/hnp/bin/clang
@@ -61,26 +61,26 @@ export CXX=/data/service/hnp/bin/clang++
 pip install <package>
 ```
 
-**已验证工作的包**:
-- bcrypt (Rust crate) — 编译成功后签名 .so
-- greenlet (C++ extension) — 编译成功后签名 .so
-- sqlalchemy — 纯 Python，依赖 greenlet
-- pillow — 编译 libjpeg-turbo 3.0.4 + libpng 1.6.48
-- lxml — 编译 libxml2 2.14.0 + libxslt 1.1.42
+**Verified working packages**:
+- bcrypt (Rust crate) — sign .so after compilation
+- greenlet (C++ extension) — sign .so after compilation
+- sqlalchemy — pure Python, depends on greenlet
+- pillow — compile libjpeg-turbo 3.0.4 + libpng 1.6.48
+- lxml — compile libxml2 2.14.0 + libxslt 1.1.42
 
-**失败的包**:
-- curses — autoconf 不识别 'ohos' triplet，需修改 config.sub
+**Failed packages**:
+- curses — autoconf doesn't recognize 'ohos' triplet, requires config.sub modification
 
-## numpy 安装步骤
+## numpy Installation Steps
 
-1. **重命名 wheel**: 平台标识 `harmonyos_hongmeng_kernel_1_12_0_aarch64`
-2. **签名扩展模块**: 后缀 `.cpython-312-aarch64-linux-gnu.so`
+1. **Rename wheel**: Platform tag `harmonyos_hongmeng_kernel_1_12_0_aarch64`
+2. **Sign extension modules**: Suffix `.cpython-312-aarch64-linux-gnu.so`
 
-## pillow 安装步骤
+## pillow Installation Steps
 
-pillow 需要先编译 libjpeg-turbo 和 libpng:
+pillow requires compiling libjpeg-turbo and libpng first:
 
-1. **编译 libjpeg-turbo 3.0.4**:
+1. **Compile libjpeg-turbo 3.0.4**:
    ```bash
    cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=/data/service/hnp/bin/clang \
      --sysroot=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot \
@@ -88,7 +88,7 @@ pillow 需要先编译 libjpeg-turbo 和 libpng:
    make && make install
    ```
 
-2. **编译 libpng 1.6.48**:
+2. **Compile libpng 1.6.48**:
    ```bash
    cmake -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=/data/service/hnp/bin/clang \
      --sysroot=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot \
@@ -96,12 +96,12 @@ pillow 需要先编译 libjpeg-turbo 和 libpng:
    make && make install
    ```
 
-3. **安装 pillow**:
+3. **Install pillow**:
    ```bash
    CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ pip install pillow
    ```
 
-4. **重命名扩展模块**:
+4. **Rename extension modules**:
    ```bash
    cd ~/.local/lib/python3.12/site-packages/PIL
    for f in *.cpython-312.so; do
@@ -109,7 +109,7 @@ pillow 需要先编译 libjpeg-turbo 和 libpng:
    done
    ```
 
-5. **签名扩展模块**:
+5. **Sign extension modules**:
    ```bash
    for f in *.cpython-312-aarch64-linux-gnu.so; do
      /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile "$f" -outFile "${f}_signed"
@@ -117,11 +117,11 @@ pillow 需要先编译 libjpeg-turbo 和 libpng:
    done
    ```
 
-## lxml 安装步骤
+## lxml Installation Steps
 
-lxml 需要先编译 libxml2, libxslt 和 libexslt:
+lxml requires compiling libxml2, libxslt and libexslt first:
 
-1. **编译 libxml2 2.14.0**:
+1. **Compile libxml2 2.14.0**:
    ```bash
    cmake -DLIBXML2_WITH_PYTHON=OFF -DCMAKE_SYSTEM_NAME=Linux \
      -DCMAKE_C_COMPILER=/data/service/hnp/bin/clang \
@@ -130,22 +130,22 @@ lxml 需要先编译 libxml2, libxslt 和 libexslt:
    make && make install
    ```
 
-2. **编译 libxslt 1.1.42** (需要手动创建 xsltconfig.h):
+2. **Compile libxslt 1.1.42** (requires manually creating xsltconfig.h):
    ```bash
-   # 创建 xsltconfig.h 添加 WITH_PROFILER=1
-   # 使用 clang 编译各模块，链接为 libxslt.so 和 libexslt.so
+   # Create xsltconfig.h adding WITH_PROFILER=1
+   # Compile modules with clang, link as libxslt.so and libexslt.so
    ```
 
-3. **安装 lxml**:
+3. **Install lxml**:
    ```bash
    CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ pip install lxml
    ```
 
-   **注意**: `$HOME/.local/lib` 已在 `LD_LIBRARY_PATH` 中配置，无需额外设置。
+   **Note**: `$HOME/.local/lib` is already in `LD_LIBRARY_PATH`, no additional setup needed.
 
-4. **重命名和签名扩展模块** (同 pillow)
+4. **Rename and sign extension modules** (same as pillow)
 
-## 扩展模块编译模板
+## Extension Module Compilation Template
 
 ```bash
 SYSROOT=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot
@@ -158,55 +158,57 @@ SYSROOT=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot
   -o module.cpython-312-aarch64-linux-gnu.so \
   source.c
 
-# 签名
+# Sign
 /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign module.so module_tmp.so
 /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
   -inFile module_tmp.so -outFile module_signed.so
 ```
 
-## 常见问题
+## FAQ
 
-### Q: 为什么不用系统 Python？
+### Q: Why not use the system Python?
 
-系统 Python (`/data/service/hnp/bin/python3`) 静态链接，不导出 Py 符号，无法加载用户目录的 .so 扩展模块。
+The system Python (`/data/service/hnp/bin/python3`) is statically linked and doesn't export Py symbols, so it cannot load .so extension modules from user directories.
 
-### Q: pip 安装的 C 扩展包为什么不工作？
+### Q: Why don't pip-installed C extension packages work?
 
-pip wheel 中的 .so 文件可能依赖 `libpython3.12.so.1.0`，本地静态编译的 Python 不提供此动态库。
+pip wheel .so files may depend on `libpython3.12.so.1.0`, which our locally compiled static Python doesn't provide as a dynamic library.
 
-### Q: 如何验证符号导出？
+### Q: How to verify symbol exports?
 
 ```bash
 nm -D ~/.local/bin/python3 | grep " T " | grep Py | wc -l
-# 输出: 1521
+# Output: 948+ (Py public API symbols)
+nm -D ~/.local/bin/python3 | grep " T " | wc -l
+# Output: 1521 (all exported symbols including _Py internal)
 ```
 
-### Q: bcrypt/greenlet 等包编译失败怎么办？
+### Q: What to do when bcrypt/greenlet packages fail to compile?
 
-设置 `CC` 和 `CXX` 环境变量指向 clang:
+Set `CC` and `CXX` environment variables to point to clang:
 ```bash
 CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ pip install bcrypt
 ```
 
-### Q: pillow 安装失败怎么办？
+### Q: What to do when pillow installation fails?
 
-pillow 需要 libjpeg 和 libpng 开发库，SDK 不提供。需从源码编译:
+pillow requires libjpeg and libpng development libraries, which the SDK doesn't provide. Compile from source:
 - libjpeg-turbo 3.0.4 → `~/.local/lib/libjpeg.a`
 - libpng 1.6.48 → `~/.local/lib/libpng16.a`
 
-### Q: lxml 报错 "libxml2.so.16 not found" 怎么办？
+### Q: What to do when lxml reports "libxml2.so.16 not found"?
 
-确保 `LD_LIBRARY_PATH` 包含 `$HOME/.local/lib`:
+Ensure `LD_LIBRARY_PATH` includes `$HOME/.local/lib`:
 ```bash
 export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 ```
 
-此设置已在 `~/.zshenv` 中配置。
+This is already configured in `~/.zshenv`.
 
-### Q: curses 模块能用吗？
+### Q: Can the curses module be used?
 
-不能。ncurses 的 configure 脚本不识别 HarmonyOS (ohos) 目标三元组，需要修改 config.sub 文件。
+No. ncurses's configure script doesn't recognize the HarmonyOS (ohos) target triplet, requiring modification of config.sub files.
 
-## 相关文档
+## Related Documentation
 
-- [python-packages-harmonyos.md](python-packages-harmonyos.md) — 包兼容性完整报告
+- [python-packages-harmonyos.md](python-packages-harmonyos.md) — Complete package compatibility report

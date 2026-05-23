@@ -2,7 +2,7 @@
 # This file is loaded by zsh on every session (.zshenv is always sourced)
 
 # Local compiled Python (with -rdynamic, can load user-dir .so extensions)
-# This Python exports 948 Py symbols, enabling extension module loading
+# This Python exports 948+ Py symbols (1521 total), enabling extension module loading
 export LOCAL_PYTHON_HOME="$HOME/.local"
 export PATH="$LOCAL_PYTHON_HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$LOCAL_PYTHON_HOME/lib:$LD_LIBRARY_PATH"

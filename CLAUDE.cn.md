@@ -97,6 +97,6 @@ HarmonyOS-Dev-Env-Skill/
 
 ## 相关文档
 
-- 目标系统规则: `rules/CLAUDE.md`
-- 代码签名指南: `docs/code-signing.md`
-- LD_LIBRARY_PATH: `docs/ld-library-path.md`
+- 目标系统规则: `rules/CLAUDE.cn.md`
+- 代码签名指南: `docs/code-signing.cn.md`
+- LD_LIBRARY_PATH: `docs/ld-library-path.cn.md`

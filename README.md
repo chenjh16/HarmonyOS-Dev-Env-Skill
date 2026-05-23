@@ -85,10 +85,6 @@ HarmonyOS-Dev-Env-Skill/
 │   ├── ipc-feasibility.cn.md
 │   ├── troubleshooting.md           # 故障排除指南
 │   └── troubleshooting.cn.md
-│   ├── code-signing.md              # 代码签名指南
-│   ├── code-signing.cn.md
-│   ├── ld-library-path.md           # 动态库路径配置
-│   └── ld-library-path.cn.md
 └── tools/                       # 各工具的构建指南和安装脚本
     ├── python/
     │   ├── build.md              # 完整构建指南
@@ -214,7 +210,7 @@ Python 必须用 `-rdynamic` 编译才能加载扩展模块：
 | Python Build | 导出 Py 符号数 | 扩展模块加载 |
 |--------------|----------------|--------------|
 | 系统 Python (静态) | 0 | Permission denied |
-| 本地 Python (-rdynamic) | 948+ | SUCCESS |
+| 本地 Python (-rdynamic) | 948+ (1521 总导出) | SUCCESS |
 
 完整流程见 `tools/python/build.md`。
 
@@ -454,7 +450,7 @@ Python must be compiled with `-rdynamic` for extension module support:
 | Python Build | Py Symbols Exported | Extension Loading |
 |--------------|---------------------|-------------------|
 | System Python (static) | 0 | Permission denied |
-| Local Python (-rdynamic) | 1521 | SUCCESS |
+| Local Python (-rdynamic) | 948+ (1521 total) | SUCCESS |
 
 See `docs/python-harmonyos.md` for complete workflow.
 

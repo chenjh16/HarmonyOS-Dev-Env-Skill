@@ -69,13 +69,12 @@
       "category": "ml-framework",
       "source": "https://github.com/pytorch/pytorch (v2.5.1)",
       "build_guide": "tools/pytorch/build.md",
-      "install_script": "tools/pytorch/install.sh",
       "install_dir": "$HOME/.local/lib/python3.12/site-packages/torch",
       "features": ["tensor ops", "nn modules", "autograd", "optimizers", "LAPACK enabled", "NumPy support", "15/15 e2e tests", "MNIST training"]
     },
     {
       "name": "llama-cpp",
-      "version": "9073",
+      "version": "b9073",
       "category": "ml-inference",
       "source": "https://github.com/ggml-org/llama.cpp",
       "build_guide": "tools/llama-cpp/build.md",
@@ -99,7 +98,6 @@
       "category": "utility",
       "source": "https://github.com/eza-community/eza",
       "build_guide": "tools/eza/build.md",
-      "install_script": "tools/eza/install.sh",
       "install_dir": "$HOME/Claude/eza-build/eza/target/release",
       "features": ["modern ls", "colors", "icons", "tree view"]
     },
@@ -109,7 +107,6 @@
       "category": "utility",
       "source": "https://github.com/sharkdp/bat",
       "build_guide": "tools/bat/build.md",
-      "install_script": "tools/bat/install.sh",
       "install_dir": "$HOME/Claude/bat-build/bat/target/release",
       "features": ["syntax highlighting", "cat replacement"]
     },
@@ -119,7 +116,6 @@
       "category": "utility",
       "source": "https://github.com/starship/starship",
       "build_guide": "tools/starship/build.md",
-      "install_script": "tools/starship/install.sh",
       "install_dir": "$HOME/Claude/starship-build/starship/target/release",
       "features": ["cross-shell prompt", "customizable"]
     },

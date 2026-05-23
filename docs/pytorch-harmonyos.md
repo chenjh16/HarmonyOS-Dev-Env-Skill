@@ -1,7 +1,7 @@
 # PyTorch v2.5.1 on HarmonyOS - Adaptation Guide
 
 > **Status**: 15/15 tests passed — fully functional (NumPy and LAPACK fixed)
-> **Date**: 2026-05-22
+> **Date**: 2026-05-23
 > **PyTorch Version**: 2.5.0a0+gita8d6afb
 
 ## Overview

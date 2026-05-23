@@ -83,9 +83,7 @@ export CLAUDE_CODE_ATTRIBUTION_HEADER=0
 # === LiteLLM provider (GLM-5 / Qwen) ===
 # LiteLLM translates Claude API calls to backend models (GLM-5, Qwen3.6-Plus).
 # Model names here are LiteLLM route names, not actual Claude model IDs.
-export ANTHROPIC_MODEL='GLM-5.1'
 export ANTHROPIC_MODEL='GLM-5'
-export ANTHROPIC_DEFAULT_OPUS_MODEL='GLM-5.1'
 export ANTHROPIC_DEFAULT_OPUS_MODEL='GLM-5'
 export ANTHROPIC_DEFAULT_SONNET_MODEL='GLM-5'
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='Qwen3.6-Plus'

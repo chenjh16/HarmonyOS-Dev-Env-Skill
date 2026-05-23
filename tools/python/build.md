@@ -304,12 +304,14 @@ python3 -m pip --version
 | Python Build | Exported Py Symbols | Extension Loading |
 |--------------|---------------------|-------------------|
 | System Python (static) | 0 | Permission denied |
-| Local Python (-rdynamic) | 948+ | SUCCESS |
+| Local Python (-rdynamic) | 948+ (1521 total) | SUCCESS |
 
 Verify with:
 ```bash
-nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
-# 948
+nm -D $HOME/.local/bin/python3 | awk '$2=="T" && $3~/^Py/' | wc -l
+# 948 (Py public API symbols)
+nm -D $HOME/.local/bin/python3 | grep " T " | wc -l
+# 1521 (all exported symbols including _Py internal)
 ```
 
 ## Installing numpy

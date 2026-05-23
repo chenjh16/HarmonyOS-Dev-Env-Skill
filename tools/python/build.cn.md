@@ -304,12 +304,14 @@ python3 -m pip --version
 | Python 构建 | 导出的 Py 符号数 | 扩展模块加载 |
 |--------------|---------------------|-------------------|
 | 系统 Python（静态） | 0 | 权限被拒绝 |
-| 本地 Python（-rdynamic） | 948+ | 成功 |
+| 本地 Python（-rdynamic） | 948+（1521 总导出） | 成功 |
 
 验证命令：
 ```bash
-nm -D $HOME/.local/bin/python3 | grep " T " | grep Py | wc -l
-# 948
+nm -D $HOME/.local/bin/python3 | awk '$2=="T" && $3~/^Py/' | wc -l
+# 948（Py 公开 API 符号）
+nm -D $HOME/.local/bin/python3 | grep " T " | wc -l
+# 1521（全部导出符号，含 _Py 内部符号）
 ```
 
 ## 安装 numpy

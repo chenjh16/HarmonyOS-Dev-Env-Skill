@@ -168,7 +168,7 @@ ImportError: dlopen() failed: Permission denied
 binary-sign-tool sign -selfSign 1 -inFile module.so -outFile module-signed.so -signAlg SHA256withECDSA
 ```
 
-2. Ensure Python compiled with `-rdynamic` (exports 1517 symbols):
+2. Ensure Python compiled with `-rdynamic` (exports 948+ Py symbols, 1521 total):
 ```bash
 python3 -c "import ctypes; print(len([s for s in dir(ctypes.pythonapi) if not s.startswith('_')]))"
 ```
@@ -330,7 +330,7 @@ export LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_L
 
 **Solution**: Enable NEON/SVE optimizations:
 ```bash
-llama-cli -m model.gguf -p "prompt" -ngl 99 -sm sleed
+llama-cli -m model.gguf -p "prompt" -ngl 0 -sm seed
 ```
 
 **Problem**: CoT Model Doesn't Reason
