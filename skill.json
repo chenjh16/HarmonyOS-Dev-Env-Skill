@@ -52,7 +52,7 @@
       "install_script": "tools/go/install.sh",
       "install_dir": "$HOME/Claude/go-build/go",
       "features": ["go", "gofmt", "GOPROXY support"]
-    },,
+    },
     {
       "name": "claude-code",
       "version": "2.1.88-ohos.1",
