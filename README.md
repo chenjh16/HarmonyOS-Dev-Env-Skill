@@ -27,23 +27,39 @@
 
 ## 📦 Skill 安装与使用
 
-本 Skill 通过 Claude Code 的 `CLAUDE.md` 规则机制生效——安装后，Agent 在每次对话中都会自动加载这些鸿蒙平台知识。
+本 Skill 遵循 Claude Code 标准 Skill 结构（`~/.claude/skills/<name>/SKILL.md`），安装后 Agent 在每次对话中自动加载鸿蒙平台知识和完整适配文档。
 
-### 方式一：全局安装（推荐）
+### 方式一：一键安装（推荐）
 
-适用于所有项目，Agent 在任何工作目录下都能获得鸿蒙知识：
+使用项目自带的安装脚本，自动将 Skill 整体复制到 `~/.claude/skills/` 目录：
 
 ```bash
 # 克隆仓库
 git clone https://github.com/chenjh16/HarmonyOS-Dev-Env-Skill.git ~/Claude/HarmonyOS-Dev-Env-Skill
 
-# 复制规则文件到 Claude Code 全局配置目录
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.md ~/.claude/CLAUDE.md
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+# 运行安装脚本
+sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
+```
 
-# 复制 SSH polyfill 和启动脚本（可选，SSH 场景必需）
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.claude/ssh-fetch-polyfill.js ~/.claude/ssh-fetch-polyfill.js
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.claude/start-claude.sh ~/.claude/start-claude.sh
+安装脚本会自动创建以下结构：
+
+```
+~/.claude/skills/harmonyos-dev-env/
+├── SKILL.md              ← Skill 定义（YAML frontmatter + 平台规则 + 工具链参考）
+│                            Agent 每次对话自动加载此文件
+├── rules_CLAUDE.md       ← 完整平台规则（供 SKILL.md 引用）
+├── rules_CLAUDE.cn.md    ← 中文版规则
+├── docs/                 ← 18 组双语适配文档（Agent 需要时主动查阅）
+│   ├── python-harmonyos.md
+│   ├── openssh-harmonyos.md
+│   └── ...
+├── scripts/              ← 工具脚本
+│   ├── sign-all.sh       ← 批量代码签名
+│   ├── verify-env.sh     ← 环境验证
+│   ├── ssh-fetch-polyfill.js ← SSH fetch polyfill
+│   └── start-claude.sh   ← Claude Code 启动脚本
+└── config/
+    └── zshenv            ← Shell 环境配置模板
 ```
 
 ### 方式二：项目级安装
@@ -51,48 +67,58 @@ cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.claude/start-claude.sh ~/.claude/sta
 仅对特定项目生效，不影响其他项目：
 
 ```bash
-# 在项目根目录下创建 .claude/ 目录
-mkdir -p <your-project>/.claude
-
-# 复制规则文件
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.md <your-project>/.claude/CLAUDE.md
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.cn.md <your-project>/.claude/CLAUDE.cn.md
+sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh --project <your-project-path>
 ```
+
+这会在 `<your-project>/.claude/skills/harmonyos-dev-env/` 下创建同样的结构。
+
+### 方式三：全局规则补充安装
+
+除了 Skill 机制外，还可以将规则文件安装到全局 `~/.claude/CLAUDE.md`（双重保障）：
+
+```bash
+cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.md ~/.claude/CLAUDE.md
+cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+```
+
+> **注意**: 方式一（Skill 安装）和方式三（CLAUDE.md 规则）是互补的。Skill 提供了可调用的 `/harmonyos-dev-env` 命令和完整文档查阅能力，而 CLAUDE.md 规则在每次对话中强制注入核心平台知识。两者同时安装效果最佳。
 
 ### 配置 Shell 环境
 
 无论哪种安装方式，都需要配置 Shell 环境让工具链可用：
 
 ```bash
-# 复制 zshenv 配置（包含所有 PATH/LD_LIBRARY_PATH/LD_PRELOAD 设置）
 cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.zshenv ~/.zshenv
 source ~/.zshenv
 ```
 
 ### 验证安装
 
-安装完成后，启动 Claude Code 并验证 Agent 是否加载了鸿蒙知识：
+安装完成后，启动 Claude Code 并验证 Skill 是否生效：
 
 ```
-# 在 Claude Code 中提问，如果 Agent 知道以下信息则说明 Skill 已生效：
+# 方式一：在 Claude Code 中直接调用 Skill
+> /harmonyos-dev-env 代码签名怎么做？
+
+# 方式二：提问测试 Agent 是否加载了鸿蒙知识
 > "HarmonyOS 上编译 C 代码需要注意什么？"
 # 预期回答应包含：代码签名、ld.bfd 封装、-B 参数、无 gcc 等
 
-# 也可以运行验证脚本：
-sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/verify-env.sh
+# 方式三：运行验证脚本
+sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh
 ```
 
 ### Skill 工作原理
 
-| 文件 | 作用 | 加载时机 |
+Claude Code 通过文件系统自动发现 Skills：
+
+| 路径 | 作用 | 加载时机 |
 |------|------|----------|
-| `~/.claude/CLAUDE.md` | 全局规则（平台特性、工具链、核心问题） | 每次对话自动加载 |
-| `~/.claude/CLAUDE.cn.md` | 中文版全局规则 | 与英文版并行加载 |
-| `rules/CLAUDE.md` | 源规则文件（供复制到全局） | 不自动加载，需复制 |
-| `config/.zshenv` | Shell PATH/LD 配置 | shell 启动时加载 |
-| `config/.claude/start-claude.sh` | Claude Code 启动脚本（含 SSH 检测） | 手动启动或 SSH 环境 |
-| `skill.json` | Skill 元数据（工具版本、文档路径） | 供 Agent 程序化查找 |
-| `docs/*.md` | 详细适配指南 | Agent 需要时主动查阅 |
+| `~/.claude/skills/<name>/SKILL.md` | Skill 定义（规则 + 文档索引） | 每次对话自动发现，用户可 `/name` 调用 |
+| `~/.claude/CLAUDE.md` | 全局规则（强制注入核心知识） | 每次对话自动加载 |
+| `SKILL.md` 中的 `docs/` 引用 | 完整适配指南 | Agent 需要时主动 Read 查阅 |
+| `SKILL.md` 中的 `scripts/` | 签名/验证/启动脚本 | Agent 执行 Bash 命令时调用 |
+| `config/zshenv` | Shell PATH/LD 配置 | shell 启动时加载（需手动 cp 到 ~/.zshenv） |
 
 ## 📋 平台特性
 
@@ -253,23 +279,39 @@ This project is a **Claude Code Skill Pack** designed specifically for HarmonyOS
 
 ## 📦 Skill Installation & Usage
 
-This Skill works through Claude Code's `CLAUDE.md` rules mechanism — once installed, the Agent automatically loads HarmonyOS platform knowledge in every conversation.
+This Skill follows the standard Claude Code Skill structure (`~/.claude/skills/<name>/SKILL.md`). Once installed, the Agent automatically loads HarmonyOS platform knowledge and full adaptation documentation in every conversation.
 
-### Option A: Global Install (Recommended)
+### Option A: One-Click Install (Recommended)
 
-Applies to all projects. The Agent gets HarmonyOS knowledge in any working directory:
+Use the project's built-in install script to copy the entire Skill pack into `~/.claude/skills/`:
 
 ```bash
 # Clone the repository
 git clone https://github.com/chenjh16/HarmonyOS-Dev-Env-Skill.git ~/Claude/HarmonyOS-Dev-Env-Skill
 
-# Copy rules to Claude Code's global config directory
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.md ~/.claude/CLAUDE.md
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+# Run the install script
+sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
+```
 
-# Copy SSH polyfill and startup script (optional, required for SSH sessions)
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.claude/ssh-fetch-polyfill.js ~/.claude/ssh-fetch-polyfill.js
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.claude/start-claude.sh ~/.claude/start-claude.sh
+The script automatically creates this structure:
+
+```
+~/.claude/skills/harmonyos-dev-env/
+├── SKILL.md              ← Skill definition (YAML frontmatter + platform rules + toolchain reference)
+│                            Auto-discovered by Agent every conversation; user can invoke via /harmonyos-dev-env
+├── rules_CLAUDE.md       ← Full platform rules (referenced by SKILL.md)
+├── rules_CLAUDE.cn.md    ← Chinese version rules
+├── docs/                 ← 18 bilingual adaptation guides (Agent reads when needed)
+│   ├── python-harmonyos.md
+│   ├── openssh-harmonyos.md
+│   └── ...
+├── scripts/              ← Utility scripts
+│   ├── sign-all.sh       ← Batch code signing
+│   ├── verify-env.sh     ← Environment verification
+│   ├── ssh-fetch-polyfill.js ← SSH fetch polyfill
+│   └── start-claude.sh   ← Claude Code startup script
+└── config/
+    └── zshenv            ← Shell environment config template
 ```
 
 ### Option B: Project-Level Install
@@ -277,48 +319,58 @@ cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.claude/start-claude.sh ~/.claude/sta
 Only affects specific projects, doesn't change global behavior:
 
 ```bash
-# Create .claude/ directory in your project root
-mkdir -p <your-project>/.claude
-
-# Copy rules files
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.md <your-project>/.claude/CLAUDE.md
-cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.cn.md <your-project>/.claude/CLAUDE.cn.md
+sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh --project <your-project-path>
 ```
+
+This creates the same structure under `<your-project>/.claude/skills/harmonyos-dev-env/`.
+
+### Option C: Global Rules Supplement
+
+In addition to the Skill mechanism, install rules to global `~/.claude/CLAUDE.md` (double guarantee):
+
+```bash
+cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.md ~/.claude/CLAUDE.md
+cp ~/Claude/HarmonyOS-Dev-Env-Skill/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+```
+
+> **Note**: Option A (Skill install) and Option C (CLAUDE.md rules) are complementary. The Skill provides an invocable `/harmonyos-dev-env` command and full documentation access, while CLAUDE.md rules force-inject core platform knowledge in every conversation. Best results with both installed.
 
 ### Configure Shell Environment
 
 Either installation method requires shell environment setup for toolchain access:
 
 ```bash
-# Copy zshenv config (includes all PATH/LD_LIBRARY_PATH/LD_PRELOAD settings)
 cp ~/Claude/HarmonyOS-Dev-Env-Skill/config/.zshenv ~/.zshenv
 source ~/.zshenv
 ```
 
 ### Verify Installation
 
-After installation, start Claude Code and verify the Agent has loaded HarmonyOS knowledge:
+After installation, start Claude Code and verify the Skill is active:
 
 ```
-# Ask Claude Code a question — if it knows these details, the Skill is active:
+# Option A: Directly invoke the Skill in Claude Code
+> /harmonyos-dev-env How does code signing work?
+
+# Option B: Test if the Agent has loaded HarmonyOS knowledge
 > "What do I need to know when compiling C code on HarmonyOS?"
 # Expected answer should mention: code signing, ld.bfd wrapper, -B flag, no gcc, etc.
 
-# Or run the verification script:
-sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/verify-env.sh
+# Option C: Run the verification script
+sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh
 ```
 
 ### How the Skill Works
 
-| File | Purpose | When Loaded |
+Claude Code auto-discovers Skills through the filesystem:
+
+| Path | Purpose | When Loaded |
 |------|---------|-------------|
-| `~/.claude/CLAUDE.md` | Global rules (platform, toolchains, core issues) | Auto-loaded every conversation |
-| `~/.claude/CLAUDE.cn.md` | Chinese version of global rules | Loaded alongside English version |
-| `rules/CLAUDE.md` | Source rules file (to copy to global) | Not auto-loaded, must be copied |
-| `config/.zshenv` | Shell PATH/LD configuration | Loaded at shell startup |
-| `config/.claude/start-claude.sh` | Claude Code startup script (with SSH detection) | Manual start or SSH environment |
-| `skill.json` | Skill metadata (tool versions, doc paths) | For programmatic Agent lookups |
-| `docs/*.md` | Detailed adaptation guides | Agent reads when needed |
+| `~/.claude/skills/<name>/SKILL.md` | Skill definition (rules + doc index) | Auto-discovered every conversation; user can invoke `/name` |
+| `~/.claude/CLAUDE.md` | Global rules (force-inject core knowledge) | Auto-loaded every conversation |
+| `docs/` references in SKILL.md | Full adaptation guides | Agent reads when needed |
+| `scripts/` references in SKILL.md | Sign/verify/start scripts | Agent calls via Bash when executing |
+| `config/zshenv` | Shell PATH/LD config | Loaded at shell startup (must manually cp to ~/.zshenv) |
 
 ## 📋 Platform Characteristics
 
