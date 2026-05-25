@@ -100,6 +100,7 @@ All third-party toolchains are configured in `$HOME/.zshenv` and auto-loaded on 
 - Dropbear: `$HOME/.local/bin` → `dropbear`, `dbclient`, `dropbearkey`, `dropbearconvert`
 - OpenSSH: `$HOME/Claude/openssh-build/openssh-prefix/bin` → `ssh`, `sshd`, `scp`, `sftp`, `ssh-add`, `ssh-agent`, `ssh-keygen`, `ssh-keyscan`; requires `LD_PRELOAD=$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so`; ssh-agent uses abstract namespace sockets (`SSH_AUTH_SOCK=abstract:<name>`)
 - `LD_LIBRARY_PATH` includes `$HOME/.rust/lib`, `/system/lib64`, and llama.cpp bin dir
+- `LD_PRELOAD` set to `$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so` (for OpenSSH sshd)
 - `SSL_CERT_FILE` set to `$HOME/.rust/cacert.pem` (for cargo crates.io access)
 - `TMPDIR` set to `$HOME/Claude/tmpdir` (because `/tmp` is read-only on HarmonyOS)
 

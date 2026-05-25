@@ -153,13 +153,44 @@ else
     fail "Dropbear not found at $DROPBEAR_PATH"
 fi
 
+# OpenSSH
+SSH_PATH="$HOME/Claude/openssh-build/openssh-prefix/bin/ssh"
+if [ -x "$SSH_PATH" ]; then
+    VERSION=$($SSH_PATH -V 2>&1 | grep -o "OpenSSH_[0-9.]*p[0-9]*" | head -1)
+    pass "$VERSION at $SSH_PATH"
+else
+    warn "OpenSSH not found at $SSH_PATH (optional)"
+fi
+
+SSHD_PATH="$HOME/Claude/openssh-build/openssh-prefix/bin/sshd"
+if [ -x "$SSHD_PATH" ]; then
+    pass "sshd at $SSHD_PATH"
+fi
+
+SCP_PATH="$HOME/Claude/openssh-build/openssh-prefix/bin/scp"
+if [ -x "$SCP_PATH" ]; then
+    pass "scp at $SCP_PATH"
+fi
+
+SSH_AGENT_PATH="$HOME/Claude/openssh-build/openssh-prefix/bin/ssh-agent"
+if [ -x "$SSH_AGENT_PATH" ]; then
+    pass "ssh-agent at $SSH_AGENT_PATH"
+fi
+
+PASSWD_COMPAT="$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so"
+if [ -f "$PASSWD_COMPAT" ]; then
+    pass "passwd_compat.so at $PASSWD_COMPAT"
+else
+    warn "passwd_compat.so not found (required for OpenSSH sshd)"
+fi
+
 # PyTorch (optional)
 echo ""
 echo "--- Optional Tools ---"
 PYTHON=$HOME/.local/bin/python3
 if [ -x "$PYTHON" ]; then
     TORCH_VERSION=$($PYTHON -c "import torch; print(torch.__version__)" 2>/dev/null || echo "not installed")
-    if [ "$TORCH_VERSION" = "2.5.0a0+gita8d6afb" ]; then
+    if [ "$TORCH_VERSION" = "2.5.0a0+gita8d6fb" ]; then
         pass "PyTorch v2.5.1 ($TORCH_VERSION)"
         # Check LAPACK support
         LAPACK=$($PYTHON -c "import torch; m=torch.randn(3,3); torch.det(m); print('OK')" 2>/dev/null || echo "FAIL")
@@ -178,7 +209,7 @@ if [ -x "$PYTHON" ]; then
     elif [ "$TORCH_VERSION" = "not installed" ]; then
         warn "PyTorch not installed"
     else
-        warn "PyTorch $TORCH_VERSION (expected 2.5.0a0+gita8d6afb)"
+        warn "PyTorch $TORCH_VERSION (expected 2.5.0a0+gita8d6fb)"
     fi
 fi
 
@@ -221,6 +252,13 @@ if [ -x "$LINKER_WRAPPER" ]; then
     pass "ld.bfd wrapper at $LINKER_WRAPPER"
 else
     warn "Linker wrapper not created (may need for clang linking)"
+fi
+
+# LD_PRELOAD (for OpenSSH)
+if [ -n "$LD_PRELOAD" ]; then
+    pass "LD_PRELOAD=$LD_PRELOAD"
+else
+    warn "LD_PRELOAD not set (required for OpenSSH sshd)"
 fi
 
 # Summary

@@ -14,7 +14,7 @@ This guide consolidates common issues and solutions for HarmonyOS development.
 | SDK linker broken | Use ld.bfd wrapper | [Linker](#linker-issues) |
 | V8 JIT crash in SSH | `node --jitless` | [SSH V8 Crash](#ssh-v8-crash) |
 | Python extension fails | Compile locally with `-rdynamic` | [Python Extensions](#python-extensions) |
-| .so loading denied | SELinux policy blocks user paths | [SELinux](#selinux-blocking) |
+| .so loading denied | Sign .so + use `-rdynamic` Python | [SELinux](#selinux-blocking) |
 | TLS certificate error | `NODE_TLS_REJECT_UNAUTHORIZED=0` | [TLS Issues](#tls-certificate) |
 
 ---
@@ -192,15 +192,20 @@ ImportError: cannot load numpy: Permission denied
 - System path .so files (`/data/service/hnp/`)
 - Pure Python packages
 - Locally compiled Python with `-rdynamic`
+- **Signed .so extension modules from `$HOME/.local/lib/`** (34/34 packages tested, all working — see [python-packages-harmonyos.md](python-packages-harmonyos.md))
+- PyTorch, numpy, pillow, lxml, bcrypt, greenlet and other compiled extensions from user-installed paths
 
-**What Doesn't**:
-- pip-installed packages with compiled extensions
-- Any .so from `/storage/Users/currentUser/`
+**What May Have Issues**:
+- .so files from arbitrary `/storage/Users/currentUser/` subpaths (not installed via pip to `$HOME/.local/`)
+- .so files without code signing
+- .so files loaded by Python without `-rdynamic` symbol exports
+
+> **Note**: With code signing + `-rdynamic` Python (948+ Py symbols exported), extension modules from user paths like `$HOME/.local/lib/python3.12/site-packages/` load correctly. The original SELinux restriction is effectively bypassed for this use case. See [selinux-analysis.md](selinux-analysis.md) for details.
 
 **Solution Options**:
-1. Use pure Python alternatives
-2. Use cloud services for data science
-3. Accept limitation for CLI development
+1. Install packages to `$HOME/.local/` (pip default) and ensure code signing
+2. Use `-rdynamic` Python build for extension module compatibility
+3. Use pure Python alternatives if signing is not feasible
 
 **Full Guide**: [selinux-analysis.md](selinux-analysis.md)
 

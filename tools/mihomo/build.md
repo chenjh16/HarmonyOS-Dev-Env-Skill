@@ -1,88 +1,90 @@
-# mihomo (Clash Meta) HarmonyOS 适配记录
+# mihomo (Clash Meta) HarmonyOS Adaptation Notes
 
-## 概述
+> **中文版本见 build.cn.md**
 
-mihomo 是 Clash Meta 的核心实现，一个功能强大的代理客户端。本文记录在 HarmonyOS 上编译、配置和运行 mihomo 的完整过程。
+## Overview
 
-## 编译过程
+mihomo is the core implementation of Clash Meta, a powerful proxy client. This document records the complete process of compiling, configuring, and running mihomo on HarmonyOS.
 
-### 1. 安装 Go 编译器
+## Build Process
 
-HarmonyOS 没有 gcc，需要下载 Go官方发行版：
+### 1. Install Go Compiler
+
+HarmonyOS has no gcc, need to download the official Go release:
 
 ```bash
-# 下载 Go 1.22.5 for Linux ARM64
+# Download Go 1.22.5 for Linux ARM64
 mkdir -p ~/Claude/go-build
 cd ~/Claude/go-build
 curl -L -o go1.22.5.linux-arm64.tar.gz "https://go.dev/dl/go1.22.5.linux-arm64.tar.gz"
 tar -xzf go1.22.5.linux-arm64.tar.gz
 ```
 
-### 2. 签名 Go 工具链
+### 2. Sign Go Toolchain
 
-HarmonyOS 要求所有 ELF 二进制文件必须签名才能执行：
+HarmonyOS requires all ELF binaries to be signed before execution:
 
 ```bash
-# 签名主二进制
+# Sign main binary
 /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
   -inFile ~/Claude/go-build/go/bin/go \
   -outFile ~/Claude/go-build/go/bin/go.signed
 mv ~/Claude/go-build/go/bin/go.signed ~/Claude/go-build/go/bin/go
 
-# 签名 gofmt
+# Sign gofmt
 /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
   -inFile ~/Claude/go-build/go/bin/gofmt \
   -outFile ~/Claude/go-build/go/bin/gofmt.signed
 mv ~/Claude/go-build/go/bin/gofmt.signed ~/Claude/go-build/go/bin/gofmt
 
-# 签名工具链中的所有编译工具
+# Sign all compilation tools in the toolchain
 for f in ~/Claude/go-build/go/pkg/tool/linux_arm64/*; do
   file "$f" | grep -q "ELF" && /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile "$f" -outFile "$f.signed" && mv "$f.signed" "$f"
 done
 
-# 添加执行权限
+# Add execution permissions
 chmod +x ~/Claude/go-build/go/bin/go ~/Claude/go-build/go/bin/gofmt
 chmod +x ~/Claude/go-build/go/pkg/tool/linux_arm64/*
 ```
 
-### 3. 克隆 mihomo 源码
+### 3. Clone mihomo Source
 
-mihomo 仓库有两个分支：
-- `main` - Python 客户端库（不是我们要的）
-- `Meta` - Clash Meta 核心（正确分支）
+The mihomo repository has two branches:
+- `main` - Python client library (not what we need)
+- `Meta` - Clash Meta core (correct branch)
 
 ```bash
 mkdir -p ~/Claude/mihomo-build
 cd ~/Claude/mihomo-build
 git clone https://github.com/MetaCubeX/mihomo.git .
-git checkout Meta  # 重要：切换到 Meta 分支
+git checkout Meta  # Important: switch to Meta branch
 ```
 
-### 4. 下载依赖
+### 4. Download Dependencies
 
-使用中国代理加速：
+Use China proxy for acceleration:
 
 ```bash
 export PATH=$HOME/Claude/go-build/go/bin:$PATH
 export GOPATH=$HOME/Claude/go-build/gopath
 export GOMODCACHE=$HOME/Claude/go-build/gomodcache
 export GOPROXY=https://goproxy.cn,direct
-export TMPDIR=$HOME/Claude/tmpdir  # HarmonyOS /tmp 不可写
+export TMPDIR=$HOME/Claude/tmpdir  # HarmonyOS /tmp is not writable
 
 go mod download
 ```
 
-### 5. 编译
+### 5. Build
 
 ```bash
-# 编译 linux-arm64 版本
+# Build linux-arm64 version
 GOARCH=arm64 GOOS=linux CGO_ENABLED=0 go build \
   -tags with_gvisor -trimpath \
   -ldflags '-X "github.com/metacubex/mihomo/constant.Version=local-20260511" -w -s -buildid=' \
   -o bin/mihomo-linux-arm64 .
 ```
 
-### 6. 签名 mihomo 二进制
+### 6. Sign mihomo Binary
 
 ```bash
 /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
@@ -92,32 +94,32 @@ mv ~/Claude/mihomo-build/bin/mihomo-linux-arm64.signed ~/Claude/mihomo-build/bin
 chmod +x ~/Claude/mihomo-build/bin/mihomo-linux-arm64
 ```
 
-验证编译结果：
+Verify build result:
 
 ```bash
 ~/Claude/mihomo-build/bin/mihomo-linux-arm64 -v
-# 输出: Mihomo Meta local-20260511 linux arm64 with go1.22.5
+# Output: Mihomo Meta local-20260511 linux arm64 with go1.22.5
 ```
 
-## 配置与运行
+## Configuration and Running
 
-### 配置文件位置
+### Configuration File Location
 
 ```
 ~/Claude/mihomo-config/
 ```
 
-主要配置文件：
-- `merged.yaml` - 合并配置（推荐使用）
-- `config.yaml` - 单订阅配置
-- `minimal.yaml` - 最小配置示例
+Main configuration files:
+- `merged.yaml` - Merged configuration (recommended)
+- `config.yaml` - Single subscription configuration
+- `minimal.yaml` - Minimal configuration example
 
-### GEOIP/GEOSITE 规则配置
+### GEOIP/GEOSITE Rule Configuration
 
-mihomo 支持 GEOIP 和 GEOSITE 规则，实现智能分流：
+mihomo supports GEOIP and GEOSITE rules for intelligent traffic routing:
 
 ```yaml
-# GeoData 配置
+# GeoData configuration
 geodata-mode: true
 geox-url:
   geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
@@ -125,14 +127,14 @@ geox-url:
   mmdb: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
 
 rules:
-  # 中国大陆直连
+  # China mainland direct connection
   - GEOSITE,cn,DIRECT
   - GEOIP,cn,DIRECT
-  # 内网地址直连
+  # Private network addresses direct connection
   - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
   - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
-  # 需要代理的服务
+  # Services requiring proxy
   - GEOSITE,google,PROXY
   - GEOSITE,github,PROXY
   - GEOSITE,youtube,PROXY
@@ -142,30 +144,30 @@ rules:
   - MATCH,PROXY
 ```
 
-规则记录数：
-| 规则 | 记录数 |
-|------|--------|
+Rule record counts:
+| Rule | Records |
+|------|---------|
 | GEOSITE cn | 113,431 |
 | GEOIP cn | 8,676 |
 | GEOSITE google | 1,113 |
 | GEOSITE github | 61 |
 
-### 下载 GEOIP/GEOSITE 数据文件
+### Download GEOIP/GEOSITE Data Files
 
 ```bash
 cd ~/Claude/mihomo-config
 
-# 下载 geoip.dat (约18MB)
+# Download geoip.dat (~18MB)
 curl -L -o geoip.dat "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
 
-# 下载 geosite.dat (约4MB)
+# Download geosite.dat (~4MB)
 curl -L -o geosite.dat "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
 
-# 下载 geoip.metadb (MMDB格式)
+# Download geoip.metadb (MMDB format)
 curl -L -o geoip.metadb "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
 ```
 
-### 完整配置示例
+### Complete Configuration Example
 
 ```yaml
 # ~/Claude/mihomo-config/merged.yaml
@@ -225,14 +227,14 @@ rules:
   - MATCH,PROXY
 ```
 
-### 启动命令
+### Startup Command
 
 ```bash
 cd ~/Claude/mihomo-config
 ~/Claude/mihomo-build/bin/mihomo-linux-arm64 -d . -f merged.yaml
 ```
 
-启动日志确认 GEOIP/GEOSITE 加载成功：
+Startup log confirms GEOIP/GEOSITE loaded successfully:
 ```
 Load GeoSite rule: cn
 Finished initial GeoSite rule cn => DIRECT, records: 113431
@@ -240,138 +242,138 @@ Load GeoIP rule: cn
 Finished initial GeoIP rule cn => DIRECT, records: 8676
 ```
 
-### 端口说明
+### Port Description
 
-| 端口 | 用途 |
-|------|------|
-| 7890 | HTTP/SOCKS5 混合代理端口 |
-| 9090 | RESTful API 端口 |
-| 1053 | DNS 服务端口 |
+| Port | Purpose |
+|------|---------|
+| 7890 | HTTP/SOCKS5 mixed proxy port |
+| 9090 | RESTful API port |
+| 1053 | DNS service port |
 
-## 系统代理配置
+## System Proxy Configuration
 
-### HarmonyOS 系统设置
+### HarmonyOS System Settings
 
-路径：设置 > 网络 >代理
+Path: Settings > Network > Proxy
 
-配置：
-- 服务器：`127.0.0.1`
-- 端口：`7890`
+Configuration:
+- Server: `127.0.0.1`
+- Port: `7890`
 
-### 国内地址 Bypass 列表
+### Domestic Address Bypass List
 
-在系统代理设置的"忽略以下主机和域的代理设置"中输入：
+In the system proxy settings "Skip proxy for these hosts and domains", enter:
 
 ```
 localhost,127.0.0.1,192.168.*,10.*,172.16.*,172.17.*,172.18.*,172.19.*,172.20.*,172.21.*,172.22.*,172.23.*,172.24.*,172.25.*,172.26.*,172.27.*,172.28.*,172.29.*,172.30.*,172.31.*,*.cn,*.baidu.com,*.qq.com,*.taobao.com,*.tmall.com,*.jd.com,*.163.com,*.126.com,*.sina.com.cn,*.weibo.com,*.zhihu.com,*.bilibili.com,*.douyin.com,*.tiktokv.com,*.ixigua.com,*.toutiao.com,*.xiaomi.com,*.huawei.com,*.aliyun.com,*.alipay.com,*.weixin.com,*.wechat.com,*.eastmoney.com,*.36kr.com,*.csdn.net
 ```
 
-### 使用 uitest 自动配置
+### Using uitest for Auto-Configuration
 
-可通过 uitest skill 自动化配置系统代理 bypass：
+You can automate system proxy bypass configuration via the uitest skill:
 
 ```bash
-# 截图查看状态
+# Screenshot to view status
 sh ~/Claude/.claude/skills/uitest/scripts/uitest_helper.sh screenshot
 
-# 获取设置应用布局
+# Get settings app layout
 sh ~/Claude/.claude/skills/uitest/scripts/uitest_helper.sh layout --focus com.huawei.hmos.settings --compact
 
-# 点击 bypass 输入区域
+# Click bypass input area
 sh ~/Claude/.claude/skills/uitest/scripts/uitest_helper.sh click_id 3462 --bundle com.huawei.hmos.settings
 
-# 输入 bypass 列表
+# Type bypass list
 sh ~/Claude/.claude/skills/uitest/scripts/uitest_helper.sh type_text "localhost,127.0.0.1,..."
 
-# 保存
+# Save
 sh ~/Claude/.claude/skills/uitest/scripts/uitest_helper.sh click_text "保存" --bundle com.huawei.hmos.settings
 ```
 
-## 免费订阅源
+## Free Subscription Sources
 
-### GitHub 免费节点项目
+### GitHub Free Node Projects
 
-| 项目 |订阅链接 | 说明 |
-|------|---------|------|
-| Pawdroid/Free-servers | `https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub` | 每6小时更新 |
-| crossxx-labs/free-proxy | `https://clash.crossxx.com/sub/vmess/xxx` | 有每日额度限制 |
+| Project | Subscription Link | Description |
+|---------|-------------------|-------------|
+| Pawdroid/Free-servers | `https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub` | Updated every 6 hours |
+| crossxx-labs/free-proxy | `https://clash.crossxx.com/sub/vmess/xxx` | Has daily quota limit |
 
-### 解析订阅链接
+### Parsing Subscription Links
 
-订阅链接通常是 Base64 编码的节点列表：
+Subscription links are usually Base64-encoded node lists:
 
 ```bash
-# 解码 vmess 链接
-echo 'base64编码内容' | base64 -d
+# Decode vmess link
+echo 'base64-encoded-content' | base64 -d
 
-# vmess 链接格式：vmess://base64(json配置)
-# json 包含：add(服务器), port(端口), id(uuid), net(网络类型)等
+# vmess link format: vmess://base64(json config)
+# json contains: add(server), port, id(uuid), net(network type), etc.
 ```
 
-## API 使用
+## API Usage
 
-查看代理状态：
+View proxy status:
 
 ```bash
 curl http://127.0.0.1:9090/proxies
 ```
 
-切换节点：
+Switch node:
 
 ```bash
 curl -X PUT "http://127.0.0.1:9090/proxies/PROXY" \
   -H "Content-Type: application/json" \
-  -d '{"name":"节点名称"}'
+  -d '{"name":"node-name"}'
 ```
 
-## 已解决的问题
+## Resolved Issues
 
-### 1. MMDB 加载失败
+### 1. MMDB Loading Failure
 
-症状：`MMDB invalid, remove and download`
+Symptom: `MMDB invalid, remove and download`
 
-解决方案：使用不包含 `GEOIP` 规则的配置文件，避免依赖 GeoIP 数据库。
+Solution: Use a configuration file that does not include `GEOIP` rules, avoiding dependency on the GeoIP database.
 
-### 2. Go 工具链权限拒绝
+### 2. Go Toolchain Permission Denied
 
-症状：`fork/exec ... permission denied`
+Symptom: `fork/exec ... permission denied`
 
-解决方案：签名 Go 工具链中的所有 ELF 二进制文件，包括 `pkg/tool/linux_arm64/` 目录下的编译工具。
+Solution: Sign all ELF binaries in the Go toolchain, including compilation tools in the `pkg/tool/linux_arm64/` directory.
 
-### 3. /tmp 不可写
+### 3. /tmp Not Writable
 
-症状：Go 编译过程中临时文件写入失败
+Symptom: Go compilation temporary file write failure
 
-解决方案：设置 `TMPDIR=$HOME/Claude/tmpdir`
+Solution: Set `TMPDIR=$HOME/Claude/tmpdir`
 
-### 4. 依赖下载超时
+### 4. Dependency Download Timeout
 
-症状：`Get "https://proxy.golang.org/..." timeout`
+Symptom: `Get "https://proxy.golang.org/..." timeout`
 
-解决方案：使用中国代理 `GOPROXY=https://goproxy.cn,direct`
+Solution: Use China proxy `GOPROXY=https://goproxy.cn,direct`
 
-## 文件位置总结
+## File Location Summary
 
-| 文件 | 路径 |
+| File | Path |
 |------|------|
-| Go 编译器 | `~/Claude/go-build/go/` |
-| mihomo 二进制 | `~/Claude/mihomo-build/bin/mihomo-linux-arm64` |
-| mihomo 配置 | `~/Claude/mihomo-config/minimal.yaml` |
-| Go 模块缓存 | `~/Claude/go-build/gomodcache/` |
+| Go compiler | `~/Claude/go-build/go/` |
+| mihomo binary | `~/Claude/mihomo-build/bin/mihomo-linux-arm64` |
+| mihomo config | `~/Claude/mihomo-config/minimal.yaml` |
+| Go module cache | `~/Claude/go-build/gomodcache/` |
 
-## 测试验证
+## Test Verification
 
 ```bash
-# 测试国外网站（走代理）
+# Test international website (via proxy)
 curl --proxy http://127.0.0.1:7890 https://www.google.com -w "%{http_code}\n"
-#期望输出: 200
+# Expected output: 200
 
-# 测试国内网站（系统bypass生效，浏览器直连）
-# 打开浏览器访问 https://www.baidu.com
+# Test domestic website (system bypass active, browser direct connection)
+# Open browser and visit https://www.baidu.com
 ```
 
-## 参考链接
+## Reference Links
 
 - [mihomo GitHub](https://github.com/MetaCubeX/mihomo)
-- [Go 官方下载](https://go.dev/dl/)
-- [Pawdroid 免费节点](https://github.com/Pawdroid/Free-servers)
+- [Go Official Download](https://go.dev/dl/)
+- [Pawdroid Free Nodes](https://github.com/Pawdroid/Free-servers)

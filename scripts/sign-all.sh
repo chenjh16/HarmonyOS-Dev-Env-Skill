@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # sign-all.sh - Batch signing script for HarmonyOS ELF binaries
 # Usage: ./sign-all.sh <directory>
 #

@@ -249,7 +249,7 @@ cmake -S . -B build \
 |------|-------|
 | 模型 | Qwen3.5-9B Q4_K_M (5.5 GiB) |
 | 架构 | qwen35（混合 SSM+Attention）|
-| CoT 支持 | 使用 `mosphalous` 标签进行推理 |
+| CoT 支持 | 使用 `<think>` 标签进行推理 |
 | 平台 | HarmonyOS aarch64，20 核 |
 
 ### 9.2 推理预算参数

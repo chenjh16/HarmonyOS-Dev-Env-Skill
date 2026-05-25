@@ -52,7 +52,7 @@
       "install_script": "tools/go/install.sh",
       "install_dir": "$HOME/Claude/go-build/go",
       "features": ["go", "gofmt", "GOPROXY support"]
-    },
+    },,
     {
       "name": "claude-code",
       "version": "2.1.88-ohos.1",
@@ -65,7 +65,7 @@
     },
     {
       "name": "pytorch",
-      "version": "2.5.1",
+      "version": "2.5.1 (internal: 2.5.0a0+gita8d6fb)",
       "category": "ml-framework",
       "source": "https://github.com/pytorch/pytorch (v2.5.1)",
       "build_guide": "tools/pytorch/build.md",

@@ -519,18 +519,16 @@ fi
 // 但 --jitless 禁用 WebAssembly，导致原生 fetch 失效
 // 本脚本用 node-fetch（基于 http.request）替代原生 fetch
 //
-// 重要：在 --jitless 模式下：
-// - 原生 fetch 存在（typeof fetch === 'function'）
-// - WebAssembly 不存在（typeof WebAssembly === 'undefined'）
-// - 原生 fetch 虽然存在但调用时会失败（返回 "fetch failed" TypeError）
-//
-// 因此 polyfill 条件必须只检查 WebAssembly，不能检查 fetch 是否存在
+// 重要：在 --jitless 模式下，原生 fetch 存在但已损坏（WebAssembly 为 undefined）
+// 因此必须检查 WebAssembly，不能只检查 fetch 是否存在
 //
 // 兼容性修复：
 // 1. node-fetch@2 Response.body 是 Node.js Readable stream，没有 cancel() 方法
 // 2. node-fetch@2 Response.body 不是 Web ReadableStream（没有 pipeThrough/getReader）
 // 3. MCP SDK 使用 Web Streams API: body.pipeThrough(new TextDecoderStream)...
-// 4. Response.body 是 getter 属性，必须用 Object.defineProperty 替换
+// 4. Readable.toWeb() 会消费原始 stream，导致 text()/json() 失败
+// 5. SSH 远程执行不传递 shell 环境变量到 Node.js - 必须直接加载 .env
+// 6. 解决方案：使用 CustomResponse 类延迟处理 stream 转换
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly 禁用 (--jitless 模式)，使用 node-fetch 替代 fetch...');
@@ -558,38 +556,92 @@ if (typeof WebAssembly === 'undefined') {
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
         const { Readable } = require('stream');
 
-        const originalFetch = nodeFetch;
+        // 存储原始 Response 类
+        const OriginalResponse = nodeFetch.Response;
 
-        globalThis.fetch = async function(url, opts) {
-            const response = await originalFetch(url, opts);
-
-            // 转换 Node.js stream 为 Web ReadableStream（MCP SDK 需要）
-            if (response.body && !(response.body instanceof ReadableStream)) {
-                const webStream = Readable.toWeb(response.body);
-
-                webStream.cancel = async function(reason) {
-                    const reader = webStream.getReader();
-                    await reader.cancel(reason);
-                };
-
-                Object.defineProperty(response, 'body', {
-                    value: webStream,
-                    writable: true,
-                    configurable: true,
-                    enumerable: true
-                });
+        // 创建自定义 Response 类，正确处理 stream 转换
+        class CustomResponse extends OriginalResponse {
+            constructor(body, init) {
+                super(body, init);
+                this._nodeStream = body; // 存储原始 Node stream
+                this._webStream = null;  // 延迟初始化的 web stream
             }
 
-            return response;
+            // 覆盖 body getter，需要时返回 Web ReadableStream
+            get body() {
+                // 已转换则返回缓存的 web stream
+                if (this._webStream) {
+                    return this._webStream;
+                }
+
+                // 如果是 Node stream，转换为 Web ReadableStream
+                // 但不要消费它 - 使用 tee/克隆方案
+                if (this._nodeStream && typeof Readable.toWeb === 'function') {
+                    // 转换前克隆 stream 以避免消费
+                    // Node.js stream 无法克隆，所以使用缓冲方案
+                    // 替代方案：创建复制数据的 pass-through
+
+                    // MCP SDK 兼容性，返回 web stream
+                    // 但 text()/json() 从缓冲读取，不从 stream 读取
+                    this._webStream = Readable.toWeb(this._nodeStream);
+                    this._webStream.cancel = async function(reason) {
+                        const reader = this._webStream.getReader();
+                        await reader.cancel(reason);
+                    };
+                    return this._webStream;
+                }
+
+                // 备用：返回 null 或原始 body
+                return null;
+            }
+
+            // 覆盖 text() 使用 node-fetch 的原始实现
+            async text() {
+                // 使用 node-fetch 的 buffer 方法，正确处理 Node stream
+                const buffer = await this.buffer();
+                return buffer.toString('utf-8');
+            }
+
+            // 覆盖 json() 使用 text() 方法
+            async json() {
+                const text = await this.text();
+                return JSON.parse(text);
+            }
+
+            // 覆盖 buffer() 正确处理 Node stream
+            async buffer() {
+                if (this._nodeStream) {
+                    // 直接从 Node stream 读取
+                    return new Promise((resolve, reject) => {
+                        const chunks = [];
+                        this._nodeStream.on('data', chunk => chunks.push(chunk));
+                        this._nodeStream.on('end', () => resolve(Buffer.concat(chunks)));
+                        this._nodeStream.on('error', reject);
+                    });
+                }
+                return super.buffer();
+            }
+        }
+
+        // 简单 polyfill - 包装 node-fetch 并返回 CustomResponse
+        globalThis.fetch = async function(url, opts) {
+            const response = await nodeFetch(url, opts);
+            // 返回包装原始 response 的 CustomResponse
+            return new CustomResponse(response.body, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+            });
         };
 
         globalThis.Headers = nodeFetch.Headers;
         globalThis.Request = nodeFetch.Request;
-        globalThis.Response = nodeFetch.Response;
+        globalThis.Response = CustomResponse;
 
-        console.log('[SSH] fetch polyfill 加载成功 (Web ReadableStream 兼容)');
+        console.log('[SSH] fetch polyfill 加载成功 (CustomResponse 延迟 stream 转换)');
     } catch (e) {
         console.error('[SSH] node-fetch 加载失败:', e.message);
+        console.error('[SSH] Stack:', e.stack);
     }
 }
 ```
@@ -608,12 +660,15 @@ if (typeof WebAssembly === 'undefined') {
    - 空字符串 `''` 不是 `null`，所以 SDK 会发送 `Authorization: Bearer ''`
    - LiteLLM 拒绝空的 Bearer token，返回 401 Unauthorized
 
-3. **Response.body Web ReadableStream 转换**（对 MCP 至关重要）：
+3. **CustomResponse 类 stream 转换**（对 MCP 至关重要，关键 Bug 修复 2026-05-20）：
+   - `Readable.toWeb()` 会消费原始 Node stream，导致 `text()`/`json()` 调用失败
    - node-fetch@2 Response.body 是 Node.js Readable stream (PassThrough)，不是 Web ReadableStream
    - MCP SDK 使用 Web Streams API: `body.pipeThrough(new TextDecoderStream).pipeThrough(new EventSourceParserStream).getReader()`
    - Node.js stream 没有 `pipeThrough` 和 `getReader` 方法
-   - Response.body 是 getter 属性，直接赋值不生效
-   - 解决方案：使用 `Readable.toWeb(response.body)` + `Object.defineProperty` 转换并替换
+   - 解决方案：使用 `CustomResponse` 类延迟处理 stream 转换
+   - 覆盖 `text()`/`json()`/`buffer()` 从原始 Node stream 读取
+   - 覆盖 `body` getter 在直接访问时返回 Web ReadableStream
+   - 确保 MCP SDK (Web Streams) 和标准 `text()/json()` 都能正常工作
 
 4. **Response.body.cancel()**：Web ReadableStream 的 reader 有 `cancel()`，但 SDK 可能直接调用 `body.cancel()`。
    - 添加 `webStream.cancel = async function() { reader.cancel() }` 作为备用

@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # llama.cpp Build Script for HarmonyOS
 # Builds llama.cpp with NEON/SVE optimization
 #
@@ -114,13 +114,15 @@ if [ "$NO_OPTIMIZE" = true ]; then
         -DLLAMA_BUILD_SERVER=ON \
         -DBUILD_SHARED_LIBS=OFF
 else
+    # IMPORTANT: Do NOT use -B linker wrapper in CMAKE_C_FLAGS for optimized build!
+    # It interferes with CMake try_run() tests, causing ARM feature detection to fail.
+    # Only use linker wrapper in CMAKE_EXE_LINKER_FLAGS (link phase only).
     $CMAKE -S "$INSTALL_DIR" -B "$BUILD_DIR" \
         -GNinja \
         -DCMAKE_C_COMPILER=$CLANG \
         -DCMAKE_CXX_COMPILER="${CLANG}++" \
-        -DCMAKE_C_FLAGS="-B$LINKER_WRAPPER_DIR" \
-        -DCMAKE_CXX_FLAGS="-B$LINKER_WRAPPER_DIR" \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_EXE_LINKER_FLAGS="-B$LINKER_WRAPPER_DIR" \
         -DGGML_NATIVE=ON \
         -DGGML_LLAMAFILE=ON \
         -DGGML_BLAS=OFF \
@@ -129,7 +131,8 @@ else
         -DGGML_VULKAN=OFF \
         -DLLAMA_BUILD_TESTS=OFF \
         -DLLAMA_BUILD_SERVER=ON \
-        -DBUILD_SHARED_LIBS=OFF
+        -DBUILD_SHARED_LIBS=OFF \
+        -DGGML_CCACHE=OFF
 fi
 
 $NINJA -C "$BUILD_DIR"

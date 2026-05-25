@@ -313,9 +313,16 @@ find $PYTORCH_BUILD/confu-deps/cpuinfo/CMakeFiles/cpuinfo.dir/src -name "*.o" -t
 **解决方案**: 创建补充共享库 (`libtorch_supplement.so`) 提供缺失符号的 stub 实现，并通过 `patchelf --add-needed` 将其添加为 libtorch_python.so 的 NEEDED 依赖：
 
 ```bash
-clang++ -B$HOME/Claude/lib/linker_wrapper -shared -o libtorch_supplement.so torch_supplement.o
+# 1. 编译补充库
+clang++ -B$HOME/Claude/lib/linker_wrapper -shared \
+  -o libtorch_supplement.so torch_supplement.o
+
+# 2. 添加为 libtorch_python.so 的 NEEDED 依赖
 patchelf --add-needed libtorch_supplement.so libtorch_python.so
+
+# 3. 签名并安装两个库
 binary-sign-tool sign -selfSign 1 -keyAlias "OpenHarmony" -inFile libtorch_supplement.so -outFile signed
+binary-sign-tool sign -selfSign 1 -keyAlias "OpenHarmony" -inFile libtorch_python.so -outFile signed
 ```
 
 ### 15. NEEDED 库路径格式差异（patchelf 修复）
@@ -330,6 +337,8 @@ for f in lib/*.so; do
   patchelf --replace-needed lib/libtorch_cpu.so libtorch_cpu.so $f
   patchelf --replace-needed lib/libtorch.so libtorch.so $f
   patchelf --replace-needed lib/libc10.so libc10.so $f
+  patchelf --replace-needed lib/libshm.so libshm.so $f
+  patchelf --replace-needed lib/libtorch_python.so libtorch_python.so $f
 done
 ```
 

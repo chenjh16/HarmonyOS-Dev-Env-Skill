@@ -43,12 +43,21 @@ SELinux status:
 - File read/write/execute permissions ✓
 - System Python extensions ✓
 - Pure Python packages ✓
+- **Signed .so extension modules from `$HOME/.local/lib/`** ✓ (resolved via code signing + `-rdynamic` Python)
+- **pip-installed packages with compiled extensions** ✓ (34/34 tested, all working from `$HOME/.local/lib/python3.12/site-packages/`)
 
-**Not Working**:
-- dlopen() from user paths ✗
-- Loading .so even with correct file permissions ✗
+**Historical Issues (Resolved)**:
+The following items previously did not work but have been **resolved** via `-rdynamic` Python + code signing:
+
+| Historical Issue | Resolution | Date |
+|-----------------|------------|------|
+| dlopen() from user paths | Works with signed .so + `-rdynamic` Python | 2026-05-22 |
+| Loading .so even with correct file permissions | Works after code signing | 2026-05-22 |
+| Code signing doesn't help (original assessment) | Code signing IS required; combined with `-rdynamic` it resolves the issue | 2026-05-22 |
+
+**Still Not Working**:
 - SELinux label modification (setfattr fails) ✗
-- Code signing (doesn't help) ✗
+- .so loading from arbitrary non-user-installed paths (e.g., random `/storage/Users/currentUser/` subdirectories without proper installation) ✗
 
 ### 4. Technical Details
 

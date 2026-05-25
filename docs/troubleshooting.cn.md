@@ -14,7 +14,7 @@
 | SDK 链接器损坏 | 使用 ld.bfd 包装器 | [链接器](#链接器问题) |
 | SSH 中 V8 JIT 崩溃 | `node --jitless` | [SSH V8 崩溃](#ssh-v8-崩溃) |
 | Python 扩展失败 | 本地编译带 `-rdynamic` | [Python 扩展](#python-扩展) |
-| .so 加载拒绝 | SELinux 策略阻止用户路径 | [SELinux](#selinux-阻止) |
+| .so 加载拒绝 | 签名 .so + 使用 `-rdynamic` Python | [SELinux](#selinux-阻止) |
 | TLS 证书错误 | `NODE_TLS_REJECT_UNAUTHORIZED=0` | [TLS 问题](#tls-证书) |
 
 ---
@@ -192,15 +192,20 @@ ImportError: cannot load numpy: Permission denied
 - 系统路径 .so 文件 (`/data/service/hnp/`)
 - 纯 Python 包
 - 本地编译带 `-rdynamic` 的 Python
+- **从 `$HOME/.local/lib/` 加载的签名 .so 扩展模块**（34/34 包测试全部通过 — 见 [python-packages-harmonyos.cn.md](python-packages-harmonyos.cn.md)）
+- PyTorch、numpy、pillow、lxml、bcrypt、greenlet 等从用户安装路径加载的编译扩展
 
-**不可用**:
-- pip 安装的带编译扩展包
-- `/storage/Users/currentUser/` 下的任何 .so
+**可能有问题**:
+- 从 `/storage/Users/currentUser/` 其他子路径加载的 .so 文件（未通过 pip 安装到 `$HOME/.local/`）
+- 未进行代码签名的 .so 文件
+- 由不带 `-rdynamic` 符号导出的 Python 加载的 .so 文件
+
+> **注意**: 配合代码签名 + `-rdynamic` Python（导出 948+ Py 符号），从用户路径 `$HOME/.local/lib/python3.12/site-packages/` 加载的扩展模块可正常工作。原始 SELinux 限制在此场景下已被有效绕过。详见 [selinux-analysis.cn.md](selinux-analysis.cn.md)。
 
 **解决方案选项**:
-1. 使用纯 Python 替代
-2. 数据科学使用云服务
-3. CLI 开发接受此限制
+1. 将包安装到 `$HOME/.local/`（pip 默认路径）并确保代码签名
+2. 使用 `-rdynamic` Python 构建以保证扩展模块兼容性
+3. 如无法签名，使用纯 Python 替代方案
 
 **完整指南**: [selinux-analysis.cn.md](selinux-analysis.cn.md)
 

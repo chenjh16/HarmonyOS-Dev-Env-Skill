@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # Python 3.12.8 Installation Script for HarmonyOS
 # This script builds Python from source with -rdynamic for extension module support
 #

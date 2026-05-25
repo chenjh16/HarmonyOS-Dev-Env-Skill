@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # mihomo (Clash Meta) Build Script for HarmonyOS
 # Builds mihomo proxy from source using Go
 #

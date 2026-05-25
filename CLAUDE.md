@@ -26,6 +26,10 @@ HarmonyOS-Dev-Env-Skill/
 │   │   ├── build.md
 │   │   ├── build.cn.md
 │   │   └── install.sh
+│   ├── go/
+│   │   ├── build.md
+│   │   ├── build.cn.md
+│   │   └── install.sh
 │   └── ...
 ├── config/                # Configuration templates
 │   ├── .zshenv
@@ -80,6 +84,7 @@ All documentation files follow bilingual naming:
 When documenting tool adaptations, always cover:
 
 1. **Code Signing**: All ELF binaries must be signed
+2. **PyTorch Version Note**: Labeled as v2.5.1 (git tag), internal version string is 2.5.0a0+gita8d6fb (pre-release marker) — same code
 2. **/tmp Read-only**: Use $HOME/Claude/tmpdir
 3. **LD_LIBRARY_PATH**: /usr/lib must come first
 4. **Linker Wrapper**: SDK's lld broken, use ld.bfd wrapper

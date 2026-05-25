@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # Go 1.22.5 Installation Script for HarmonyOS
 # Downloads prebuilt Go toolchain and signs all binaries
 #

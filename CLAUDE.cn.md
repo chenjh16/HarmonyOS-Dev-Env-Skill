@@ -26,6 +26,10 @@ HarmonyOS-Dev-Env-Skill/
 │   │   ├── build.md
 │   │   ├── build.cn.md
 │   │   └── install.sh
+│   ├── go/
+│   │   ├── build.md
+│   │   ├── build.cn.md
+│   │   └── install.sh
 │   └── ...
 ├── config/                # 配置模板
 │   ├── .zshenv
@@ -80,6 +84,7 @@ HarmonyOS-Dev-Env-Skill/
 记录工具适配时，必须覆盖：
 
 1. **代码签名**: 所有 ELF 二进制必须签名
+2. **PyTorch 版本说明**: 标注为 v2.5.1（git tag），内部版本字符串为 2.5.0a0+gita8d6fb（pre-release 标记），两者指向同一代码
 2. **/tmp 只读**: 使用 $HOME/Claude/tmpdir
 3. **LD_LIBRARY_PATH**: /usr/lib 必须在最前面
 4. **链接器封装**: SDK 的 lld 不工作，使用 ld.bfd 封装

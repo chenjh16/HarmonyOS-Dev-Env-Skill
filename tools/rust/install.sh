@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # Rust 1.95.0 Installation Script for HarmonyOS
 # Downloads and installs Rust toolchain with official ohos target
 #

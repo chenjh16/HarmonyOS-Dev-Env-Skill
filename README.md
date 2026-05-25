@@ -129,6 +129,7 @@ source ~/.zshenv
 ./tools/llama-cpp/install.sh # llama.cpp (NEON/SVE 优化)
 ./tools/mihomo/install.sh   # mihomo (Clash Meta 代理)
 ./tools/dropbear/install.sh # Dropbear SSH
+./tools/openssh/build.md    # OpenSSH (需手动补丁+构建)
 ```
 
 ## 文档索引
@@ -266,6 +267,7 @@ source ~/.zshenv
 ./tools/llama-cpp/install.sh # llama.cpp (NEON/SVE optimization)
 ./tools/mihomo/install.sh   # mihomo (Clash Meta proxy)
 ./tools/dropbear/install.sh # Dropbear SSH
+./tools/openssh/build.md    # OpenSSH (manual patches + build required)
 ```
 
 ## Documentation Index

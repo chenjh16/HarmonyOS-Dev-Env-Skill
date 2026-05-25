@@ -1,24 +1,26 @@
-# starship HarmonyOS 适配记录
+# starship HarmonyOS Adaptation Notes
 
-## 基本信息
+> **中文版本见 build.cn.md**
 
-- **项目**: starship — 跨 shell 的现代命令行提示符
-- **版本**: v1.25.1
-- **源码**: `https://github.com/starship-community/starship` (通过 gh-proxy.com 克隆)
-- **构建目录**: `/storage/Users/currentUser/Claude/starship-build/starship/`
-- **二进制路径**: `/storage/Users/currentUser/Claude/starship-build/starship/target/release/starship`
-- **配置路径**: `/data/storage/el2/base/haps/entry/files/starship/starship.toml`
-- **编译时间**: ~6 分钟 (release profile)
+## Basic Info
 
-## 构建流程
+- **Project**: starship — cross-shell modern command-line prompt
+- **Version**: v1.25.1
+- **Source**: `https://github.com/starship-community/starship` (cloned via gh-proxy.com)
+- **Build directory**: `/storage/Users/currentUser/Claude/starship-build/starship/`
+- **Binary path**: `/storage/Users/currentUser/Claude/starship-build/starship/target/release/starship`
+- **Config path**: `/data/storage/el2/base/haps/entry/files/starship/starship.toml`
+- **Build time**: ~6 minutes (release profile)
 
-### 1. 克隆源码
+## Build Process
+
+### 1. Clone Source
 
 ```bash
 git clone https://gh-proxy.com/https://github.com/starship-community/starship.git starship-build/starship
 ```
 
-### 2. Cargo 配置
+### 2. Cargo Configuration
 
 `.cargo/config.toml`:
 ```toml
@@ -30,27 +32,27 @@ TMPDIR = "/storage/Users/currentUser/Claude/tmpdir"
 CC = "/data/service/hnp/bin/clang"
 ```
 
-### 3. errno crate 修补 (关键!)
+### 3. errno Crate Patching (Critical!)
 
-**问题**: HarmonyOS 使用 musl libc，不支持 `strerror_r` 函数（只有 `strerror`）。
-但 errno crate 在 `target_os = "linux"` (ohos 继承此标识) 条件下调用 `strerror_r`，
-链接时报错 `undefined symbol: __xpg_strerror_r`。
+**Problem**: HarmonyOS uses musl libc, which does not support the `strerror_r` function (only `strerror`).
+However, the errno crate calls `strerror_r` under the `target_os = "linux"` condition (ohos inherits this identifier),
+resulting in a link-time error: `undefined symbol: __xpg_strerror_r`.
 
-**修补**: 修改 cargo registry 中 errno crate 的 unix.rs，将 `strerror_r` 替换为 `strerror`。
+**Patch**: Modify the errno crate's unix.rs in the cargo registry, replacing `strerror_r` with `strerror`.
 
-涉及三个版本的 errno crate:
+Three versions of the errno crate are affected:
 - `errno-0.2.8/src/unix.rs`
 - `errno-0.3.10/src/unix.rs`
 - `errno-0.3.14/src/unix.rs`
 
-修改要点:
-1. `with_description()` 函数：用 `CStr::from_ptr(strerror(err.0))` 替代 `strerror_r` 的缓冲区写入模式
-2. `STRERROR_NAME` 常量：`"strerror_r"` → `"strerror"`
-3. extern 块：将 `strerror_r` extern 声明替换为 `fn strerror(errnum: c_int) -> *mut c_char`
-4. import：移除 `strerror_r`/`size_t`，添加 `c_char`
+Key modifications:
+1. `with_description()` function: replace `strerror_r` buffer-write pattern with `CStr::from_ptr(strerror(err.0))`
+2. `STRERROR_NAME` constant: `"strerror_r"` -> `"strerror"`
+3. extern block: replace `strerror_r` extern declaration with `fn strerror(errnum: c_int) -> *mut c_char`
+4. import: remove `strerror_r`/`size_t`, add `c_char`
 
-**注意**: 修补 cargo registry 缓存后需手动清除 target/deps 中 errno 相关的 .rlib/.rmeta 文件，
-否则 cargo 不会重新编译已缓存的 crate。
+**Note**: After patching the cargo registry cache, you must manually remove errno-related .rlib/.rmeta files in target/deps,
+otherwise cargo will not recompile the cached crate.
 
 ```bash
 rm -f target/release/deps/*errno*
@@ -58,7 +60,7 @@ rm -f target/release/deps/*starship*
 cargo build --release
 ```
 
-### 4. 代码签名
+### 4. Code Signing
 
 ```bash
 binary-sign-tool sign -selfSign 1 \
@@ -68,56 +70,56 @@ mv target/release/starship-signed target/release/starship
 chmod +x target/release/starship
 ```
 
-### 5. PATH 与环境变量配置
+### 5. PATH and Environment Variable Configuration
 
-`.zshenv` 中添加:
+Add to `.zshenv`:
 ```bash
 export STARSHIP_HOME="$HOME/Claude/starship-build/starship/target/release"
 export PATH="$STARSHIP_HOME:$PATH"
 export STARSHIP_CONFIG="/data/storage/el2/base/haps/entry/files/starship/starship.toml"
 ```
 
-### 6. zsh 提示符配置
+### 6. zsh Prompt Configuration
 
-`.zshrc` 中将原来的 `PROMPT='%m:%~%# '` 替换为:
+In `.zshrc`, replace the original `PROMPT='%m:%~%# '` with:
 ```bash
 eval "$(starship init zsh)"
 ```
 
-### 7. starship 配置文件
+### 7. starship Configuration File
 
 `/data/storage/el2/base/haps/entry/files/starship/starship.toml`:
-- `command_timeout = 5000` (git 命令在 HarmonyOS 上可能较慢)
-- 精简 format: directory + git_branch + git_status + git_state + rust + cmd_duration + character
-- 禁用 right_format (简化终端显示)
+- `command_timeout = 5000` (git commands may be slower on HarmonyOS)
+- Streamlined format: directory + git_branch + git_status + git_state + rust + cmd_duration + character
+- Disable right_format (simplify terminal display)
 
-## 端到端测试结果
+## End-to-End Test Results
 
-| 测试项 | 结果 |
-|--------|------|
-| `starship --version` | ✅ starship 1.25.1 |
-| `starship --help` | ✅ 完整帮助输出 |
-| `starship init zsh` | ✅ 输出 zsh 初始化脚本 |
-| `starship prompt` | ✅ 输出带颜色的提示符 (directory + git + rust + character) |
-| `starship module directory` | ✅ 目录模块 |
-| `starship module git_branch` | ✅ Git 分支模块 |
-| `starship preset` | ✅ 预设配置可用 |
-| `starship timings` | ✅ 模块计时功能 |
+| Test Item | Result |
+|-----------|--------|
+| `starship --version` | starship 1.25.1 |
+| `starship --help` | Full help output |
+| `starship init zsh` | Outputs zsh initialization script |
+| `starship prompt` | Outputs colored prompt (directory + git + rust + character) |
+| `starship module directory` | Directory module |
+| `starship module git_branch` | Git branch module |
+| `starship preset` | Preset configuration available |
+| `starship timings` | Module timing feature |
 
-## 遇到的问题与解决方案
+## Problems Encountered and Solutions
 
-| 问题 | 原因 | 解决方案 |
-|------|------|----------|
-| `undefined symbol: __xpg_strerror_r` | musl libc 不提供 strerror_r，ohos 继承 linux target_os 导致 errno crate 使用 strerror_r | 修补 errno crate 源码，改用 strerror |
-| cargo 不重新编译修补后的 crate | target/deps 缓存了旧 .rlib | 手动 rm errno 相关的 .rlib/.rmeta 文件 |
-| `permission denied` 运行二进制 | 签名后文件权限丢失 | `chmod +x` 恢复执行权限 |
-| git 命令超时警告 | HarmonyOS 上 git 命令可能较慢 | 配置 `command_timeout = 5000` |
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| `undefined symbol: __xpg_strerror_r` | musl libc does not provide strerror_r; ohos inherits linux target_os causing errno crate to use strerror_r | Patch errno crate source code, use strerror instead |
+| cargo does not recompile patched crate | target/deps caches old .rlib | Manually rm errno-related .rlib/.rmeta files |
+| `permission denied` running binary | File permissions lost after signing | `chmod +x` to restore execution permissions |
+| git command timeout warning | git commands may be slower on HarmonyOS | Configure `command_timeout = 5000` |
 
-## 与 zsh 集成
+## Integration with zsh
 
-starship 通过 `eval "$(starship init zsh)"` 方式集成到 zsh，该命令定义了:
-- `starship_prompt_func` — 绘制提示符的函数
-- `precmd` / `preexec` — 命令计时钩子
-- `STARSHIP_START_TIME` — 命令执行开始时间追踪
+starship integrates into zsh via `eval "$(starship init zsh)"`, which defines:
+- `starship_prompt_func` — the function that renders the prompt
+- `precmd` / `preexec` — command timing hooks
+- `STARSHIP_START_TIME` — command execution start time tracking
 
-在 HarmonyOS stripped zsh (无 compinit) 下正常工作，不需要 completion 系统支持。
+Works normally under HarmonyOS stripped zsh (no compinit), does not require completion system support.

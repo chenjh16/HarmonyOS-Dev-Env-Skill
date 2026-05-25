@@ -100,6 +100,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - Dropbear: `$HOME/.local/bin` → `dropbear`, `dbclient`, `dropbearkey`, `dropbearconvert`
 - OpenSSH: `$HOME/Claude/openssh-build/openssh-prefix/bin` → `ssh`, `sshd`, `scp`, `sftp`, `ssh-add`, `ssh-agent`, `ssh-keygen`, `ssh-keyscan`; 需要LD_PRELOAD; ssh-agent 使用抽象命名空间socket (`SSH_AUTH_SOCK=abstract:<name>`)
 - `LD_LIBRARY_PATH` 包含 `$HOME/.rust/lib`, `/system/lib64` 和 llama.cpp bin 目录
+- `LD_PRELOAD` 设置为 `$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so`（用于 OpenSSH sshd）
 - `SSL_CERT_FILE` 设置为 `$HOME/.rust/cacert.pem` (用于 cargo crates.io 访问)
 - `TMPDIR` 设置为 `$HOME/Claude/tmpdir` (因为 HarmonyOS 上 `/tmp` 只读)
 

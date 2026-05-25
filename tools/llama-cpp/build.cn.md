@@ -1,6 +1,6 @@
 # llama.cpp HarmonyOS (aarch64) 适配与端到端测试
 
-> **English version available at build.md**
+> **英文版本见 build.md**
 
 ## 1. 仓库克隆：GitHub 直连不通，需用国内代理
 
@@ -76,7 +76,7 @@ cmake .. \
 
 ---
 
-## 3. 链接错误：unicode-data 空文件导致 undefined symbol
+## 4. 链接错误：unicode-data 空文件导致 undefined symbol
 
 **问题**: 链接阶段报错：
 ```
@@ -99,7 +99,7 @@ ninja -C build
 
 ---
 
-## 4. 运行时：libomp.so 加载失败
+## 5. 运行时：libomp.so 加载失败
 
 **问题**: 运行 `llama-cli --version` 报错：
 ```
@@ -114,7 +114,7 @@ export LD_LIBRARY_PATH=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/na
 
 ---
 
-## 5. 模型下载：HuggingFace CDN 不可达
+## 6. 模型下载：HuggingFace CDN 不可达
 
 **问题**: `hf-mirror.com` API 可访问但文件下载 CDN 连接超时（文件下载走不同 CDN 域）。
 
@@ -128,7 +128,7 @@ curl -L --connect-timeout 30 --max-time 1800 -# -o models/Qwen3.5-0.8B-Q4_K_M.gg
 
 ---
 
-## 6. Qwen3.5 架构支持确认
+## 7. Qwen3.5 架构支持确认
 
 llama.cpp 已原生支持 Qwen3.5 系列：
 - `src/models/qwen35.cpp` — dense 版本
@@ -141,7 +141,7 @@ llama.cpp 已原生支持 Qwen3.5 系列：
 
 ---
 
-## 7. 推理测试结果
+## 8. 推理测试结果
 
 | 项目 | 值 |
 |------|-----|
@@ -155,17 +155,17 @@ llama.cpp 已原生支持 Qwen3.5 系列：
 
 ---
 
-## 8. CPU 加速构建：ARM NEON/SVE/i8mm 优化
+## 9. CPU 加速构建：ARM NEON/SVE/i8mm 优化
 
-### 8.1 问题
+### 9.1 问题
 
 CMake 无法识别 HarmonyOS 平台（`CMAKE_SYSTEM_PROCESSOR` 为 "unknown"），导致 `GGML_SYSTEM_ARCH` 被设为 "UNKNOWN"，ggml-cpu 走 fallback 到 `GGML_CPU_GENERIC`（无任何 SIMD 优化）。编译 flags 中没有 `-mcpu=native+dotprod+i8mm+sve`。
 
-### 8.2 根因
+### 9.2 根因
 
 `ggml/cmake/common.cmake` 中的 `ggml_get_system_arch()` 函数通过 `CMAKE_SYSTEM_PROCESSOR` 正则匹配架构。HarmonyOS 不在 CMake 的已知平台列表中，处理器类型回退为 "unknown"，不匹配 `^(aarch64|arm.*|ARM64)$`。
 
-### 8.3 解决：patch common.cmake 增加编译器目标 fallback
+### 9.3 解决：patch common.cmake 增加编译器目标 fallback
 
 在 `ggml_get_system_arch()` 函数开头加入 compiler target triple 检测：
 ```cmake
@@ -188,7 +188,7 @@ Clang 在 HarmonyOS 上 `clang -dumpmachine` 返回 `aarch64-unknown-linux-ohos`
 
 **注意**：不要用 `CMAKE_TOOLCHAIN_FILE` 设置 `CMAKE_SYSTEM_NAME=Generic` 来解决问题——这会触发 CMake 的 cross-compiling 模式，导致 `check_cxx_source_runs()`（try_run）失败，ARM 特性检测全部被跳过。
 
-### 8.4 加速构建 CMake 配置
+### 9.4 加速构建 CMake 配置
 
 **重要提示**：加速构建**不要**在 `CMAKE_C_FLAGS` 中添加 `-B$LINKER_WRAPPER_DIR`！这个参数会影响 CMake 的 `try_run` 测试程序，导致 ARM 特性检测失败（测试程序需要正确执行才能检测 CPU 特性）。
 
@@ -227,7 +227,7 @@ cmake -S . -B build \
 - 不再需要 `GGML_CPU_ARM_ARCH` 手动设置（`GGML_NATIVE=ON` 自动检测）
 - **不在 `CMAKE_C_FLAGS` 中使用 linker wrapper**，避免影响 try_run 测试
 
-### 8.5 检测到的 ARM 特性
+### 9.5 检测到的 ARM 特性
 
 | 特性 | 状态 | 说明 |
 |------|------|------|
@@ -238,7 +238,7 @@ cmake -S . -B build \
 
 编译 flags: `-mcpu=native+dotprod+i8mm+sve+nosme`
 
-### 8.6 性能对比（9B Q4_K_M 模型）
+### 9.6 性能对比（9B Q4_K_M 模型）
 
 | 指标 | Generic 构建 | 加速构建 | 提升 |
 |------|-------------|---------|------|

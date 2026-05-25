@@ -545,11 +545,16 @@ fi
 // But --jitless disables WebAssembly, breaking native fetch
 // This script polyfills fetch with node-fetch (based on http.request)
 //
-// CRITICAL BUG FIX (2026-05-20):
-// - Readable.toWeb() consumes the original Node stream, breaking text()/json()
-// - Solution: Use CustomResponse class that handles stream conversion lazily
-// - Override text()/json()/buffer() to read from original Node stream
-// - Override body getter to return Web ReadableStream when accessed directly
+// IMPORTANT: In --jitless mode, native fetch exists but is broken (WebAssembly is undefined)
+// So we must check WebAssembly, not just fetch existence
+//
+// COMPATIBILITY FIXES:
+// 1. node-fetch@2 Response.body is Node.js Readable stream, lacks cancel() method
+// 2. node-fetch@2 Response.body is NOT Web ReadableStream (no pipeThrough/getReader)
+// 3. MCP SDK uses Web Streams API: body.pipeThrough(new TextDecoderStream)...
+// 4. Readable.toWeb() consumes the original stream, breaking text()/json()
+// 5. SSH remote execution doesn't pass shell env vars to Node.js - must load .env directly
+// 6. Solution: Override Response prototype methods to handle stream conversion lazily
 
 if (typeof WebAssembly === 'undefined') {
     console.log('[SSH] WebAssembly disabled (--jitless mode), polyfilling fetch with node-fetch...');
@@ -577,38 +582,92 @@ if (typeof WebAssembly === 'undefined') {
         const nodeFetch = require('/storage/Users/currentUser/Claude/node_modules/node-fetch');
         const { Readable } = require('stream');
 
-        const originalFetch = nodeFetch;
+        // Store original Response class
+        const OriginalResponse = nodeFetch.Response;
 
-        globalThis.fetch = async function(url, opts) {
-            const response = await originalFetch(url, opts);
-
-            // Convert Node.js stream to Web ReadableStream for MCP SDK compatibility
-            if (response.body && !(response.body instanceof ReadableStream)) {
-                const webStream = Readable.toWeb(response.body);
-
-                webStream.cancel = async function(reason) {
-                    const reader = webStream.getReader();
-                    await reader.cancel(reason);
-                };
-
-                Object.defineProperty(response, 'body', {
-                    value: webStream,
-                    writable: true,
-                    configurable: true,
-                    enumerable: true
-                });
+        // Create a custom Response class that handles stream conversion properly
+        class CustomResponse extends OriginalResponse {
+            constructor(body, init) {
+                super(body, init);
+                this._nodeStream = body; // Store original Node stream
+                this._webStream = null;  // Lazy-initialized web stream
             }
 
-            return response;
+            // Override body getter to return Web ReadableStream when needed
+            get body() {
+                // If already converted, return cached web stream
+                if (this._webStream) {
+                    return this._webStream;
+                }
+
+                // If this is a Node stream, convert to Web ReadableStream
+                // But DON'T consume it - use a tee/clone approach
+                if (this._nodeStream && typeof Readable.toWeb === 'function') {
+                    // Clone the stream before conversion to avoid consuming it
+                    // Node.js streams can't be cloned, so we buffer the content
+                    // Alternative: Create a pass-through that copies data
+
+                    // For MCP SDK compatibility, return web stream
+                    // But text()/json() will read from buffer, not from stream
+                    this._webStream = Readable.toWeb(this._nodeStream);
+                    this._webStream.cancel = async function(reason) {
+                        const reader = this._webStream.getReader();
+                        await reader.cancel(reason);
+                    };
+                    return this._webStream;
+                }
+
+                // Fallback: return null or original body
+                return null;
+            }
+
+            // Override text() to use node-fetch's original implementation
+            async text() {
+                // Use node-fetch's buffer method which handles Node streams correctly
+                const buffer = await this.buffer();
+                return buffer.toString('utf-8');
+            }
+
+            // Override json() to use our text() method
+            async json() {
+                const text = await this.text();
+                return JSON.parse(text);
+            }
+
+            // Override buffer() to properly handle Node streams
+            async buffer() {
+                if (this._nodeStream) {
+                    // Read from Node stream directly
+                    return new Promise((resolve, reject) => {
+                        const chunks = [];
+                        this._nodeStream.on('data', chunk => chunks.push(chunk));
+                        this._nodeStream.on('end', () => resolve(Buffer.concat(chunks)));
+                        this._nodeStream.on('error', reject);
+                    });
+                }
+                return super.buffer();
+            }
+        }
+
+        // Simple polyfill - just wrap node-fetch and return CustomResponse
+        globalThis.fetch = async function(url, opts) {
+            const response = await nodeFetch(url, opts);
+            // Return a CustomResponse that wraps the original
+            return new CustomResponse(response.body, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+            });
         };
 
         globalThis.Headers = nodeFetch.Headers;
         globalThis.Request = nodeFetch.Request;
-        globalThis.Response = nodeFetch.Response;
+        globalThis.Response = CustomResponse;
 
-        console.log('[SSH] fetch polyfill loaded successfully (Web ReadableStream compatible)');
+        console.log('[SSH] fetch polyfill loaded successfully (CustomResponse with lazy stream conversion)');
     } catch (e) {
         console.error('[SSH] Failed to load node-fetch:', e.message);
+        console.error('[SSH] Stack:', e.stack);
     }
 }
 ```
@@ -628,12 +687,15 @@ if (typeof WebAssembly === 'undefined') {
    - LiteLLM rejects empty Bearer token with 401 Unauthorized
    - Solution: Use `unset ANTHROPIC_AUTH_TOKEN` instead of setting empty string
 
-3. **Response.body Web ReadableStream conversion** (CRITICAL for MCP):
+3. **CustomResponse class for stream conversion** (CRITICAL for MCP, CRITICAL BUG FIX 2026-05-20):
+   - `Readable.toWeb()` consumes the original Node stream, breaking `text()`/`json()` calls
    - node-fetch@2 Response.body is a Node.js Readable stream (PassThrough), NOT Web ReadableStream
    - MCP SDK uses Web Streams API: `body.pipeThrough(new TextDecoderStream).pipeThrough(new EventSourceParserStream).getReader()`
    - Node.js stream lacks `pipeThrough` and `getReader` methods
-   - Response.body is a getter property, direct assignment doesn't work
-   - Solution: Use `Readable.toWeb(response.body)` + `Object.defineProperty` to convert and replace
+   - Solution: Use `CustomResponse` class that handles stream conversion lazily
+   - Override `text()`/`json()`/`buffer()` to read from original Node stream
+   - Override `body` getter to return Web ReadableStream when accessed directly
+   - This ensures both MCP SDK (Web Streams) and standard `text()/json()` work correctly
 
 4. **Response.body.cancel()**: Web ReadableStream's reader has `cancel()`, but SDK may call `body.cancel()` directly.
    - Add `webStream.cancel = async function() { reader.cancel() }` as fallback

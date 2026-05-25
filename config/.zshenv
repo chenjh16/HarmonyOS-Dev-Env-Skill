@@ -43,6 +43,16 @@ export GOPATH="$HOME/Claude/go-build/gopath"
 export GOMODCACHE="$HOME/Claude/go-build/gomodcache"
 export GOPROXY="https://goproxy.cn,direct"
 
+# Dropbear SSH (lightweight SSH server/client)
+export DROPBEAR_HOME="$HOME/.local/bin"
+export PATH="$DROPBEAR_HOME:$PATH"
+
+# OpenSSH (full SSH suite: ssh, sshd, scp, sftp, ssh-agent, ssh-keygen)
+export OPENSSH_HOME="$HOME/Claude/openssh-build/openssh-prefix/bin"
+export PATH="$OPENSSH_HOME:$PATH"
+# passwd_compat LD_PRELOAD required for sshd (uid 20020106 not in /etc/passwd)
+export LD_PRELOAD="$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so"
+
 # SSL certificate for cargo (crates.io access)
 export SSL_CERT_FILE="$RUST_HOME/cacert.pem"
 
