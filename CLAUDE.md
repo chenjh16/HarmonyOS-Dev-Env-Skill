@@ -94,9 +94,14 @@ When documenting tool adaptations, always cover:
 13. **CMake 4.1.2 ldd in PATH**: CMake 4.1.2 runs ldd after linking executables; copy ldd wrapper to ~/.local/bin/ldd
 14. **PyTorch visibility hidden + supplement.so**: PyTorch compiles with `-fvisibility=hidden`, hiding `RefcountedMapAllocator::decref/incref` and `at::internal::invoke_parallel` from libtorch_cpu.so's dynamic symbol table. Create `libtorch_supplement.so` with stub implementations, add as NEEDED dependency via `patchelf --add-needed`
 15. **NEEDED path prefix fix**: Ninja-built libraries use "lib/" prefix in NEEDED entries (e.g. `lib/libtorch_cpu.so`). Use `patchelf --replace-needed` to strip prefix and `--set-rpath` to set `$ORIGIN:$HOME/.local/lib`
+16. **OpenSSH passwd_compat LD_PRELOAD**: sshd requires passwd_compat LD_PRELOAD because uid 20020106 is not in /etc/passwd (read-only). Child env must preserve LD_PRELOAD/LD_LIBRARY_PATH (patch session.c do_setup_env). sshd_config must use SetEnv PATH to put openssh-prefix/bin first (system /usr/bin/scp crashes).
+17. **OpenSSH abstract socket**: ssh-agent bind() returns EPERM for filesystem Unix sockets; falls back to abstract namespace (sun_path[0]='\0'). SSH_AUTH_SOCK uses "abstract:" prefix.
+18. **OpenSSH privsep non-fatal**: HarmonyOS doesn't permit chroot/setgroups/setegid/seteuid for user-space processes. Patch sshd-session.c to make chroot non-fatal (skip subsequent privdrop). uidswap.c: change setgroups/setegid/seteuid from fatal to debug.
+19. **OpenSSH authorized_keys UID**: Files owned by uid 20001006 (file_manager), sshd runs as uid 20020106. Add uid 20001006 to platform_sys_dir_uid() (like root). safe_path() skips mode check (022 bitmask) for system-dir-owned files. StrictModes=yes works.
 
 ## Related Documentation
 
 - Target system rules: `rules/CLAUDE.md`
 - Code signing guide: `docs/code-signing.md`
 - LD_LIBRARY_PATH: `docs/ld-library-path.md`
+- OpenSSH adaptation: `docs/openssh-harmonyos.md`

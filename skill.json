@@ -128,6 +128,15 @@
       "install_script": "tools/dropbear/install.sh",
       "install_dir": "$HOME/.local/bin",
       "features": ["SSH server", "SSH client", "pubkey auth only", "lightweight", "auto-start on login", "5 HarmonyOS patches", "V8 crash workaround"]
+    },
+    {
+      "name": "openssh",
+      "version": "9.9p1",
+      "category": "network",
+      "source": "https://github.com/openssh/openssh-portable (V_9_9_P1)",
+      "build_guide": "tools/openssh/build.md",
+      "install_dir": "$HOME/Claude/openssh-build/openssh-prefix/bin",
+      "features": ["SSH server", "SSH client", "scp", "sftp", "ssh-agent", "ssh-keygen", "pubkey auth", "StrictModes=yes", "abstract socket", "16 HarmonyOS patches", "LD_PRELOAD passwd_compat", "full sshd_config"]
     }
   ],
   "core_issues": [
@@ -160,6 +169,16 @@
       "name": "ssh-v8-crash",
       "description": "V8 JIT crashes in SSH PTY, use --jitless + node-fetch polyfill",
       "guide": "tools/dropbear/build.md"
+    },
+    {
+      "name": "openssh-passwd-compat",
+      "description": "sshd requires passwd_compat LD_PRELOAD for UID 20020106 not in /etc/passwd (read-only); child env must preserve LD_PRELOAD/LD_LIBRARY_PATH",
+      "guide": "docs/openssh-harmonyos.md"
+    },
+    {
+      "name": "openssh-abstract-socket",
+      "description": "ssh-agent bind() EPERM on filesystem sockets; uses abstract namespace fallback (SSH_AUTH_SOCK=abstract:name)",
+      "guide": "docs/openssh-harmonyos.md"
     }
   ],
   "documentation": [
@@ -175,6 +194,7 @@
     {"name": "bat", "path": "docs/bat-harmonyos.md", "path_cn": "docs/bat-harmonyos.cn.md"},
     {"name": "starship", "path": "docs/starship-harmonyos.md", "path_cn": "docs/starship-harmonyos.cn.md"},
     {"name": "Dropbear SSH", "path": "docs/dropbear-harmonyos.md", "path_cn": "docs/dropbear-harmonyos.cn.md"},
+    {"name": "OpenSSH", "path": "docs/openssh-harmonyos.md", "path_cn": "docs/openssh-harmonyos.cn.md"},
     {"name": "Code Signing", "path": "docs/code-signing.md", "path_cn": "docs/code-signing.cn.md"},
     {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md", "path_cn": "docs/ld-library-path.cn.md"},
     {"name": "SELinux Analysis", "path": "docs/selinux-analysis.md", "path_cn": "docs/selinux-analysis.cn.md"},

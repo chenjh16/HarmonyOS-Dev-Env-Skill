@@ -87,6 +87,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **mihomo**: Clash Meta proxy at `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; config at `$HOME/Claude/mihomo-config/`; proxy port 7890, API port 9090; supports GEOIP/GEOSITE intelligent routing
 - **PyTorch**: v2.5.1 at `$HOME/.local/lib/python3.12/site-packages/torch/`; **15/15 e2e tests passed** (all functional: NumPy fixed via post-build patch, LAPACK enabled via OpenBLAS + supplement.so); requires `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`; build must use Ninja (not `make -j` which fails due to mkfifo); do NOT use CMAKE_TOOLCHAIN_FILE with CMAKE_SYSTEM_NAME; use lightweight toolchain file; OpenBLAS v0.3.28 at `$HOME/.local/lib/libopenblas.so`; `libtorch_supplement.so` provides 3 hidden symbols (decref/incref/invoke_parallel); patchelf needed to fix NEEDED path prefixes
 - **Dropbear**: v2024.86 SSH server/client at `$HOME/.local/bin/`; `dropbear` (server), `dbclient` (client), `dropbearkey` (key generation); pubkey auth only (no password auth due to missing crypt()); any non-system username accepted (chenh, user, currentUser, UID all work — single-user device); **must use `-e` flag** (passes env vars to child sessions); PTY interactive sessions limited (TIOCSCTTY fails on HarmonyOS)
+- **OpenSSH**: 9.9p1 at `$HOME/Claude/openssh-build/openssh-prefix/bin`; `ssh`, `sshd`, `scp`, `sftp`, `ssh-add`, `ssh-agent`, `ssh-keygen`, `ssh-keyscan`; requires `LD_PRELOAD=$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so`; ssh-agent uses abstract namespace sockets (`SSH_AUTH_SOCK=abstract:<name>`); scp/sftp work with `SetEnv PATH` in sshd_config; all 16 HarmonyOS patches applied
 
 ### Third-party tools in PATH
 
@@ -97,6 +98,7 @@ All third-party toolchains are configured in `$HOME/.zshenv` and auto-loaded on 
 - bat: `$HOME/Claude/bat-build/bat/target/release` → `bat`
 - starship: `$HOME/Claude/starship-build/starship/target/release` → `starship`
 - Dropbear: `$HOME/.local/bin` → `dropbear`, `dbclient`, `dropbearkey`, `dropbearconvert`
+- OpenSSH: `$HOME/Claude/openssh-build/openssh-prefix/bin` → `ssh`, `sshd`, `scp`, `sftp`, `ssh-add`, `ssh-agent`, `ssh-keygen`, `ssh-keyscan`; requires `LD_PRELOAD=$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so`; ssh-agent uses abstract namespace sockets (`SSH_AUTH_SOCK=abstract:<name>`)
 - `LD_LIBRARY_PATH` includes `$HOME/.rust/lib`, `/system/lib64`, and llama.cpp bin dir
 - `SSL_CERT_FILE` set to `$HOME/.rust/cacert.pem` (for cargo crates.io access)
 - `TMPDIR` set to `$HOME/Claude/tmpdir` (because `/tmp` is read-only on HarmonyOS)
@@ -154,6 +156,7 @@ Detailed adaptation guides are available in the `docs/` directory:
 - [mihomo Adaptation](docs/mihomo-harmonyos.md) — Go toolchain, proxy config, GEOIP/GEOSITE rules
 - [PyTorch Adaptation](docs/pytorch-harmonyos.md) — PyTorch v2.5.1 compilation, 15 key adaptations, **15/15 e2e tests all passed** (NumPy + LAPACK fixed), MNIST training
 - [Dropbear SSH Adaptation](docs/dropbear-harmonyos.md) — SSH server/client, 5 source patches, V8 JIT crash workaround
+- [OpenSSH Adaptation](docs/openssh-harmonyos.md) — OpenSSH 9.9p1 full build, 16 source patches, scp/sftp/ssh-agent all working
 - [Code Signing Guide](docs/code-signing.md) — detailed code signing instructions
 - [LD_LIBRARY_PATH Guide](docs/ld-library-path.md) — dynamic library path configuration
 - [SELinux Analysis](docs/selinux-analysis.md) — root cause of .so loading restrictions

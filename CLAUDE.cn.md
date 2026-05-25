@@ -94,9 +94,14 @@ HarmonyOS-Dev-Env-Skill/
 13. **CMake 4.1.2 ldd**: CMake 4.1.2 链接后运行 ldd；将 ldd 封装复制到 ~/.local/bin/ldd
 14. **PyTorch visibility hidden + supplement.so**: PyTorch 使用 `-fvisibility=hidden` 编译，导致 `RefcountedMapAllocator::decref/incref` 和 `at::internal::invoke_parallel` 从 libtorch_cpu.so 动态符号表中被隐藏。创建 `libtorch_supplement.so` 提供 stub 实现，通过 `patchelf --add-needed` 添加为 NEEDED 依赖
 15. **NEEDED 路径前缀修复**: Ninja 构建的库在 NEEDED 条目中使用 "lib/" 前缀（如 `lib/libtorch_cpu.so`）。使用 `patchelf --replace-needed` 去除前缀，并 `--set-rpath` 设置 `$ORIGIN:$HOME/.local/lib`
+16. **OpenSSH passwd_compat LD_PRELOAD**: sshd 需要 passwd_compat LD_PRELOAD，因为 uid 20020106 不在 /etc/passwd（只读）。子进程环境必须保留 LD_PRELOAD/LD_LIBRARY_PATH（patch session.c do_setup_env）。sshd_config 必须使用 SetEnv PATH 将 openssh-prefix/bin 放在首位（系统 /usr/bin/scp 会崩溃）。
+17. **OpenSSH 抽象socket**: ssh-agent bind() 对文件系统 Unix socket 返回 EPERM；回退到抽象命名空间（sun_path[0]='\0'）。SSH_AUTH_SOCK 使用 "abstract:" 前缀。
+18. **OpenSSH privsep 非致命**: HarmonyOS 不允许用户空间进程调用 chroot/setgroups/setegid/seteuid。Patch sshd-session.c 使 chroot 非致命（跳过后续权限降级）。uidswap.c：将 setgroups/setegid/seteuid 从 fatal 改为 debug。
+19. **OpenSSH authorized_keys UID**: 文件所有者为 uid 20001006（file_manager），sshd 运行在 uid 20020106。将 uid 20001006 加入 platform_sys_dir_uid()（类似 root）。safe_path() 对系统目录拥有的文件跳过 mode 检查（022 位掩码）。StrictModes=yes 正常工作。
 
 ## 相关文档
 
 - 目标系统规则: `rules/CLAUDE.cn.md`
 - 代码签名指南: `docs/code-signing.cn.md`
 - LD_LIBRARY_PATH: `docs/ld-library-path.cn.md`
+- OpenSSH 适配指南: `docs/openssh-harmonyos.cn.md`

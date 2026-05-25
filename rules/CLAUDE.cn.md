@@ -87,6 +87,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **mihomo**: Clash Meta 代理位于 `$HOME/Claude/mihomo-build/bin/mihomo-linux-arm64`; 配置位于 `$HOME/Claude/mihomo-config/`; 代理端口 7890, API 端口 9090; 支持 GEOIP/GEOSITE 智能分流
 - **PyTorch**: v2.5.1 位于 `$HOME/.local/lib/python3.12/site-packages/torch/`; **15/15 端到端测试全部通过**（NumPy 通过增量补丁修复，LAPACK 通过 OpenBLAS + supplement.so 启用）; 需要 `LD_LIBRARY_PATH=$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH`; 构建必须使用 Ninja；不要使用 CMAKE_TOOLCHAIN_FILE 配合 CMAKE_SYSTEM_NAME；使用轻量级工具链文件；OpenBLAS v0.3.28 位于 `$HOME/.local/lib/libopenblas.so`; `libtorch_supplement.so` 提供 3 个隐藏符号；patchelf 修复 NEEDED 路径前缀
 - **Dropbear**: v2024.86 SSH 服务器/客户端位于 `$HOME/.local/bin/`; `dropbear` (服务器), `dbclient` (客户端), `dropbearkey` (密钥生成); 仅支持公钥认证（无密码认证，因缺少 crypt() 函数）；接受任何非系统用户名（chenh, user, currentUser, UID 均可——单用户设备）；**必须使用 `-e` 参数**（将环境变量传递给子会话）；PTY 交互式会话受限（TIOCSCTTY 在 HarmonyOS 上失败）
+- **OpenSSH**: 9.9p1 位于 `$HOME/Claude/openssh-build/openssh-prefix/bin`; `ssh`, `sshd`, `scp`, `sftp`, `ssh-add`, `ssh-agent`, `ssh-keygen`, `ssh-keyscan`; 需要 `LD_PRELOAD=$HOME/Claude/openssh-build/passwd_compat/passwd_compat_signed.so`; ssh-agent 使用抽象命名空间socket (`SSH_AUTH_SOCK=abstract:<name>`); scp/sftp 通过 sshd_config 的 `SetEnv PATH` 正常工作; 已应用全部16个 HarmonyOS 补丁
 
 ### PATH 中的第三方工具
 
@@ -97,6 +98,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - bat: `$HOME/Claude/bat-build/bat/target/release` → `bat`
 - starship: `$HOME/Claude/starship-build/starship/target/release` → `starship`
 - Dropbear: `$HOME/.local/bin` → `dropbear`, `dbclient`, `dropbearkey`, `dropbearconvert`
+- OpenSSH: `$HOME/Claude/openssh-build/openssh-prefix/bin` → `ssh`, `sshd`, `scp`, `sftp`, `ssh-add`, `ssh-agent`, `ssh-keygen`, `ssh-keyscan`; 需要LD_PRELOAD; ssh-agent 使用抽象命名空间socket (`SSH_AUTH_SOCK=abstract:<name>`)
 - `LD_LIBRARY_PATH` 包含 `$HOME/.rust/lib`, `/system/lib64` 和 llama.cpp bin 目录
 - `SSL_CERT_FILE` 设置为 `$HOME/.rust/cacert.pem` (用于 cargo crates.io 访问)
 - `TMPDIR` 设置为 `$HOME/Claude/tmpdir` (因为 HarmonyOS 上 `/tmp` 只读)
@@ -154,6 +156,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - [mihomo 适配记录](docs/mihomo-harmonyos.cn.md) — Go 工具链、代理配置、GEOIP/GEOSITE 分流规则
 - [PyTorch 适配记录](docs/pytorch-harmonyos.cn.md) — PyTorch v2.5.1 编译、15个关键适配、15/15 端到端测试全部通过（NumPy + LAPACK 已修复）、MNIST 训练
 - [Dropbear SSH 适配记录](docs/dropbear-harmonyos.cn.md) — SSH 服务器/客户端、5个源码补丁、V8 JIT 崩溃解决方案
+- [OpenSSH 适配记录](docs/openssh-harmonyos.cn.md) — OpenSSH 9.9p1 完整构建、16个源码补丁、scp/sftp/ssh-agent 全功能可用
 - [代码签名指南](docs/code-signing.cn.md) — 详细代码签名说明
 - [动态库路径指南](docs/ld-library-path.cn.md) — 动态库路径配置
 - [SELinux 根因分析](docs/selinux-analysis.cn.md) — .so 加载限制的根本原因
