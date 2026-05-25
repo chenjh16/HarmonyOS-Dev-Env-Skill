@@ -190,7 +190,12 @@ cp "$SKILL_SRC/scripts/verify-env.sh" "$SKILL_DIR/scripts/verify-env.sh"
 cp "$SKILL_SRC/config/.zshenv" "$SKILL_DIR/config/zshenv"
 cp "$SKILL_SRC/config/.claude/ssh-fetch-polyfill.js" "$SKILL_DIR/scripts/ssh-fetch-polyfill.js"
 cp "$SKILL_SRC/config/.claude/start-claude.sh" "$SKILL_DIR/scripts/start-claude.sh"
-echo "[4/4] Scripts and config copied"
+echo "[4/5] Scripts and config copied"
+
+# ── 5. Tool build guides (for Agent to reference during builds) ──
+
+cp -r "$SKILL_SRC/tools"/* "$SKILL_DIR/tools/"
+echo "[5/5] Tool build guides copied ($(ls "$SKILL_DIR/tools/" | wc -l) tools)"
 
 echo ""
 echo "=== Installation Complete ==="
