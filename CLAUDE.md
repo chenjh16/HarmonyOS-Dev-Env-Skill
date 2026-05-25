@@ -8,38 +8,37 @@ This project is a skill pack for HarmonyOS PC development environment. It provid
 
 ## Project Structure
 
+The skill content lives in a self-contained `harmonyos-dev-env/` subdirectory that is copied wholesale to `~/.claude/skills/` during installation:
+
 ```
 HarmonyOS-Dev-Env-Skill/
-├── CLAUDE.md              # This file - Agent development guide (English)
-├── CLAUDE.cn.md           # Agent development guide (Chinese)
-├── README.md              # Project README (bilingual)
-├── skill.json             # Skill definition with tool metadata
-├── rules/                 # Rules for target system (install to ~/.claude/)
-│   ├── CLAUDE.md          # HarmonyOS rules (English)
-│   └── CLAUDE.cn.md       # HarmonyOS rules (Chinese)
-├── docs/                  # Adaptation guides (bilingual *.md + *.cn.md)
-│   ├── python-harmonyos.md
-│   ├── python-harmonyos.cn.md
-│   └── ...
-├── tools/                 # Tool-specific build guides (bilingual)
-│   ├── python/
-│   │   ├── build.md
-│   │   ├── build.cn.md
-│   │   └── install.sh
-│   ├── go/
-│   │   ├── build.md
-│   │   ├── build.cn.md
-│   │   └── install.sh
-│   └── ...
-├── config/                # Configuration templates
-│   ├── .zshenv
-│   ├── .claude/
+├── harmonyos-dev-env/        ← THE SKILL (cp -r this to ~/.claude/skills/)
+│   ├── SKILL.md              ← Skill definition (YAML frontmatter + bilingual rules)
+│   ├── scripts/
+│   │   ├── env-setup.sh      ← One-time env setup (tmpdir + linker wrapper + zshenv)
+│   │   ├── sign-all.sh       ← Batch ELF signing
+│   │   ├── verify-env.sh     ← Environment verification
 │   │   ├── ssh-fetch-polyfill.js
 │   │   └── start-claude.sh
-│   └── ...
-└── scripts/               # Utility scripts
-    └── sign-all.sh
+│   ├── docs/                 ← 18 bilingual adaptation guides (*.md + *.cn.md)
+│   ├── tools/                ← 11 tool build guides + install scripts
+│   ├── config/
+│   │   ├── zshenv            ← Shell env template
+│   │   └── .claude/          ← SSH polyfill + startup script templates
+│   └── rules/
+│       ├── CLAUDE.md         ← Full platform rules (English)
+│       └── CLAUDE.cn.md      ← Full platform rules (Chinese)
+├── CLAUDE.md                 ← This file - project dev guide (English)
+├── CLAUDE.cn.md              ← Project dev guide (Chinese)
+├── README.md                 ← Project README (bilingual)
+├── skill.json                ← Metadata
+├── scripts/
+│   └── install-skill.sh      ← Simplified: just cp -r harmonyos-dev-env/
+├── .gitignore
+└── (top-level config/, docs/, rules/, tools/ are the repo source originals)
 ```
+
+**Key principle**: `harmonyos-dev-env/` must be fully self-contained. Shell scripts use `SCRIPT_DIR` pattern to find sibling files. SKILL.md references docs with relative paths. All user-variable paths use `$HOME` (never `/storage/Users/currentUser`).
 
 ## Documentation Naming Convention
 
@@ -62,19 +61,27 @@ All documentation files follow bilingual naming:
   - Documentation paths (path and path_cn)
 - When adding new docs, update documentation array
 
-### 3. File Organization
-- `docs/` - General adaptation guides (platform-wide issues)
-- `tools/` - Tool-specific build guides
-- `rules/` - Target system rules (to be installed on user's system)
-- `config/` - Configuration templates and scripts
+### 3. Path Portability
+- **Never use `/storage/Users/currentUser`** — always use `$HOME`
+- In JavaScript: use `process.env.HOME`
+- In C code: use `getenv("HOME")`
+- System paths like `/data/service/hnp/bin/*`, `/system/lib64`, `/usr/lib` are fine (platform-fixed)
+- Shell scripts must use `SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"` for sibling references
 
-### 4. Content Guidelines
+### 4. File Organization
+- `harmonyos-dev-env/docs/` - General adaptation guides (platform-wide issues)
+- `harmonyos-dev-env/tools/` - Tool-specific build guides
+- `harmonyos-dev-env/rules/` - Target system rules (installed to ~/.claude/ by env-setup.sh)
+- `harmonyos-dev-env/config/` - Configuration templates and scripts
+- `harmonyos-dev-env/scripts/` - Utility scripts (sign-all, verify-env, env-setup)
+
+### 5. Content Guidelines
 - Include complete build steps, not just summaries
 - Document all HarmonyOS-specific adaptations
 - Provide troubleshooting sections for known issues
 - Cross-reference related documents
 
-### 5. Git Commits
+### 6. Git Commits
 - Maintain bilingual commit messages when significant
 - Update both language versions together
 - Reference the Co-Authored-By line
@@ -106,7 +113,9 @@ When documenting tool adaptations, always cover:
 
 ## Related Documentation
 
-- Target system rules: `rules/CLAUDE.md`
-- Code signing guide: `docs/code-signing.md`
-- LD_LIBRARY_PATH: `docs/ld-library-path.md`
-- OpenSSH adaptation: `docs/openssh-harmonyos.md`
+- Skill definition: `harmonyos-dev-env/SKILL.md`
+- One-time setup: `harmonyos-dev-env/scripts/env-setup.sh`
+- Target system rules: `harmonyos-dev-env/rules/CLAUDE.md`
+- Code signing guide: `harmonyos-dev-env/docs/code-signing.md`
+- LD_LIBRARY_PATH: `harmonyos-dev-env/docs/ld-library-path.md`
+- OpenSSH adaptation: `harmonyos-dev-env/docs/openssh-harmonyos.md`

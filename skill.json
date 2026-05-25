@@ -12,14 +12,18 @@
     "libc": "musl",
     "compiler": "clang 15.0.4"
   },
+  "skill_directory": "harmonyos-dev-env",
+  "install_method": "cp -r harmonyos-dev-env/ ~/.claude/skills/harmonyos-dev-env/",
+  "install_script": "scripts/install-skill.sh",
+  "env_setup_script": "harmonyos-dev-env/scripts/env-setup.sh",
   "tools": [
     {
       "name": "python",
       "version": "3.12.8",
       "category": "language",
       "source": "https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tar.xz",
-      "build_guide": "tools/python/build.md",
-      "install_script": "tools/python/install.sh",
+      "build_guide": "harmonyos-dev-env/tools/python/build.md",
+      "install_script": "harmonyos-dev-env/tools/python/install.sh",
       "install_dir": "$HOME/.local",
       "features": ["pip", "extension modules", "numpy", "pillow", "lxml"]
     },
@@ -28,7 +32,7 @@
       "version": "24.13.0",
       "category": "language",
       "source": "AppGallery DevNode-OH",
-      "build_guide": "docs/nodejs-harmonyos.md",
+      "build_guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md",
       "install_script": "AppGallery install",
       "install_dir": "/usr/lib/node_modules",
       "features": ["node", "npm", "DevNode-OH native", "TLS workaround", "--jitless SSH"]
@@ -38,8 +42,8 @@
       "version": "1.95.0",
       "category": "language",
       "source": "https://static.rust-lang.org/dist/",
-      "build_guide": "tools/rust/build.md",
-      "install_script": "tools/rust/install.sh",
+      "build_guide": "harmonyos-dev-env/tools/rust/build.md",
+      "install_script": "harmonyos-dev-env/tools/rust/install.sh",
       "install_dir": "$HOME/.rust",
       "features": ["rustc", "cargo", "FFI", "official ohos target"]
     },
@@ -48,8 +52,8 @@
       "version": "1.22.5",
       "category": "language",
       "source": "https://go.dev/dl/go1.22.5.linux-arm64.tar.gz",
-      "build_guide": "tools/go/build.md",
-      "install_script": "tools/go/install.sh",
+      "build_guide": "harmonyos-dev-env/tools/go/build.md",
+      "install_script": "harmonyos-dev-env/tools/go/install.sh",
       "install_dir": "$HOME/Claude/go-build/go",
       "features": ["go", "gofmt", "GOPROXY support"]
     },
@@ -58,7 +62,7 @@
       "version": "2.1.88-ohos.1",
       "category": "ai-tool",
       "source": "https://github.com/chenjh16/HarmonyOS-Claude-Code",
-      "build_guide": "docs/claude-code-harmonyos.md",
+      "build_guide": "harmonyos-dev-env/docs/claude-code-harmonyos.md",
       "install_script": "npm install -g claude-code-ohos.tgz",
       "install_dir": "$(npm prefix -g)/bin",
       "features": ["Agent mode", "TUI", "40+ tools", "MCP support", "HarmonyOS native", "ripgrep auto-signing", "SSH V8 crash workaround"]
@@ -68,7 +72,7 @@
       "version": "2.5.1 (internal: 2.5.0a0+gita8d6fb)",
       "category": "ml-framework",
       "source": "https://github.com/pytorch/pytorch (v2.5.1)",
-      "build_guide": "tools/pytorch/build.md",
+      "build_guide": "harmonyos-dev-env/tools/pytorch/build.md",
       "install_dir": "$HOME/.local/lib/python3.12/site-packages/torch",
       "features": ["tensor ops", "nn modules", "autograd", "optimizers", "LAPACK enabled", "NumPy support", "15/15 e2e tests", "MNIST training"]
     },
@@ -77,8 +81,8 @@
       "version": "b9073",
       "category": "ml-inference",
       "source": "https://github.com/ggml-org/llama.cpp",
-      "build_guide": "tools/llama-cpp/build.md",
-      "install_script": "tools/llama-cpp/install.sh",
+      "build_guide": "harmonyos-dev-env/tools/llama-cpp/build.md",
+      "install_script": "harmonyos-dev-env/tools/llama-cpp/install.sh",
       "install_dir": "$HOME/Claude/llama.cpp/build/bin",
       "features": ["llama-cli", "llama-server", "NEON/SVE optimization", "Qwen3.5 support", "9B CoT model"]
     },
@@ -87,8 +91,8 @@
       "version": "Meta",
       "category": "network",
       "source": "https://github.com/MetaCubeX/mihomo (Meta branch)",
-      "build_guide": "tools/mihomo/build.md",
-      "install_script": "tools/mihomo/install.sh",
+      "build_guide": "harmonyos-dev-env/tools/mihomo/build.md",
+      "install_script": "harmonyos-dev-env/tools/mihomo/install.sh",
       "install_dir": "$HOME/Claude/mihomo-build/bin",
       "features": ["proxy", "HTTP/SOCKS5", "API control", "GEOIP/GEOSITE rules", "intelligent routing"]
     },
@@ -97,7 +101,7 @@
       "version": "0.23.4",
       "category": "utility",
       "source": "https://github.com/eza-community/eza",
-      "build_guide": "tools/eza/build.md",
+      "build_guide": "harmonyos-dev-env/tools/eza/build.md",
       "install_dir": "$HOME/Claude/eza-build/eza/target/release",
       "features": ["modern ls", "colors", "icons", "tree view"]
     },
@@ -106,7 +110,7 @@
       "version": "0.26.1",
       "category": "utility",
       "source": "https://github.com/sharkdp/bat",
-      "build_guide": "tools/bat/build.md",
+      "build_guide": "harmonyos-dev-env/tools/bat/build.md",
       "install_dir": "$HOME/Claude/bat-build/bat/target/release",
       "features": ["syntax highlighting", "cat replacement"]
     },
@@ -115,7 +119,7 @@
       "version": "1.25.1",
       "category": "utility",
       "source": "https://github.com/starship/starship",
-      "build_guide": "tools/starship/build.md",
+      "build_guide": "harmonyos-dev-env/tools/starship/build.md",
       "install_dir": "$HOME/Claude/starship-build/starship/target/release",
       "features": ["cross-shell prompt", "customizable"]
     },
@@ -124,8 +128,8 @@
       "version": "2024.86",
       "category": "network",
       "source": "https://matt.ucc.asn.au/dropbear/releases/dropbear-2024.86.tar.bz2",
-      "build_guide": "tools/dropbear/build.md",
-      "install_script": "tools/dropbear/install.sh",
+      "build_guide": "harmonyos-dev-env/tools/dropbear/build.md",
+      "install_script": "harmonyos-dev-env/tools/dropbear/install.sh",
       "install_dir": "$HOME/.local/bin",
       "features": ["SSH server", "SSH client", "pubkey auth only", "lightweight", "auto-start on login", "5 HarmonyOS patches", "V8 crash workaround"]
     },
@@ -134,7 +138,7 @@
       "version": "9.9p1",
       "category": "network",
       "source": "https://github.com/openssh/openssh-portable (V_9_9_P1)",
-      "build_guide": "tools/openssh/build.md",
+      "build_guide": "harmonyos-dev-env/tools/openssh/build.md",
       "install_dir": "$HOME/Claude/openssh-build/openssh-prefix/bin",
       "features": ["SSH server", "SSH client", "scp", "sftp", "ssh-agent", "ssh-keygen", "pubkey auth", "StrictModes=yes", "abstract socket", "16 HarmonyOS patches", "LD_PRELOAD passwd_compat", "full sshd_config"]
     }
@@ -143,68 +147,69 @@
     {
       "name": "code-signing",
       "description": "All ELF binaries must be signed before execution",
-      "guide": "docs/code-signing.md"
+      "guide": "harmonyos-dev-env/docs/code-signing.md"
     },
     {
       "name": "tmpdir",
       "description": "/tmp is read-only, use $HOME/Claude/tmpdir",
-      "guide": "rules/CLAUDE.md"
+      "guide": "harmonyos-dev-env/rules/CLAUDE.md"
     },
     {
       "name": "ld-library-path",
       "description": "/usr/lib must come first to avoid OpenSSL symbol version conflict",
-      "guide": "docs/ld-library-path.md"
+      "guide": "harmonyos-dev-env/docs/ld-library-path.md"
     },
     {
       "name": "linker-wrapper",
       "description": "SDK lld requires libxml2.so.16, use ld.bfd wrapper",
-      "guide": "rules/CLAUDE.md"
+      "guide": "harmonyos-dev-env/rules/CLAUDE.md"
     },
     {
       "name": "no-gcc",
       "description": "Only clang available, no gcc",
-      "guide": "CLAUDE.md"
+      "guide": "harmonyos-dev-env/rules/CLAUDE.md"
     },
     {
       "name": "ssh-v8-crash",
       "description": "V8 JIT crashes in SSH PTY, use --jitless + node-fetch polyfill",
-      "guide": "tools/dropbear/build.md"
+      "guide": "harmonyos-dev-env/tools/dropbear/build.md"
     },
     {
       "name": "openssh-passwd-compat",
       "description": "sshd requires passwd_compat LD_PRELOAD for UID 20020106 not in /etc/passwd (read-only); child env must preserve LD_PRELOAD/LD_LIBRARY_PATH",
-      "guide": "docs/openssh-harmonyos.md"
+      "guide": "harmonyos-dev-env/docs/openssh-harmonyos.md"
     },
     {
       "name": "openssh-abstract-socket",
       "description": "ssh-agent bind() EPERM on filesystem sockets; uses abstract namespace fallback (SSH_AUTH_SOCK=abstract:name)",
-      "guide": "docs/openssh-harmonyos.md"
+      "guide": "harmonyos-dev-env/docs/openssh-harmonyos.md"
     }
   ],
   "documentation": [
-    {"name": "Claude Code", "path": "docs/claude-code-harmonyos.md", "path_cn": "docs/claude-code-harmonyos.cn.md"},
-    {"name": "Node.js (DevNode-OH)", "path": "docs/nodejs-harmonyos.md", "path_cn": "docs/nodejs-harmonyos.cn.md"},
-    {"name": "Python Environment", "path": "docs/python-harmonyos.md", "path_cn": "docs/python-harmonyos.cn.md"},
-    {"name": "Python Packages", "path": "docs/python-packages-harmonyos.md", "path_cn": "docs/python-packages-harmonyos.cn.md"},
-    {"name": "llama.cpp", "path": "docs/llama-cpp-harmonyos.md", "path_cn": "docs/llama-cpp-harmonyos.cn.md"},
-    {"name": "Rust", "path": "docs/rust-harmonyos.md", "path_cn": "docs/rust-harmonyos.cn.md"},
-    {"name": "PyTorch", "path": "docs/pytorch-harmonyos.md", "path_cn": "docs/pytorch-harmonyos.cn.md"},
-    {"name": "mihomo", "path": "docs/mihomo-harmonyos.md", "path_cn": "docs/mihomo-harmonyos.cn.md"},
-    {"name": "eza", "path": "docs/eza-harmonyos.md", "path_cn": "docs/eza-harmonyos.cn.md"},
-    {"name": "bat", "path": "docs/bat-harmonyos.md", "path_cn": "docs/bat-harmonyos.cn.md"},
-    {"name": "starship", "path": "docs/starship-harmonyos.md", "path_cn": "docs/starship-harmonyos.cn.md"},
-    {"name": "Dropbear SSH", "path": "docs/dropbear-harmonyos.md", "path_cn": "docs/dropbear-harmonyos.cn.md"},
-    {"name": "OpenSSH", "path": "docs/openssh-harmonyos.md", "path_cn": "docs/openssh-harmonyos.cn.md"},
-    {"name": "Code Signing", "path": "docs/code-signing.md", "path_cn": "docs/code-signing.cn.md"},
-    {"name": "LD_LIBRARY_PATH", "path": "docs/ld-library-path.md", "path_cn": "docs/ld-library-path.cn.md"},
-    {"name": "SELinux Analysis", "path": "docs/selinux-analysis.md", "path_cn": "docs/selinux-analysis.cn.md"},
-    {"name": "IPC Feasibility", "path": "docs/ipc-feasibility.md", "path_cn": "docs/ipc-feasibility.cn.md"},
-    {"name": "Troubleshooting", "path": "docs/troubleshooting.md", "path_cn": "docs/troubleshooting.cn.md"}
+    {"name": "Claude Code", "path": "harmonyos-dev-env/docs/claude-code-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/claude-code-harmonyos.cn.md"},
+    {"name": "Node.js (DevNode-OH)", "path": "harmonyos-dev-env/docs/nodejs-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/nodejs-harmonyos.cn.md"},
+    {"name": "Python Environment", "path": "harmonyos-dev-env/docs/python-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-harmonyos.cn.md"},
+    {"name": "Python Packages", "path": "harmonyos-dev-env/docs/python-packages-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-packages-harmonyos.cn.md"},
+    {"name": "llama.cpp", "path": "harmonyos-dev-env/docs/llama-cpp-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md"},
+    {"name": "Rust", "path": "harmonyos-dev-env/docs/rust-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/rust-harmonyos.cn.md"},
+    {"name": "PyTorch", "path": "harmonyos-dev-env/docs/pytorch-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/pytorch-harmonyos.cn.md"},
+    {"name": "mihomo", "path": "harmonyos-dev-env/docs/mihomo-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/mihomo-harmonyos.cn.md"},
+    {"name": "eza", "path": "harmonyos-dev-env/docs/eza-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/eza-harmonyos.cn.md"},
+    {"name": "bat", "path": "harmonyos-dev-env/docs/bat-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/bat-harmonyos.cn.md"},
+    {"name": "starship", "path": "harmonyos-dev-env/docs/starship-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/starship-harmonyos.cn.md"},
+    {"name": "Dropbear SSH", "path": "harmonyos-dev-env/docs/dropbear-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/dropbear-harmonyos.cn.md"},
+    {"name": "OpenSSH", "path": "harmonyos-dev-env/docs/openssh-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/openssh-harmonyos.cn.md"},
+    {"name": "Code Signing", "path": "harmonyos-dev-env/docs/code-signing.md", "path_cn": "harmonyos-dev-env/docs/code-signing.cn.md"},
+    {"name": "LD_LIBRARY_PATH", "path": "harmonyos-dev-env/docs/ld-library-path.md", "path_cn": "harmonyos-dev-env/docs/ld-library-path.cn.md"},
+    {"name": "SELinux Analysis", "path": "harmonyos-dev-env/docs/selinux-analysis.md", "path_cn": "harmonyos-dev-env/docs/selinux-analysis.cn.md"},
+    {"name": "IPC Feasibility", "path": "harmonyos-dev-env/docs/ipc-feasibility.md", "path_cn": "harmonyos-dev-env/docs/ipc-feasibility.cn.md"},
+    {"name": "Troubleshooting", "path": "harmonyos-dev-env/docs/troubleshooting.md", "path_cn": "harmonyos-dev-env/docs/troubleshooting.cn.md"}
   ],
   "env_config": {
-    "shell_config": "config/.zshenv",
-    "claude_rules": ["rules/CLAUDE.md", "rules/CLAUDE.cn.md"],
-    "ssh_polyfill": "config/.claude/ssh-fetch-polyfill.js",
-    "start_script": "config/.claude/start-claude.sh"
+    "shell_config": "harmonyos-dev-env/config/zshenv",
+    "claude_rules": ["harmonyos-dev-env/rules/CLAUDE.md", "harmonyos-dev-env/rules/CLAUDE.cn.md"],
+    "ssh_polyfill": "harmonyos-dev-env/scripts/ssh-fetch-polyfill.js",
+    "start_script": "harmonyos-dev-env/scripts/start-claude.sh",
+    "env_setup_script": "harmonyos-dev-env/scripts/env-setup.sh"
   }
 }

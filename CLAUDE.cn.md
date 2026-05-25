@@ -8,38 +8,37 @@
 
 ## 项目结构
 
+Skill 内容存放在自包含的 `harmonyos-dev-env/` 子目录中，安装时直接整体复制到 `~/.claude/skills/`：
+
 ```
 HarmonyOS-Dev-Env-Skill/
-├── CLAUDE.md              # 本文件 - Agent 开发指南（英文）
-├── CLAUDE.cn.md           # Agent 开发指南（中文）
-├── README.md              # 项目 README（双语合一）
-├── skill.json             # Skill 定义，包含工具元数据
-├── rules/                 # 目标系统规则（安装到 ~/.claude/）
-│   ├── CLAUDE.md          # HarmonyOS 规则（英文）
-│   └── CLAUDE.cn.md       # HarmonyOS 规则（中文）
-├── docs/                  # 适配指南（双语 *.md + *.cn.md）
-│   ├── python-harmonyos.md
-│   ├── python-harmonyos.cn.md
-│   └── ...
-├── tools/                 # 工具构建指南（双语）
-│   ├── python/
-│   │   ├── build.md
-│   │   ├── build.cn.md
-│   │   └── install.sh
-│   ├── go/
-│   │   ├── build.md
-│   │   ├── build.cn.md
-│   │   └── install.sh
-│   └── ...
-├── config/                # 配置模板
-│   ├── .zshenv
-│   ├── .claude/
+├── harmonyos-dev-env/        ← THE SKILL（cp -r 此目录到 ~/.claude/skills/）
+│   ├── SKILL.md              ← Skill 定义（YAML frontmatter + 双语规则）
+│   ├── scripts/
+│   │   ├── env-setup.sh      ← 一键环境设置（tmpdir + linker wrapper + zshenv）
+│   │   ├── sign-all.sh       ← 批量 ELF 签名
+│   │   ├── verify-env.sh     ← 环境验证
 │   │   ├── ssh-fetch-polyfill.js
 │   │   └── start-claude.sh
-│   └── ...
-└── scripts/               # 工具脚本
-    └── sign-all.sh
+│   ├── docs/                 ← 18 组双语适配文档（*.md + *.cn.md）
+│   ├── tools/                ← 11 工具构建指南 + install.sh
+│   ├── config/
+│   │   ├── zshenv            ← Shell 环境配置模板
+│   │   └── .claude/          ← SSH polyfill + 启动脚本模板
+│   └── rules/
+│       ├── CLAUDE.md         ← 完整平台规则（英文）
+│       └── CLAUDE.cn.md      ← 完整平台规则（中文）
+├── CLAUDE.md                 ← 本文件 - 项目开发指南（英文）
+├── CLAUDE.cn.md              ← 项目开发指南（中文）
+├── README.md                 ← 项目 README（双语合一）
+├── skill.json                ← 元数据
+├── scripts/
+│   └── install-skill.sh      ← 简化版：直接 cp -r harmonyos-dev-env/
+├── .gitignore
+└── (顶层 config/, docs/, rules/, tools/ 是仓库源码原始文件)
 ```
+
+**关键原则**: `harmonyos-dev-env/` 必须完全自包含。Shell 脚本使用 `SCRIPT_DIR` 模式查找同级文件。SKILL.md 使用相对路径引用 docs。所有用户可变路径使用 `$HOME`（绝不使用 `/storage/Users/currentUser`）。
 
 ## 文档命名规范
 
@@ -62,13 +61,21 @@ HarmonyOS-Dev-Env-Skill/
   - 文档路径（path 和 path_cn）
 - 添加新文档时，更新 documentation 数组
 
-### 3. 文件组织
-- `docs/` - 通用适配指南（平台级别问题）
-- `tools/` - 工具特定构建指南
-- `rules/` - 目标系统规则（安装到用户系统）
-- `config/` - 配置模板和脚本
+### 3. 路径可移植性
+- **绝不使用 `/storage/Users/currentUser`** — 始终使用 `$HOME`
+- JavaScript 中：使用 `process.env.HOME`
+- C 代码中：使用 `getenv("HOME")`
+- 系统路径如 `/data/service/hnp/bin/*`、`/system/lib64`、`/usr/lib` 是可以的（平台固定）
+- Shell 脚本必须使用 `SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"` 查找同级文件
 
-### 4. 内容指南
+### 4. 文件组织
+- `harmonyos-dev-env/docs/` - 通用适配指南（平台级别问题）
+- `harmonyos-dev-env/tools/` - 工具特定构建指南
+- `harmonyos-dev-env/rules/` - 目标系统规则（由 env-setup.sh 安装到 ~/.claude/）
+- `harmonyos-dev-env/config/` - 配置模板和脚本
+- `harmonyos-dev-env/scripts/` - 工具脚本（签名、验证、环境设置）
+
+### 5. 内容指南
 - 包含完整构建步骤，不只是摘要
 - 记录所有 HarmonyOS 特定适配
 - 提供已知问题的故障排除章节
@@ -106,7 +113,9 @@ HarmonyOS-Dev-Env-Skill/
 
 ## 相关文档
 
-- 目标系统规则: `rules/CLAUDE.cn.md`
-- 代码签名指南: `docs/code-signing.cn.md`
-- LD_LIBRARY_PATH: `docs/ld-library-path.cn.md`
-- OpenSSH 适配指南: `docs/openssh-harmonyos.cn.md`
+- Skill 定义: `harmonyos-dev-env/SKILL.md`
+- 一键环境设置: `harmonyos-dev-env/scripts/env-setup.sh`
+- 目标系统规则: `harmonyos-dev-env/rules/CLAUDE.cn.md`
+- 代码签名指南: `harmonyos-dev-env/docs/code-signing.cn.md`
+- LD_LIBRARY_PATH: `harmonyos-dev-env/docs/ld-library-path.cn.md`
+- OpenSSH 适配指南: `harmonyos-dev-env/docs/openssh-harmonyos.cn.md`
