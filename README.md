@@ -15,6 +15,10 @@
 
 </div>
 
+> **前置依赖**: 本项目依赖 [HarmonyOS-Claude-Code](https://github.com/chenjh16/HarmonyOS-Claude-Code) 提供的 HarmonyOS PC 版 Claude Code 运行环境。请先按该项目说明完成 Claude Code 安装和基础环境配置，再安装本 Skill Pack。
+>
+> **Prerequisite**: This project depends on [HarmonyOS-Claude-Code](https://github.com/chenjh16/HarmonyOS-Claude-Code) for the HarmonyOS PC version of Claude Code runtime. Please complete Claude Code installation and basic environment setup following that project first, then install this Skill Pack.
+
 ---
 
 <a id="中文版"></a>
