@@ -33,6 +33,12 @@
 
 本 Skill 遵循 Claude Code 标准 Skill 结构（`~/.claude/skills/<name>/SKILL.md`），安装后 Agent 在每次对话中自动加载鸿蒙平台知识和完整适配文档。
 
+| 安装方式 | 适用场景 | 影响范围 | 推荐程度 |
+|----------|----------|----------|:--------:|
+| 一键安装 | 本地已克隆仓库，希望快速安装 | 全局 Skill | 推荐 |
+| Agent 自动安装 | 希望让 Claude Code Agent 代为克隆、安装、配置 | 全局 Skill + 环境配置 | 推荐 |
+| 项目级安装 | 只希望在某个项目内启用 HarmonyOS 知识 | 单个项目 | 可选 |
+
 ### 方式一：一键安装（推荐）
 
 使用项目自带的安装脚本，将 `harmonyos-dev-env/` 目录整体复制到 `~/.claude/skills/`：
@@ -49,22 +55,32 @@ sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
 
 ```
 ~/.claude/skills/harmonyos-dev-env/
-├── SKILL.md                    ← Skill 定义（YAML frontmatter + 平台规则 + 工具链参考）
-│                                  Agent 每次对话自动发现，用户可 /harmonyos-dev-env 调用
+├── SKILL.md                    ← Skill 定义（英文，自动加载）
+├── SKILL.cn.md                 ← Skill 定义（中文）
 ├── scripts/
-│   ├── env-setup.sh            ← 一键环境配置（tmpdir + linker wrapper + zshenv + SSH polyfill）
+│   ├── env-setup.sh            ← 一键环境配置
 │   ├── sign-all.sh             ← 批量 ELF 代码签名
-│   ├── verify-env.sh           ← 环境验证（检查所有工具链）
+│   ├── verify-env.sh           ← 环境验证
 │   ├── ssh-fetch-polyfill.js   ← SSH V8 崩溃 workaround
-│   └── start-claude.sh         ← Claude Code 启动脚本（SSH 检测）
-├── docs/                       ← 19 组双语适配文档（Agent 需要时主动 Read 查阅）
-│   ├── python-harmonyos.md / .cn.md
-│   ├── openssh-harmonyos.md / .cn.md
+│   └── start-claude.sh         ← Claude Code 启动脚本
+├── docs/                       ← 19 组双语适配文档
+│   ├── python-harmonyos.md
+│   ├── python-harmonyos.cn.md
+│   ├── openssh-harmonyos.md
+│   ├── openssh-harmonyos.cn.md
 │   └── ...
-├── tools/                      ← 11 工具构建指南（6 个含 install.sh）
-│   ├── python/  ├── rust/  ├── go/  ├── llama-cpp/  ├── mihomo/
-│   ├── dropbear/ ├── openssh/ ├── pytorch/
-│   ├── bat/  ├── eza/  ├── starship/
+├── tools/                      ← 11 个工具构建目录（6 个含 install.sh）
+│   ├── python/
+│   ├── rust/
+│   ├── go/
+│   ├── llama-cpp/
+│   ├── mihomo/
+│   ├── dropbear/
+│   ├── openssh/
+│   ├── pytorch/
+│   ├── bat/
+│   ├── eza/
+│   └── starship/
 └── assets/                     ← 安装辅助资产（非 skill 知识本体）
     ├── zshenv                  ← Shell PATH/LD 配置模板
     └── rules/
@@ -107,7 +123,10 @@ source ~/.zshenv
 除了 Skill 机制外，还可以将规则文件安装到全局 `~/.claude/CLAUDE.md`（双重保障）：
 
 ```bash
-# env-setup.sh 步骤 [5/7] 会自动处理（如果 ~/.claude/CLAUDE.md 不存在）
+# env-setup.sh 步骤 [5/7] 会分别检查并安装：
+# - ~/.claude/CLAUDE.md 不存在时安装英文规则
+# - ~/.claude/CLAUDE.cn.md 不存在时安装中文规则
+# 已存在的文件不会被覆盖。
 # 手动更新：
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
@@ -130,6 +149,11 @@ cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE
 # 方式三：运行验证脚本
 sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh
 ```
+
+验证脚本的预期输出：
+- 核心工具和环境项通过时显示 `✓`
+- 未安装的可选工具（如 PyTorch/OpenSSH）可能显示 warning
+- 如果 `LD_LIBRARY_PATH` 检查失败，请先运行 `source ~/.zshenv`，并确认 `/usr/lib` 位于最前
 
 ### Skill 工作原理
 
@@ -156,23 +180,44 @@ Claude Code 通过文件系统自动发现 Skills：
 
 ## 🔧 已适配工具链
 
-| 工具链 | 版本 | 类别 | 状态 | 文档 |
-|--------|------|------|:----:|------|
-| Python | 3.12.8 | 语言 | ✅ | [docs/python-harmonyos.cn.md](harmonyos-dev-env/docs/python-harmonyos.cn.md) |
-| Node.js | 24.13.0 | 语言 | ✅ | [docs/nodejs-harmonyos.cn.md](harmonyos-dev-env/docs/nodejs-harmonyos.cn.md) |
-| Rust | 1.95.0 | 语言 | ✅ | [docs/rust-harmonyos.cn.md](harmonyos-dev-env/docs/rust-harmonyos.cn.md) |
-| Go | 1.22.5 | 语言 | ✅ | [tools/go/build.cn.md](harmonyos-dev-env/tools/go/build.cn.md) |
-| Claude Code | 2.1.88-ohos.1 | AI工具 | ✅ | [docs/claude-code-harmonyos.cn.md](harmonyos-dev-env/docs/claude-code-harmonyos.cn.md) |
-| PyTorch | 2.5.1 | ML框架 | ✅ | [docs/pytorch-harmonyos.cn.md](harmonyos-dev-env/docs/pytorch-harmonyos.cn.md) |
-| llama.cpp | b9073 | ML推理 | ✅ | [docs/llama-cpp-harmonyos.cn.md](harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md) |
-| mihomo | Meta | 网络 | ✅ | [docs/mihomo-harmonyos.cn.md](harmonyos-dev-env/docs/mihomo-harmonyos.cn.md) |
-| Dropbear SSH | 2024.86 | 网络 | ✅ | [docs/dropbear-harmonyos.cn.md](harmonyos-dev-env/docs/dropbear-harmonyos.cn.md) |
-| OpenSSH | 9.9p1 | 网络 | ✅ | [docs/openssh-harmonyos.cn.md](harmonyos-dev-env/docs/openssh-harmonyos.cn.md) |
-| eza | 0.23.4 | 工具 | ✅ | [docs/eza-harmonyos.cn.md](harmonyos-dev-env/docs/eza-harmonyos.cn.md) |
-| bat | 0.26.1 | 工具 | ✅ | [docs/bat-harmonyos.cn.md](harmonyos-dev-env/docs/bat-harmonyos.cn.md) |
-| starship | 1.25.1 | 工具 | ✅ | [docs/starship-harmonyos.cn.md](harmonyos-dev-env/docs/starship-harmonyos.cn.md) |
+| 工具链 | 版本 | 类别 | 安装方式 | 状态 | 文档 |
+|--------|------|------|----------|:----:|------|
+| Python | 3.12.8 | 语言 | `install.sh` | ✅ | [docs/python-harmonyos.cn.md](harmonyos-dev-env/docs/python-harmonyos.cn.md) |
+| Node.js | 24.13.0 | 语言 | AppGallery / DevNode-OH | ✅ | [docs/nodejs-harmonyos.cn.md](harmonyos-dev-env/docs/nodejs-harmonyos.cn.md) |
+| Rust | 1.95.0 | 语言 | `install.sh` | ✅ | [docs/rust-harmonyos.cn.md](harmonyos-dev-env/docs/rust-harmonyos.cn.md) |
+| Go | 1.22.5 | 语言 | `install.sh` | ✅ | [tools/go/build.cn.md](harmonyos-dev-env/tools/go/build.cn.md) |
+| Claude Code | 2.1.88-ohos.1 | AI工具 | HarmonyOS-Claude-Code / npm | ✅ | [docs/claude-code-harmonyos.cn.md](harmonyos-dev-env/docs/claude-code-harmonyos.cn.md) |
+| PyTorch | 2.5.1 | ML框架 | `build.md` | ✅ | [docs/pytorch-harmonyos.cn.md](harmonyos-dev-env/docs/pytorch-harmonyos.cn.md) |
+| llama.cpp | b9073 | ML推理 | `install.sh` | ✅ | [docs/llama-cpp-harmonyos.cn.md](harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md) |
+| mihomo | Meta | 网络 | `install.sh` | ✅ | [docs/mihomo-harmonyos.cn.md](harmonyos-dev-env/docs/mihomo-harmonyos.cn.md) |
+| Dropbear SSH | 2024.86 | 网络 | `install.sh` + 手动补丁 | ✅ | [docs/dropbear-harmonyos.cn.md](harmonyos-dev-env/docs/dropbear-harmonyos.cn.md) |
+| OpenSSH | 9.9p1 | 网络 | `build.md` + 手动补丁 | ✅ | [docs/openssh-harmonyos.cn.md](harmonyos-dev-env/docs/openssh-harmonyos.cn.md) |
+| eza | 0.23.4 | 工具 | `build.md` | ✅ | [docs/eza-harmonyos.cn.md](harmonyos-dev-env/docs/eza-harmonyos.cn.md) |
+| bat | 0.26.1 | 工具 | `build.md` | ✅ | [docs/bat-harmonyos.cn.md](harmonyos-dev-env/docs/bat-harmonyos.cn.md) |
+| starship | 1.25.1 | 工具 | `build.md` | ✅ | [docs/starship-harmonyos.cn.md](harmonyos-dev-env/docs/starship-harmonyos.cn.md) |
 
 ## ⚠️ 核心问题与解决方案
+
+**14 个核心问题总览**
+
+| # | 问题 | 影响 | 解决方向 |
+|---|------|------|----------|
+| 1 | 代码签名 | 未签名 ELF 二进制会立即崩溃 | 使用 `binary-sign-tool sign -selfSign 1` |
+| 2 | `/tmp` 只读 | 构建、测试、临时文件创建失败 | 使用 `$HOME/Claude/tmpdir` |
+| 3 | 无 gcc | 默认 gcc 的构建脚本失败 | 设置 `CC=/data/service/hnp/bin/clang` |
+| 4 | SDK lld 损坏 | 链接时报缺少 `libxml2.so.16` | 创建 ld.bfd wrapper 并添加 `-B` |
+| 5 | LD_LIBRARY_PATH 顺序 | OpenSSL 符号版本冲突 | `/usr/lib` 必须在 `$HOME/.rust/lib` 前 |
+| 6 | `make -j` 失败 | mkfifo 权限错误导致并行构建失败 | 使用 Ninja |
+| 7 | CMake toolchain 限制 | `try_run()` 在交叉编译模式失败 | 不要同时使用 `CMAKE_TOOLCHAIN_FILE` + `CMAKE_SYSTEM_NAME` |
+| 8 | SSH V8 崩溃 | SSH PTY 下 Claude Code/Node.js 崩溃 | 使用 `node --jitless` + fetch polyfill |
+| 9 | OpenSSH passwd_compat | uid 不在 `/etc/passwd`，sshd 启动/会话异常 | 使用 `LD_PRELOAD=passwd_compat_signed.so` |
+| 10 | OpenSSH abstract socket | 文件系统 Unix socket bind 返回 EPERM | ssh-agent 使用 `abstract:` socket |
+| 11 | OpenSSH authorized_keys UID | 文件 owner uid 与进程 uid 不一致 | 将 uid 20001006 视为系统目录 owner |
+| 12 | Dropbear `-e` 参数 | SSH 子会话丢失 PATH/LD_LIBRARY_PATH | 启动 dropbear 时使用 `-e` |
+| 13 | musl libc 差异 | 无 `crypt()`、locale 有限、errno/断言差异 | 禁用密码认证并按文档 patch |
+| 14 | Python `-rdynamic` | 扩展模块需要 Python 符号导出 | 使用已适配的 Python 3.12.8 |
+
+**重点问题展开说明**
 
 <details>
 <summary><strong>代码签名</strong> (最重要 — 所有 ELF 二进制必须签名)</summary>
@@ -256,7 +301,12 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 ./harmonyos-dev-env/tools/llama-cpp/install.sh # llama.cpp (NEON/SVE 优化)
 ./harmonyos-dev-env/tools/mihomo/install.sh    # mihomo (Clash Meta 代理)
 ./harmonyos-dev-env/tools/dropbear/install.sh  # Dropbear SSH (需手动源码补丁)
-# OpenSSH 需手动补丁+构建，见 harmonyos-dev-env/tools/openssh/build.md
+# 以下工具以 build.md 为主（需要按文档手动构建/补丁）
+# PyTorch: 见 harmonyos-dev-env/tools/pytorch/build.cn.md
+# OpenSSH: 见 harmonyos-dev-env/tools/openssh/build.cn.md
+# eza:     见 harmonyos-dev-env/tools/eza/build.cn.md
+# bat:     见 harmonyos-dev-env/tools/bat/build.cn.md
+# starship:见 harmonyos-dev-env/tools/starship/build.cn.md
 ```
 
 > **注意**: 工具链 install.sh 脚本需要克隆完整仓库才能运行（Skill 安装目录也包含这些脚本）。Dropbear 和 OpenSSH 需要手动编辑源码补丁（5 个 / 16 个），install.sh 会提示哪些文件需要修改。
@@ -292,6 +342,14 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [IPC 可行性](harmonyos-dev-env/docs/ipc-feasibility.cn.md) | Native 子进程 API |
 | [故障排除](harmonyos-dev-env/docs/troubleshooting.cn.md) | 综合问题解决参考 |
 
+## 🛠 维护说明
+
+- README 内容刻意保持中英文完整镜像；修改时必须同步更新两个语言章节。
+- 每个新增文档都必须同时提供 `.md` 和 `.cn.md` 版本。
+- 新增或移除工具时，需要同步更新 README、`harmonyos-dev-env/SKILL.md`、`harmonyos-dev-env/SKILL.cn.md` 和 `skill.json`。
+- 所有用户可变路径保持 `$HOME` 可移植写法；不要新增用户私有绝对路径。
+- 保持 docs、scripts 和 `assets/rules/CLAUDE.md` 与 14 条核心平台规则一致。
+
 ---
 
 <a id="english-version"></a>
@@ -305,6 +363,12 @@ This project is a **Claude Code Skill Pack** designed specifically for HarmonyOS
 ## 📦 Skill Installation & Usage
 
 This Skill follows the standard Claude Code Skill structure (`~/.claude/skills/<name>/SKILL.md`). Once installed, the Agent automatically loads HarmonyOS platform knowledge and full adaptation documentation in every conversation.
+
+| Install method | Best for | Scope | Recommendation |
+|----------------|----------|-------|:--------------:|
+| One-click install | Users who already cloned the repository and want a quick install | Global Skill | Recommended |
+| Agent auto-install | Users who want Claude Code Agent to clone, install, and configure everything | Global Skill + environment setup | Recommended |
+| Project-level install | Users who only want HarmonyOS knowledge enabled for one project | Single project | Optional |
 
 ### Option A: One-Click Install (Recommended)
 
@@ -322,22 +386,32 @@ The installed Skill directory structure:
 
 ```
 ~/.claude/skills/harmonyos-dev-env/
-├── SKILL.md                    ← Skill definition (YAML frontmatter + platform rules + toolchain reference)
-│                                  Auto-discovered every conversation; user can invoke /harmonyos-dev-env
+├── SKILL.md                    ← Skill definition (English, auto-loaded)
+├── SKILL.cn.md                 ← Skill definition (Chinese)
 ├── scripts/
-│   ├── env-setup.sh            ← One-time env config (tmpdir + linker wrapper + zshenv + SSH polyfill)
+│   ├── env-setup.sh            ← One-time environment setup
 │   ├── sign-all.sh             ← Batch ELF code signing
-│   ├── verify-env.sh           ← Environment verification (checks all toolchains)
+│   ├── verify-env.sh           ← Environment verification
 │   ├── ssh-fetch-polyfill.js   ← SSH V8 crash workaround
-│   └── start-claude.sh         ← Claude Code startup script (SSH detection)
-├── docs/                       ← 19 bilingual adaptation guides (Agent reads when needed)
-│   ├── python-harmonyos.md / .cn.md
-│   ├── openssh-harmonyos.md / .cn.md
+│   └── start-claude.sh         ← Claude Code startup script
+├── docs/                       ← 19 bilingual adaptation guides
+│   ├── python-harmonyos.md
+│   ├── python-harmonyos.cn.md
+│   ├── openssh-harmonyos.md
+│   ├── openssh-harmonyos.cn.md
 │   └── ...
-├── tools/                      ← 11 tool build guides (6 with install.sh)
-│   ├── python/  ├── rust/  ├── go/  ├── llama-cpp/  ├── mihomo/
-│   ├── dropbear/ ├── openssh/ ├── pytorch/
-│   ├── bat/  ├── eza/  ├── starship/
+├── tools/                      ← 11 tool build directories (6 with install.sh)
+│   ├── python/
+│   ├── rust/
+│   ├── go/
+│   ├── llama-cpp/
+│   ├── mihomo/
+│   ├── dropbear/
+│   ├── openssh/
+│   ├── pytorch/
+│   ├── bat/
+│   ├── eza/
+│   └── starship/
 └── assets/                     ← Installation assets (not skill knowledge per se)
     ├── zshenv                  ← Shell PATH/LD config template
     └── rules/
@@ -380,7 +454,10 @@ source ~/.zshenv
 In addition to the Skill mechanism, install rules to global `~/.claude/CLAUDE.md` (double guarantee):
 
 ```bash
-# env-setup.sh step [5/7] handles this automatically (if ~/.claude/CLAUDE.md doesn't exist)
+# env-setup.sh step [5/7] checks and installs these independently:
+# - Installs English rules if ~/.claude/CLAUDE.md does not exist
+# - Installs Chinese rules if ~/.claude/CLAUDE.cn.md does not exist
+# Existing files are not overwritten.
 # Manual update:
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
@@ -403,6 +480,11 @@ After installation, start Claude Code and verify the Skill is active:
 # Option C: Run the verification script
 sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh
 ```
+
+Expected verification output:
+- Critical tools and environment checks show `✓` when they pass
+- Optional tools that are not installed yet (such as PyTorch/OpenSSH) may show warnings
+- If the `LD_LIBRARY_PATH` check fails, run `source ~/.zshenv` and make sure `/usr/lib` is first
 
 ### How the Skill Works
 
@@ -429,23 +511,44 @@ Claude Code auto-discovers Skills through the filesystem:
 
 ## 🔧 Adapted Toolchains
 
-| Toolchain | Version | Category | Status | Docs |
-|-----------|---------|----------|:------:|------|
-| Python | 3.12.8 | Language | ✅ | [docs/python-harmonyos.md](harmonyos-dev-env/docs/python-harmonyos.md) |
-| Node.js | 24.13.0 | Language | ✅ | [docs/nodejs-harmonyos.md](harmonyos-dev-env/docs/nodejs-harmonyos.md) |
-| Rust | 1.95.0 | Language | ✅ | [docs/rust-harmonyos.md](harmonyos-dev-env/docs/rust-harmonyos.md) |
-| Go | 1.22.5 | Language | ✅ | [tools/go/build.md](harmonyos-dev-env/tools/go/build.md) |
-| Claude Code | 2.1.88-ohos.1 | AI Tool | ✅ | [docs/claude-code-harmonyos.md](harmonyos-dev-env/docs/claude-code-harmonyos.md) |
-| PyTorch | 2.5.1 | ML Framework | ✅ | [docs/pytorch-harmonyos.md](harmonyos-dev-env/docs/pytorch-harmonyos.md) |
-| llama.cpp | b9073 | ML Inference | ✅ | [docs/llama-cpp-harmonyos.md](harmonyos-dev-env/docs/llama-cpp-harmonyos.md) |
-| mihomo | Meta | Network | ✅ | [docs/mihomo-harmonyos.md](harmonyos-dev-env/docs/mihomo-harmonyos.md) |
-| Dropbear SSH | 2024.86 | Network | ✅ | [docs/dropbear-harmonyos.md](harmonyos-dev-env/docs/dropbear-harmonyos.md) |
-| OpenSSH | 9.9p1 | Network | ✅ | [docs/openssh-harmonyos.md](harmonyos-dev-env/docs/openssh-harmonyos.md) |
-| eza | 0.23.4 | Utility | ✅ | [docs/eza-harmonyos.md](harmonyos-dev-env/docs/eza-harmonyos.md) |
-| bat | 0.26.1 | Utility | ✅ | [docs/bat-harmonyos.md](harmonyos-dev-env/docs/bat-harmonyos.md) |
-| starship | 1.25.1 | Utility | ✅ | [docs/starship-harmonyos.md](harmonyos-dev-env/docs/starship-harmonyos.md) |
+| Toolchain | Version | Category | Install method | Status | Docs |
+|-----------|---------|----------|----------------|:------:|------|
+| Python | 3.12.8 | Language | `install.sh` | ✅ | [docs/python-harmonyos.md](harmonyos-dev-env/docs/python-harmonyos.md) |
+| Node.js | 24.13.0 | Language | AppGallery / DevNode-OH | ✅ | [docs/nodejs-harmonyos.md](harmonyos-dev-env/docs/nodejs-harmonyos.md) |
+| Rust | 1.95.0 | Language | `install.sh` | ✅ | [docs/rust-harmonyos.md](harmonyos-dev-env/docs/rust-harmonyos.md) |
+| Go | 1.22.5 | Language | `install.sh` | ✅ | [tools/go/build.md](harmonyos-dev-env/tools/go/build.md) |
+| Claude Code | 2.1.88-ohos.1 | AI Tool | HarmonyOS-Claude-Code / npm | ✅ | [docs/claude-code-harmonyos.md](harmonyos-dev-env/docs/claude-code-harmonyos.md) |
+| PyTorch | 2.5.1 | ML Framework | `build.md` | ✅ | [docs/pytorch-harmonyos.md](harmonyos-dev-env/docs/pytorch-harmonyos.md) |
+| llama.cpp | b9073 | ML Inference | `install.sh` | ✅ | [docs/llama-cpp-harmonyos.md](harmonyos-dev-env/docs/llama-cpp-harmonyos.md) |
+| mihomo | Meta | Network | `install.sh` | ✅ | [docs/mihomo-harmonyos.md](harmonyos-dev-env/docs/mihomo-harmonyos.md) |
+| Dropbear SSH | 2024.86 | Network | `install.sh` + manual patches | ✅ | [docs/dropbear-harmonyos.md](harmonyos-dev-env/docs/dropbear-harmonyos.md) |
+| OpenSSH | 9.9p1 | Network | `build.md` + manual patches | ✅ | [docs/openssh-harmonyos.md](harmonyos-dev-env/docs/openssh-harmonyos.md) |
+| eza | 0.23.4 | Utility | `build.md` | ✅ | [docs/eza-harmonyos.md](harmonyos-dev-env/docs/eza-harmonyos.md) |
+| bat | 0.26.1 | Utility | `build.md` | ✅ | [docs/bat-harmonyos.md](harmonyos-dev-env/docs/bat-harmonyos.md) |
+| starship | 1.25.1 | Utility | `build.md` | ✅ | [docs/starship-harmonyos.md](harmonyos-dev-env/docs/starship-harmonyos.md) |
 
 ## ⚠️ Core Issues
+
+**Overview of the 14 core issues**
+
+| # | Issue | Impact | Fix direction |
+|---|-------|--------|---------------|
+| 1 | Code signing | Unsigned ELF binaries crash immediately | Use `binary-sign-tool sign -selfSign 1` |
+| 2 | `/tmp` read-only | Builds, tests, and temp-file creation fail | Use `$HOME/Claude/tmpdir` |
+| 3 | No gcc | Build scripts that default to gcc fail | Set `CC=/data/service/hnp/bin/clang` |
+| 4 | SDK lld broken | Linking fails with missing `libxml2.so.16` | Create ld.bfd wrapper and add `-B` |
+| 5 | LD_LIBRARY_PATH order | OpenSSL symbol version conflicts | `/usr/lib` must come before `$HOME/.rust/lib` |
+| 6 | `make -j` fails | mkfifo permission error breaks parallel builds | Use Ninja |
+| 7 | CMake toolchain limitation | `try_run()` fails in cross-compile mode | Do not combine `CMAKE_TOOLCHAIN_FILE` + `CMAKE_SYSTEM_NAME` |
+| 8 | SSH V8 crash | Claude Code/Node.js crashes under SSH PTY | Use `node --jitless` + fetch polyfill |
+| 9 | OpenSSH passwd_compat | uid missing from `/etc/passwd`; sshd/session issues | Use `LD_PRELOAD=passwd_compat_signed.so` |
+| 10 | OpenSSH abstract socket | Filesystem Unix socket bind returns EPERM | ssh-agent uses `abstract:` socket |
+| 11 | OpenSSH authorized_keys UID | File owner uid differs from process uid | Treat uid 20001006 as system directory owner |
+| 12 | Dropbear `-e` flag | SSH child sessions lose PATH/LD_LIBRARY_PATH | Start dropbear with `-e` |
+| 13 | musl libc differences | No `crypt()`, limited locale, errno/assert differences | Disable password auth and apply documented patches |
+| 14 | Python `-rdynamic` | Extension modules need exported Python symbols | Use the adapted Python 3.12.8 |
+
+**Detailed notes for key issues**
 
 <details>
 <summary><strong>Code Signing</strong> (Most Critical — all ELF binaries must be signed)</summary>
@@ -529,7 +632,12 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 ./harmonyos-dev-env/tools/llama-cpp/install.sh # llama.cpp (NEON/SVE optimization)
 ./harmonyos-dev-env/tools/mihomo/install.sh    # mihomo (Clash Meta proxy)
 ./harmonyos-dev-env/tools/dropbear/install.sh  # Dropbear SSH (requires manual source patches)
-# OpenSSH requires manual patches + build, see harmonyos-dev-env/tools/openssh/build.md
+# The following tools are build.md-first (manual build/patches per guide)
+# PyTorch:  see harmonyos-dev-env/tools/pytorch/build.md
+# OpenSSH:  see harmonyos-dev-env/tools/openssh/build.md
+# eza:      see harmonyos-dev-env/tools/eza/build.md
+# bat:      see harmonyos-dev-env/tools/bat/build.md
+# starship: see harmonyos-dev-env/tools/starship/build.md
 ```
 
 > **Note**: Tool install.sh scripts require cloning the full repo (the Skill install directory also contains these scripts). Dropbear and OpenSSH require manual source code edits (5 / 16 patches respectively). See each tool's `build.md` for detailed patch instructions.
@@ -564,6 +672,14 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [SELinux Analysis](harmonyos-dev-env/docs/selinux-analysis.md) | .so loading root cause |
 | [IPC Feasibility](harmonyos-dev-env/docs/ipc-feasibility.md) | Native child process API |
 | [Troubleshooting](harmonyos-dev-env/docs/troubleshooting.md) | Consolidated problem-solving |
+
+## 🛠 Maintenance Notes
+
+- README content is intentionally fully mirrored in Chinese and English; update both sections together.
+- Every new documentation page must have both `.md` and `.cn.md` versions.
+- When adding or removing tools, update README, `harmonyos-dev-env/SKILL.md`, `harmonyos-dev-env/SKILL.cn.md`, and `skill.json` together.
+- Keep user-variable paths portable with `$HOME`; do not add user-specific absolute paths.
+- Keep docs, scripts, and `assets/rules/CLAUDE.md` aligned with the 14 core platform rules.
 
 ---
 
