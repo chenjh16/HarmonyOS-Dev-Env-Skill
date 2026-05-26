@@ -25,6 +25,11 @@ for arg in "$@"; do
     case $arg in
         --download-only) DOWNLOAD_ONLY=true ;;
         --skip-sign) SKIP_SIGN=true ;;
+        *)
+            echo "Error: unknown option: $arg"
+            echo "Usage: ./install.sh [--download-only] [--skip-sign]"
+            exit 1
+            ;;
     esac
 done
 

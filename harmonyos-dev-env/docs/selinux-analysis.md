@@ -20,7 +20,7 @@
 |------|-------------|---------------|-------------|
 | `/data/service/hnp/` | hmfs | `u:object_r:hnp_file:s0` | ✓ Works |
 | `/system/lib64/` | system | System labels | ✓ Works |
-| `$HOME` (`/storage/Users/currentUser/`) | hmdfs | `u:object_r:hmdfs:s0` | ✗ Denied |
+| `$HOME` (example: `/storage/Users/<user>/`) | hmdfs | `u:object_r:hmdfs:s0` | ✗ Denied |
 | `/data/storage/el2/base/haps/` | hmfs | `u:object_r:hishell_hap_data_file:s0` | ✗ Denied |
 | `/data/local/tmp/` | hmfs | `u:object_r:data_local_tmp:s0` | ✗ Denied (no write access) |
 

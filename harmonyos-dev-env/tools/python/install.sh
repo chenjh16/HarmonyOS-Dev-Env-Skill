@@ -28,6 +28,11 @@ for arg in "$@"; do
     case $arg in
         --skip-build) SKIP_BUILD=true ;;
         --skip-pip) SKIP_PIP=true ;;
+        *)
+            echo "Error: unknown option: $arg"
+            echo "Usage: ./install.sh [--skip-build] [--skip-pip]"
+            exit 1
+            ;;
     esac
 done
 

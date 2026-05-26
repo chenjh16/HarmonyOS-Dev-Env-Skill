@@ -50,7 +50,7 @@ fi
 echo "[3/7] Installing shell environment config..."
 cp "$SKILL_DIR/assets/zshenv" "$HOME/.zshenv"
 echo "  Installed: $HOME/.zshenv"
-echo "  Run 'source ~/.zshenv' to activate in current session."
+echo "  Run 'source $HOME/.zshenv' to activate in current session."
 
 # ── 4. Claude Code helper scripts ────────────────────────────────
 
@@ -71,7 +71,7 @@ if [ ! -f "$HOME/.claude/CLAUDE.md" ]; then
     echo "  Installed: $HOME/.claude/CLAUDE.md"
 else
     echo "  Already exists: $HOME/.claude/CLAUDE.md (not overwritten)"
-    echo "  To update, run: cp $SKILL_DIR/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md"
+    echo "  To update, run: cp $SKILL_DIR/assets/rules/CLAUDE.md $HOME/.claude/CLAUDE.md"
 fi
 
 if [ ! -f "$HOME/.claude/CLAUDE.cn.md" ]; then
@@ -79,7 +79,7 @@ if [ ! -f "$HOME/.claude/CLAUDE.cn.md" ]; then
     echo "  Installed: $HOME/.claude/CLAUDE.cn.md"
 else
     echo "  Already exists: $HOME/.claude/CLAUDE.cn.md (not overwritten)"
-    echo "  To update, run: cp $SKILL_DIR/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md"
+    echo "  To update, run: cp $SKILL_DIR/assets/rules/CLAUDE.cn.md $HOME/.claude/CLAUDE.cn.md"
 fi
 
 # ── 6. Onboarding skip ───────────────────────────────────────────
@@ -105,7 +105,7 @@ echo ""
 echo "=== Setup Complete ==="
 echo ""
 echo "Next steps:"
-echo "  1. Run: source ~/.zshenv"
+echo "  1. Run: source $HOME/.zshenv"
 echo "  2. Install toolchains as needed (see SKILL.md docs/ references)"
 echo "  3. Start a new Claude Code session (Skill will auto-load)"
 echo ""

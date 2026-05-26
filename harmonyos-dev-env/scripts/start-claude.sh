@@ -54,11 +54,11 @@ elif ! tty >/dev/null 2>&1; then
 fi
 
 # ── Load .env (if present) ────────────────────────────────────
-# Credentials and endpoints are loaded from ~/.claude/.env
-# Copy ~/.claude/.env.example to ~/.claude/.env and fill in your values.
-if [ -f ~/.claude/.env ]; then
+# Credentials and endpoints are loaded from $HOME/.claude/.env
+# Copy $HOME/.claude/.env.example to $HOME/.claude/.env and fill in your values.
+if [ -f "$HOME/.claude/.env" ]; then
     set -a
-    . ~/.claude/.env
+    . "$HOME/.claude/.env"
     set +a
 fi
 
@@ -67,7 +67,8 @@ fi
 #   Uses ANTHROPIC_API_KEY for authentication.
 export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:?Please set ANTHROPIC_API_KEY}"
 unset ANTHROPIC_AUTH_TOKEN  # 不设置空字符串，避免 SDK 发送 "Bearer ''" 导致 401
-export ANTHROPIC_BASE_URL="${ANTHROPIC_BASE_URL:-http://<your-litellm-host>:<port>}"
+: "${ANTHROPIC_BASE_URL:?Please set ANTHROPIC_BASE_URL}"
+export ANTHROPIC_BASE_URL
 #
 # Option B: Claude API proxy (anyrouter / gift)
 #   Uncomment the block below and comment out Option A above.
@@ -141,9 +142,9 @@ export CLAUDE_CODE_TMPDIR=$HOME/Claude/tmpdir
 mkdir -p "$TMPDIR"
 
 # Skip onboarding wizard
-mkdir -p ~/.claude
-if [ ! -f ~/.claude/config.json ]; then
-    echo '{"hasCompletedOnboarding":true}' > ~/.claude/config.json
+mkdir -p "$HOME/.claude"
+if [ ! -f "$HOME/.claude/config.json" ]; then
+    echo '{"hasCompletedOnboarding":true}' > "$HOME/.claude/config.json"
 fi
 
 # Launch Claude Code

@@ -20,7 +20,7 @@
 |------|----------|--------------|----------|
 | `/data/service/hnp/` | hmfs | `u:object_r:hnp_file:s0` | ✓ 成功 |
 | `/system/lib64/` | system | 系统标签 | ✓ 成功 |
-| `$HOME` (`/storage/Users/currentUser/`) | hmdfs | `u:object_r:hmdfs:s0` | ✗ 拒绝 |
+| `$HOME`（示例：`/storage/Users/<user>/`） | hmdfs | `u:object_r:hmdfs:s0` | ✗ 拒绝 |
 | `/data/storage/el2/base/haps/` | hmfs | `u:object_r:hishell_hap_data_file:s0` | ✗ 拒绝 |
 | `/data/local/tmp/` | hmfs | `u:object_r:data_local_tmp:s0` | ✗ 拒绝 (无写权限) |
 

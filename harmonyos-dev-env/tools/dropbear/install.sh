@@ -1,6 +1,6 @@
 #!/bin/sh
 # install.sh - Install Dropbear SSH server on HarmonyOS
-# Usage: ./install.sh [--skip-build]
+# Usage: ./install.sh [--skip-build] [--skip-patches]
 #
 # This script downloads, builds, and installs Dropbear SSH server for HarmonyOS.
 # Includes 5 critical source patches for HarmonyOS user system compatibility.
@@ -15,6 +15,20 @@ SYSROOT="/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot"
 SIGN_TOOL="/data/service/hnp/bin/binary-sign-tool"
 OBJCOPY="/data/service/hnp/bin/llvm-objcopy"
 SRC_DIR="$BUILD_DIR/dropbear-$DROPBEAR_VERSION"
+SKIP_PATCHES=false
+SKIP_BUILD=false
+
+for arg in "$@"; do
+    case $arg in
+        --skip-patches) SKIP_PATCHES=true ;;
+        --skip-build) SKIP_BUILD=true ;;
+        *)
+            echo "Error: unknown option: $arg"
+            echo "Usage: ./install.sh [--skip-build] [--skip-patches]"
+            exit 1
+            ;;
+    esac
+done
 
 # Check for ld.bfd wrapper
 LINKER_WRAPPER="$HOME/Claude/lib/linker_wrapper/ld.lld"
@@ -163,18 +177,9 @@ echo "See tools/dropbear/build.md for detailed patch instructions."
 echo "After applying patches, re-run this script with --skip-patches."
 echo ""
 
-# Check if patches flag
-SKIP_PATCHES=false
-for arg in "$@"; do
-    case $arg in
-        --skip-patches) SKIP_PATCHES=true ;;
-        --skip-build) SKIP_BUILD=true ;;
-    esac
-done
-
 if [ "$SKIP_PATCHES" = false ]; then
-    echo "Press Enter to continue to build (after manually applying patches), or Ctrl+C to exit..."
-    read -r _
+    echo "Re-run this script with --skip-patches after applying the manual patches."
+    exit 1
 fi
 
 if [ "$SKIP_BUILD" = true ]; then

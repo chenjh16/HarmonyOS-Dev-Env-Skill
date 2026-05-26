@@ -19,6 +19,11 @@ NO_OPTIMIZE=false
 for arg in "$@"; do
     case $arg in
         --no-optimize) NO_OPTIMIZE=true ;;
+        *)
+            echo "Error: unknown option: $arg"
+            echo "Usage: ./install.sh [--no-optimize]"
+            exit 1
+            ;;
     esac
 done
 

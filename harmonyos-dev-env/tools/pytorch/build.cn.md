@@ -491,4 +491,4 @@ $HOME/.local/lib/python3.12/site-packages/torch/
 
 - PyTorch 源码: https://github.com/pytorch/pytorch (v2.5.1)
 - HarmonyOS SDK: `/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/`
-- HarmonyOS 上的 Python: [python-harmonyos.cn.md](python-harmonyos.cn.md)
+- HarmonyOS 上的 Python: [python-harmonyos.cn.md](../../docs/python-harmonyos.cn.md)

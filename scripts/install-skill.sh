@@ -28,6 +28,10 @@ for arg in "$@"; do
             if [ "$NEXT_ARG" = "project" ]; then
                 PROJECT_PATH="$arg"
                 NEXT_ARG=""
+            else
+                echo "Error: unknown option: $arg"
+                echo "Usage: sh install-skill.sh [--global | --project <project-path>]"
+                exit 1
             fi
             ;;
     esac
@@ -62,6 +66,11 @@ case "$SKILL_DIR" in
         exit 1
         ;;
 esac
+
+if [ ! -f "$SKILL_SRC/SKILL.md" ]; then
+    echo "Error: skill source not found or incomplete: $SKILL_SRC"
+    exit 1
+fi
 
 echo "=== Installing HarmonyOS-Dev-Env Skill ==="
 echo "Source: $SKILL_SRC"

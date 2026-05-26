@@ -73,6 +73,7 @@
       "category": "ml-framework",
       "source": "https://github.com/pytorch/pytorch (v2.5.1)",
       "build_guide": "harmonyos-dev-env/tools/pytorch/build.md",
+      "install_method": "manual build guide",
       "install_dir": "$HOME/.local/lib/python3.12/site-packages/torch",
       "features": ["tensor ops", "nn modules", "autograd", "optimizers", "LAPACK enabled", "NumPy support", "15/15 e2e tests", "MNIST training"]
     },
@@ -102,6 +103,7 @@
       "category": "utility",
       "source": "https://github.com/eza-community/eza",
       "build_guide": "harmonyos-dev-env/tools/eza/build.md",
+      "install_method": "manual build guide",
       "install_dir": "$HOME/Claude/eza-build/eza/target/release",
       "features": ["modern ls", "colors", "icons", "tree view"]
     },
@@ -111,6 +113,7 @@
       "category": "utility",
       "source": "https://github.com/sharkdp/bat",
       "build_guide": "harmonyos-dev-env/tools/bat/build.md",
+      "install_method": "manual build guide",
       "install_dir": "$HOME/Claude/bat-build/bat/target/release",
       "features": ["syntax highlighting", "cat replacement"]
     },
@@ -120,6 +123,7 @@
       "category": "utility",
       "source": "https://github.com/starship/starship",
       "build_guide": "harmonyos-dev-env/tools/starship/build.md",
+      "install_method": "manual build guide",
       "install_dir": "$HOME/Claude/starship-build/starship/target/release",
       "features": ["cross-shell prompt", "customizable"]
     },
@@ -139,6 +143,7 @@
       "category": "network",
       "source": "https://github.com/openssh/openssh-portable (V_9_9_P1)",
       "build_guide": "harmonyos-dev-env/tools/openssh/build.md",
+      "install_method": "manual build guide",
       "install_dir": "$HOME/Claude/openssh-build/openssh-prefix/bin",
       "features": ["SSH server", "SSH client", "scp", "sftp", "ssh-agent", "ssh-keygen", "pubkey auth", "StrictModes=yes", "abstract socket", "16 HarmonyOS patches", "LD_PRELOAD passwd_compat", "full sshd_config"]
     }

@@ -5,7 +5,7 @@
 **HarmonyOS (鸿蒙) PC 开发环境配置技能包**
 
 [![GitHub](https://img.shields.io/badge/GitHub-chenjh16/HarmonyOS--Dev--Env--Skill-blue?logo=github)](https://github.com/chenjh16/HarmonyOS-Dev-Env-Skill)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 [![Platform](https://img.shields.io/badge/Platform-HarmonyOS%20HongMeng%20Kernel-orange)](https://www.harmonyos.com)
 [![Arch](https://img.shields.io/badge/Arch-aarch64-purple)](https://developer.huawei.com)
 [![Tools](https://img.shields.io/badge/Tools-13%20Adapted-brightgreen)](https://github.com/chenjh16/HarmonyOS-Dev-Env-Skill)
@@ -69,7 +69,7 @@ sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
 │   ├── openssh-harmonyos.md
 │   ├── openssh-harmonyos.cn.md
 │   └── ...
-├── tools/                      ← 11 个工具构建目录（6 个含 install.sh）
+├── tools/                      ← 11 个工具构建目录（6 个含 install.sh；另有 2 个外部安装工具链）
 │   ├── python/
 │   ├── rust/
 │   ├── go/
@@ -348,7 +348,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 - 每个新增文档都必须同时提供 `.md` 和 `.cn.md` 版本。
 - 新增或移除工具时，需要同步更新 README、`harmonyos-dev-env/SKILL.md`、`harmonyos-dev-env/SKILL.cn.md` 和 `skill.json`。
 - 所有用户可变路径保持 `$HOME` 可移植写法；不要新增用户私有绝对路径。
-- 保持 docs、scripts 和 `assets/rules/CLAUDE.md` 与 14 条核心平台规则一致。
+- 保持 docs、scripts 和 `assets/rules/CLAUDE.md` 与核心平台规则和适配清单一致。
 
 ---
 
@@ -400,7 +400,7 @@ The installed Skill directory structure:
 │   ├── openssh-harmonyos.md
 │   ├── openssh-harmonyos.cn.md
 │   └── ...
-├── tools/                      ← 11 tool build directories (6 with install.sh)
+├── tools/                      ← 11 tool build directories (6 with install.sh; plus 2 external-install toolchains)
 │   ├── python/
 │   ├── rust/
 │   ├── go/
@@ -679,7 +679,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 - Every new documentation page must have both `.md` and `.cn.md` versions.
 - When adding or removing tools, update README, `harmonyos-dev-env/SKILL.md`, `harmonyos-dev-env/SKILL.cn.md`, and `skill.json` together.
 - Keep user-variable paths portable with `$HOME`; do not add user-specific absolute paths.
-- Keep docs, scripts, and `assets/rules/CLAUDE.md` aligned with the 14 core platform rules.
+- Keep docs, scripts, and `assets/rules/CLAUDE.md` aligned with the core platform rules and adaptation checklist.
 
 ---
 

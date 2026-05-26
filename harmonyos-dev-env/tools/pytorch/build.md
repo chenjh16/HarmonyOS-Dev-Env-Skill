@@ -505,4 +505,4 @@ $HOME/.local/lib/python3.12/site-packages/torch/
 
 - PyTorch source: https://github.com/pytorch/pytorch (v2.5.1)
 - HarmonyOS SDK: `/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/`
-- Python on HarmonyOS: [python-harmonyos.md](python-harmonyos.md)
+- Python on HarmonyOS: [python-harmonyos.md](../../docs/python-harmonyos.md)
