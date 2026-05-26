@@ -1,17 +1,10 @@
 ---
 name: harmonyos-dev-env
 description: HarmonyOS PC development environment skill pack. Provides complete platform knowledge (code signing, read-only /tmp, no gcc, ld.bfd wrapper, LD_LIBRARY_PATH ordering) and toolchain adaptation guides (Python, Rust, Go, PyTorch, llama.cpp, OpenSSH, etc.). Use when building, compiling, or configuring any software on HarmonyOS, or when user mentions "鸿蒙", "HarmonyOS", "HongMeng", or any HarmonyOS-specific issue. Read docs/ files for detailed build guides when needed.
-argument-hint: [topic: e.g. "python build", "code signing", "openssh config"] or just describe what you need
-disable-model-invocation: false
-user-invocable: true
-allowed-tools: Bash(clang *) Bash(binary-sign-tool *) Bash(patchelf *) Bash(cmake *) Bash(ninja *) Bash(make *) Bash(pip *) Bash(cargo *) Bash(go *) Bash(curl *) Bash(git *) Bash(sh *) Bash(bash *) Bash(chmod *) Bash(mkdir *) Bash(cp *) Bash(mv *) Bash(rm *) Bash(ln *) Bash(sed *) Bash(grep *) Bash(cat *) Bash(head *) Bash(tail *) Bash(find *) Bash(file *) Bash(nm *) Bash(llvm-objcopy *) Bash(llvm-readelf *) Bash(ssh *) Bash(sshd *) Bash(scp *) Bash(sftp *) Bash(ssh-keygen *) Bash(pkill *) Bash(pgrep *) Bash(ps *) Bash(echo *) Agent Read Write Edit Grep Glob
+always-enable: true
 ---
 
 # HarmonyOS PC Development Environment Skill Pack
-
-> **中文说明见下方 | For Chinese version, see below**
-
-## English Version
 
 ### Critical Platform Rules
 
@@ -74,22 +67,22 @@ allowed-tools: Bash(clang *) Bash(binary-sign-tool *) Bash(patchelf *) Bash(cmak
 
 Full build guides are in this skill's `docs/` directory. When the user asks about a specific tool, read the corresponding guide using the Read tool with relative path from this SKILL.md's directory:
 
-- `docs/python-harmonyos.md` / `.cn.md` — Python 3.12.8 standalone build
-- `docs/rust-harmonyos.md` / `.cn.md` — Rust ohos target installation
-- `docs/pytorch-harmonyos.md` / `.cn.md` — PyTorch v2.5.1, 15/15 e2e tests
-- `docs/openssh-harmonyos.md` / `.cn.md` — OpenSSH 9.9p1, 16 patches
-- `docs/dropbear-harmonyos.md` / `.cn.md` — Dropbear, 5 patches, V8 crash
-- `docs/llama-cpp-harmonyos.md` / `.cn.md` — NEON/SVE optimization, Qwen3.5
-- `docs/claude-code-harmonyos.md` / `.cn.md` — Claude Code ohos adaptation
-- `docs/nodejs-harmonyos.md` / `.cn.md` — DevNode-OH, TLS workaround
-- `docs/mihomo-harmonyos.md` / `.cn.md` — HTTP/SOCKS5, GEOIP/GEOSITE
-- `docs/eza-harmonyos.md` / `.cn.md` — modern ls
-- `docs/bat-harmonyos.md` / `.cn.md` — syntax-highlighted cat
-- `docs/starship-harmonyos.md` / `.cn.md` — cross-shell prompt
-- `docs/code-signing.md` / `.cn.md` — ELF/HAP signing guide
-- `docs/ld-library-path.md` / `.cn.md` — LD_LIBRARY_PATH ordering
-- `docs/selinux-analysis.md` / `.cn.md` — .so loading root cause
-- `docs/troubleshooting.md` / `.cn.md` — consolidated problem-solving
+- `docs/python-harmonyos.md` — Python 3.12.8 standalone build
+- `docs/rust-harmonyos.md` — Rust ohos target installation
+- `docs/pytorch-harmonyos.md` — PyTorch v2.5.1, 15/15 e2e tests
+- `docs/openssh-harmonyos.md` — OpenSSH 9.9p1, 16 patches
+- `docs/dropbear-harmonyos.md` — Dropbear, 5 patches, V8 crash
+- `docs/llama-cpp-harmonyos.md` — NEON/SVE optimization, Qwen3.5
+- `docs/claude-code-harmonyos.md` — Claude Code ohos adaptation
+- `docs/nodejs-harmonyos.md` — DevNode-OH, TLS workaround
+- `docs/mihomo-harmonyos.md` — HTTP/SOCKS5, GEOIP/GEOSITE
+- `docs/eza-harmonyos.md` — modern ls
+- `docs/bat-harmonyos.md` — syntax-highlighted cat
+- `docs/starship-harmonyos.md` — cross-shell prompt
+- `docs/code-signing.md` — ELF/HAP signing guide
+- `docs/ld-library-path.md` — LD_LIBRARY_PATH ordering
+- `docs/selinux-analysis.md` — .so loading root cause
+- `docs/troubleshooting.md` — consolidated problem-solving
 
 Tool build guides with install scripts are in `tools/`:
 - `tools/python/`, `tools/rust/`, `tools/go/`, `tools/llama-cpp/`, `tools/mihomo/`, `tools/dropbear/`, `tools/openssh/`, `tools/pytorch/`, `tools/bat/`, `tools/eza/`, `tools/starship/`
@@ -97,46 +90,13 @@ Tool build guides with install scripts are in `tools/`:
 ### Quick Commands
 
 ```bash
-# One-time environment setup (creates tmpdir, linker wrapper, copies zshenv)
+# One-time environment setup (creates $HOME/Claude base dir, tmpdir, linker wrapper, copies zshenv)
+# $HOME/Claude is the convention directory for all toolchain installs — env-setup.sh creates it
 sh ~/.claude/skills/harmonyos-dev-env/scripts/env-setup.sh
 
 # Batch code signing for a directory
 sh ~/.claude/skills/harmonyos-dev-env/scripts/sign-all.sh <directory>
 
 # Verify environment (checks all toolchains)
-sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh
-```
-
----
-
-### 中文说明
-
-#### 关键平台规则
-
-1. **代码签名**: 所有 ELF 二进制必须签名才能执行。未签名二进制立即崩溃。
-2. **/tmp 只读**: 使用 `$HOME/Claude/tmpdir` 替代。
-3. **无 gcc**: 只有 `/data/service/hnp/bin/clang` 可用。
-4. **SDK lld 损坏**: 需要 `libxml2.so.16`（不存在），必须创建 ld.bfd 封装。
-5. **LD_LIBRARY_PATH 顺序**: `/usr/lib` 必须在 `$HOME/.rust/lib` 前面。
-6. **make -j 失败**: mkfifo 返回 "Operation not permitted"——使用 Ninja。
-7. **不要用 CMAKE_TOOLCHAIN_FILE + CMAKE_SYSTEM_NAME**: 会触发交叉编译导致 try_run() 失败。
-8. **SSH V8 崩溃**: 使用 `node --jitless` + node-fetch polyfill。
-9. **OpenSSH passwd_compat**: sshd 需要 LD_PRELOAD passwd_compat.so。
-10. **OpenSSH 抽象socket**: ssh-agent 使用抽象命名空间。
-11. **OpenSSH authorized_keys**: uid 20001006 (file_manager) 加入 platform_sys_dir_uid()。
-12. **Dropbear -e 参数**: 必须使用 `-e` 传递环境变量给子会话。
-13. **musl libc**: 无 crypt()、strerror_r，locale 支持有限。
-14. **Python -rdynamic**: 导出 948+ Py 符号，支持用户路径签名 .so 扩展模块。
-
-#### 快捷命令
-
-```bash
-# 一次性环境设置（创建 tmpdir、linker wrapper、复制 zshenv）
-sh ~/.claude/skills/harmonyos-dev-env/scripts/env-setup.sh
-
-# 批量代码签名
-sh ~/.claude/skills/harmonyos-dev-env/scripts/sign-all.sh <目录>
-
-# 环境验证
 sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh
 ```

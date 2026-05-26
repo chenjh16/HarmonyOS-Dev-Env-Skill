@@ -23,8 +23,10 @@ echo ""
 
 # ── 1. Writable tmpdir ───────────────────────────────────────────
 
-echo "[1/7] Creating writable tmpdir..."
+echo "[1/7] Creating base directory and writable tmpdir..."
+mkdir -p "$HOME/Claude"
 mkdir -p "$HOME/Claude/tmpdir"
+echo "  Created: $HOME/Claude (base directory for all toolchains)"
 echo "  Created: $HOME/Claude/tmpdir"
 
 # ── 2. Linker wrapper (SDK lld requires libxml2.so.16 which doesn't exist) ──

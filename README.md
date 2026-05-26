@@ -68,7 +68,20 @@ sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
         └── CLAUDE.cn.md        ← 全局平台规则（中文）
 ```
 
-### 方式二：项目级安装
+### 方式二：Agent 自动安装
+
+将以下 Prompt 复制并发送给 Claude Code Agent，Agent 会自动完成全局安装和环境配置：
+
+```
+请帮我安装 HarmonyOS 开发环境 Skill。步骤：
+1. 克隆仓库 https://github.com/chenjh16/HarmonyOS-Dev-Env-Skill.git 到 ~/Claude/HarmonyOS-Dev-Env-Skill
+2. 运行安装脚本: sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
+3. 运行环境配置: sh ~/.claude/skills/harmonyos-dev-env/scripts/env-setup.sh
+4. 验证安装: 确认 ~/.claude/skills/harmonyos-dev-env/SKILL.md 存在
+安装完成后告诉我结果。
+```
+
+### 方式三：项目级安装
 
 仅对特定项目生效，不影响其他项目：
 
@@ -327,7 +340,20 @@ The installed Skill directory structure:
         └── CLAUDE.cn.md        ← Global platform rules (Chinese)
 ```
 
-### Option B: Project-Level Install
+### Option B: Agent Auto-Install
+
+Copy and send the following Prompt to Claude Code Agent — it will automatically perform global install and environment setup:
+
+```
+Please install the HarmonyOS development environment Skill for me. Steps:
+1. Clone repo https://github.com/chenjh16/HarmonyOS-Dev-Env-Skill.git to ~/Claude/HarmonyOS-Dev-Env-Skill
+2. Run install script: sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
+3. Run env setup: sh ~/.claude/skills/harmonyos-dev-env/scripts/env-setup.sh
+4. Verify: confirm ~/.claude/skills/harmonyos-dev-env/SKILL.md exists
+Report the result when done.
+```
+
+### Option C: Project-Level Install
 
 Only affects specific projects, doesn't change global behavior:
 
