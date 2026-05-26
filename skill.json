@@ -190,6 +190,7 @@
     {"name": "Node.js (DevNode-OH)", "path": "harmonyos-dev-env/docs/nodejs-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/nodejs-harmonyos.cn.md"},
     {"name": "Python Environment", "path": "harmonyos-dev-env/docs/python-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-harmonyos.cn.md"},
     {"name": "Python Packages", "path": "harmonyos-dev-env/docs/python-packages-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-packages-harmonyos.cn.md"},
+    {"name": "Python Extension Adaptation", "path": "harmonyos-dev-env/docs/python-extension-adaptation.md", "path_cn": "harmonyos-dev-env/docs/python-extension-adaptation.cn.md"},
     {"name": "llama.cpp", "path": "harmonyos-dev-env/docs/llama-cpp-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md"},
     {"name": "Rust", "path": "harmonyos-dev-env/docs/rust-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/rust-harmonyos.cn.md"},
     {"name": "PyTorch", "path": "harmonyos-dev-env/docs/pytorch-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/pytorch-harmonyos.cn.md"},

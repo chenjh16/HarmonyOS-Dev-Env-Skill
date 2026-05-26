@@ -68,6 +68,7 @@ always-enable: true
 完整构建指南在本 skill 的 `docs/` 目录中。当用户询问特定工具时，使用 Read 工具从本 SKILL.cn.md 目录的相对路径读取对应指南：
 
 - `docs/python-harmonyos.cn.md` — Python 3.12.8 独立构建
+- `docs/python-extension-adaptation.cn.md` — **适配 C/Rust/C++ Python 包的通用指南**
 - `docs/rust-harmonyos.cn.md` — Rust ohos 目标安装
 - `docs/pytorch-harmonyos.cn.md` — PyTorch v2.5.1, 15/15 测试
 - `docs/openssh-harmonyos.cn.md` — OpenSSH 9.9p1, 16 补丁

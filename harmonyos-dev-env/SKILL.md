@@ -68,6 +68,7 @@ always-enable: true
 Full build guides are in this skill's `docs/` directory. When the user asks about a specific tool, read the corresponding guide using the Read tool with relative path from this SKILL.md's directory:
 
 - `docs/python-harmonyos.md` — Python 3.12.8 standalone build
+- `docs/python-extension-adaptation.md` — **General guide for adapting C/Rust/C++ Python packages**
 - `docs/rust-harmonyos.md` — Rust ohos target installation
 - `docs/pytorch-harmonyos.md` — PyTorch v2.5.1, 15/15 e2e tests
 - `docs/openssh-harmonyos.md` — OpenSSH 9.9p1, 16 patches

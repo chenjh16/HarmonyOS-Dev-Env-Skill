@@ -271,6 +271,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.cn.md) | Node.js 安装、TLS/V8 问题 |
 | [Python 环境](harmonyos-dev-env/docs/python-harmonyos.cn.md) | Python 3.12.8、pip、numpy、扩展模块 |
 | [Python 包兼容性](harmonyos-dev-env/docs/python-packages-harmonyos.cn.md) | 34 个包测试报告 |
+| [Python 扩展适配指南](harmonyos-dev-env/docs/python-extension-adaptation.cn.md) | C/Rust/C++ 包通用适配流程 |
 | [Rust 适配](harmonyos-dev-env/docs/rust-harmonyos.cn.md) | Rust 1.95.0、cargo、FFI |
 | [PyTorch 适配](harmonyos-dev-env/docs/pytorch-harmonyos.cn.md) | PyTorch v2.5.1、15/15 测试、LAPACK |
 | [llama.cpp 适配](harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md) | NEON/SVE、Qwen3.5 模型 |
@@ -543,6 +544,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.md) | Node.js setup, TLS/V8 issues |
 | [Python Environment](harmonyos-dev-env/docs/python-harmonyos.md) | Python 3.12.8, pip, numpy, extensions |
 | [Python Packages](harmonyos-dev-env/docs/python-packages-harmonyos.md) | 34 packages compatibility report |
+| [Python Extension Adaptation](harmonyos-dev-env/docs/python-extension-adaptation.md) | General guide for adapting C/Rust/C++ Python packages |
 | [Rust](harmonyos-dev-env/docs/rust-harmonyos.md) | Rust 1.95.0, cargo, FFI |
 | [PyTorch](harmonyos-dev-env/docs/pytorch-harmonyos.md) | PyTorch v2.5.1, 15/15 tests, LAPACK |
 | [llama.cpp](harmonyos-dev-env/docs/llama-cpp-harmonyos.md) | NEON/SVE, Qwen3.5 model |

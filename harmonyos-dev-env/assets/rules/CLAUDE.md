@@ -156,6 +156,7 @@ Use the Read tool with the appropriate path. Available guides:
 | nodejs-harmonyos.md | Node.js installation, TLS/V8 issues, npm configuration |
 | python-harmonyos.md | Python installation, configuration, numpy/pillow/lxml setup |
 | python-packages-harmonyos.md | 34 packages tested, solutions for C/Rust extensions |
+| python-extension-adaptation.md | **General guide for adapting C/Rust/C++ Python packages** (signing, patchelf, supplement.so, .so suffix) |
 | llama-cpp-harmonyos.md | Build, NEON/SVE optimization, ModelScope model download |
 | rust-harmonyos.md | Toolchain install, signing, cargo config, FFI interop |
 | eza-harmonyos.md | Rust build, SELinux/hmdfs attributes |

@@ -156,6 +156,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 | nodejs-harmonyos.cn.md | Node.js 安装、TLS/V8 问题、npm 配置 |
 | python-harmonyos.cn.md | 安装位置、配置、numpy/pillow/lxml 安装 |
 | python-packages-harmonyos.cn.md | 34 个包测试结果，C/Rust 扩展解决方案 |
+| python-extension-adaptation.cn.md | **适配 C/Rust/C++ Python 包的通用指南**（签名、patchelf、supplement.so、.so 后缀） |
 | llama-cpp-harmonyos.cn.md | 构建、NEON/SVE 优化、ModelScope 模型下载 |
 | rust-harmonyos.cn.md | 工具链安装、签名、cargo 配置、FFI 互操作 |
 | eza-harmonyos.cn.md | Rust 项目编译、SELinux/hmdfs 属性显示 |
