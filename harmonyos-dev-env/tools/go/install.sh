@@ -26,7 +26,7 @@ cd "$HOME/Claude/go-build"
 
 if [ ! -f "go${GO_VERSION}.linux-arm64.tar.gz" ]; then
     echo "[2/4] Downloading Go..."
-    curl -L "https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz" -o "go${GO_VERSION}.linux-arm64.tar.gz"
+    curl -fL "https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz" -o "go${GO_VERSION}.linux-arm64.tar.gz"
 else
     echo "[2/4] Go already downloaded, skipping..."
 fi

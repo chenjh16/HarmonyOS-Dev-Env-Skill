@@ -33,7 +33,7 @@ if [ ! -d "$SRC_DIR" ]; then
     echo "Downloading Dropbear $DROPBEAR_VERSION..."
     mkdir -p "$BUILD_DIR"
     cd "$BUILD_DIR"
-    curl -L --connect-timeout 30 -o "dropbear-$DROPBEAR_VERSION.tar.bz2" \
+    curl -fL --connect-timeout 30 -o "dropbear-$DROPBEAR_VERSION.tar.bz2" \
         "https://matt.ucc.asn.au/dropbear/releases/dropbear-$DROPBEAR_VERSION.tar.bz2"
     tar xjf "dropbear-$DROPBEAR_VERSION.tar.bz2"
 fi
@@ -229,9 +229,26 @@ done
 
 # Link binaries
 echo "Linking dropbear..."
-COMMON_OBJS=$(ls obj/*.o | grep -v 'svr-\|cli-\|dropbearkey\|dropbearconvert')
-SVR_OBJS=$(ls obj/svr-*.o)
-CLI_OBJS=$(ls obj/cli-*.o)
+COMMON_OBJS=""
+for obj in obj/*.o; do
+    [ -f "$obj" ] || continue
+    case "$obj" in
+        obj/svr-*|obj/cli-*|obj/dropbearkey.o|obj/dropbearconvert.o) continue ;;
+    esac
+    COMMON_OBJS="$COMMON_OBJS $obj"
+done
+
+SVR_OBJS=""
+for obj in obj/svr-*.o; do
+    [ -f "$obj" ] || continue
+    SVR_OBJS="$SVR_OBJS $obj"
+done
+
+CLI_OBJS=""
+for obj in obj/cli-*.o; do
+    [ -f "$obj" ] || continue
+    CLI_OBJS="$CLI_OBJS $obj"
+done
 
 $CC $LDFLAGS -o dropbear $COMMON_OBJS $SVR_OBJS libtomcrypt/libtomcrypt.a libtommath/libtommath.a -lz
 $CC $LDFLAGS -o dbclient $COMMON_OBJS $CLI_OBJS libtomcrypt/libtomcrypt.a libtommath/libtommath.a -lz

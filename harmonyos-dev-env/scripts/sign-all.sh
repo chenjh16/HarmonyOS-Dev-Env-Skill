@@ -25,10 +25,13 @@ fi
 
 echo "Signing all ELF binaries in $TARGET_DIR..."
 
-# Find all files and check if they are ELF
+# Find all files and check if they are ELF. Use a list file so paths with spaces are preserved.
 COUNT=0
 FAILED=0
-for FILE in $(find "$TARGET_DIR" -type f 2>/dev/null); do
+LIST_FILE="${TMPDIR:-$HOME/Claude/tmpdir}/sign-all-files.$$"
+mkdir -p "$(dirname "$LIST_FILE")"
+find "$TARGET_DIR" -type f 2>/dev/null > "$LIST_FILE"
+while IFS= read -r FILE; do
     # Skip source files and known non-ELF files
     case "$FILE" in
         *.c|*.cpp|*.h|*.py|*.txt|*.md|*.json|*.toml|*.yaml|*.yml|*.sh|*.tar|*.gz|*.xz) continue ;;
@@ -64,7 +67,8 @@ for FILE in $(find "$TARGET_DIR" -type f 2>/dev/null); do
         rm -f "$UNSIGNED_FILE" "$SIGNED_FILE"
         FAILED=$((FAILED + 1))
     fi
-done
+done < "$LIST_FILE"
+rm -f "$LIST_FILE"
 
 if [ "$COUNT" -eq 0 ]; then
     echo "No ELF files found in $TARGET_DIR"

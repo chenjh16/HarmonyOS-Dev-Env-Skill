@@ -33,7 +33,7 @@ export PATH="$BAT_HOME:$PATH"
 # starship (cross-shell prompt, compiled from Rust)
 export STARSHIP_HOME="$HOME/Claude/starship-build/starship/target/release"
 export PATH="$STARSHIP_HOME:$PATH"
-export STARSHIP_CONFIG="/data/storage/el2/base/haps/entry/files/starship/starship.toml"
+export STARSHIP_CONFIG="$HOME/Claude/starship.toml"
 
 # Go
 export GO_HOME="$HOME/Claude/go-build/go"

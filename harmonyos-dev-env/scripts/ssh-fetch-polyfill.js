@@ -37,7 +37,12 @@ if (typeof WebAssembly === 'undefined') {
     }
 
     try {
-        const nodeFetch = require(process.env.HOME + '/Claude/node_modules/node-fetch');
+        let nodeFetch;
+        try {
+            nodeFetch = require(process.env.HOME + '/Claude/node_modules/node-fetch');
+        } catch (homeError) {
+            nodeFetch = require('node-fetch');
+        }
         const { Readable } = require('stream');
 
         // Store original Response class

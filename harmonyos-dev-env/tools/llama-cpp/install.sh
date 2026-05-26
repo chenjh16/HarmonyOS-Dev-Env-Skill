@@ -84,7 +84,7 @@ if (NOT CMAKE_SYSTEM_PROCESSOR OR CMAKE_SYSTEM_PROCESSOR STREQUAL "unknown")
 endif()
 PATCH_EOF
         # Insert after function declaration line
-        sed -i '/function(ggml_get_system_arch)/r $TMPDIR/cmake_patch.txt' "ggml/cmake/common.cmake"
+        sed -i "/function(ggml_get_system_arch)/r $TMPDIR/cmake_patch.txt" "ggml/cmake/common.cmake"
         echo "CMake patched successfully"
     else
         echo "CMake patch already applied, skipping..."

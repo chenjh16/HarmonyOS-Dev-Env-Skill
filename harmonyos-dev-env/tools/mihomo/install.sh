@@ -59,9 +59,10 @@ go mod download
 echo "[3/4] Building mihomo..."
 mkdir -p "$INSTALL_DIR/bin"
 
+BUILD_DATE=$(date +%Y%m%d)
 GOARCH=arm64 GOOS=linux CGO_ENABLED=0 go build \
     -tags with_gvisor -trimpath \
-    -ldflags '-X "github.com/metacubex/mihomo/constant.Version=local-$(date +%Y%m%d)" -w -s -buildid=' \
+    -ldflags "-X github.com/metacubex/mihomo/constant.Version=local-$BUILD_DATE -w -s -buildid=" \
     -o "$INSTALL_DIR/bin/mihomo-linux-arm64" .
 
 # Sign

@@ -44,7 +44,11 @@ if [ -x "$PYTHON_PATH" ]; then
         warn "Python $VERSION (expected 3.12.8)"
     fi
     # Check symbol exports
-    SYMBOLS=$(nm -D "$PYTHON_PATH" 2>/dev/null | grep -c " T Py" || echo "0")
+    NM_TOOL="/data/service/hnp/bin/llvm-nm"
+    if [ ! -x "$NM_TOOL" ]; then
+        NM_TOOL="nm"
+    fi
+    SYMBOLS=$($NM_TOOL -D "$PYTHON_PATH" 2>/dev/null | grep -c " T Py" || echo "0")
     if [ "$SYMBOLS" -ge 1500 ]; then
         pass "Python exports $SYMBOLS Py symbols (-rdynamic)"
     else
@@ -225,7 +229,8 @@ else
 fi
 
 # LD_LIBRARY_PATH
-if echo "$LD_LIBRARY_PATH" | grep -q "^/usr/lib:"; then
+FIRST_LIB_PATH=$(printf '%s' "$LD_LIBRARY_PATH" | cut -d: -f1)
+if [ "$FIRST_LIB_PATH" = "/usr/lib" ]; then
     pass "LD_LIBRARY_PATH starts with /usr/lib (correct order)"
 else
     fail "LD_LIBRARY_PATH should start with /usr/lib"

@@ -59,7 +59,7 @@ fi
 if [ ! -f "$BUILD_DIR/Python-$PYTHON_VERSION.tar.xz" ]; then
     echo "[2/9] Downloading Python source..."
     cd "$BUILD_DIR"
-    curl -L "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz" \
+    curl -fL "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz" \
         -o "Python-$PYTHON_VERSION.tar.xz"
 else
     echo "[2/9] Source already downloaded, skipping..."
@@ -166,14 +166,14 @@ done
 # Copy sysconfigdata
 echo "[8/9] Configuring sysconfigdata..."
 # Determine correct platform name for sysconfigdata
-PLATFORM_NAME=$(python3 -c "import sysconfig; p=sysconfig.get_platform(); print(p.replace('-', '_').replace(' ', '_').replace('.', '_'))")
+PLATFORM_NAME=$("$INSTALL_DIR/bin/python3" -c "import sysconfig; p=sysconfig.get_platform(); print(p.replace('-', '_').replace(' ', '_').replace('.', '_'))")
 cp /data/service/hnp/python.org/python_3.12/lib/python3.12/_sysconfigdata__linux_.py \
    "$INSTALL_DIR/lib/python3.12/_sysconfigdata__${PLATFORM_NAME}.py"
 
 # Step 9: Install pip
 if [ "$SKIP_PIP" = false ]; then
     echo "[9/9] Installing pip..."
-    curl -L https://bootstrap.pypa.io/get-pip.py -o "$TMPDIR/get-pip.py"
+    curl -fL https://bootstrap.pypa.io/get-pip.py -o "$TMPDIR/get-pip.py"
     "$INSTALL_DIR/bin/python3" "$TMPDIR/get-pip.py"
 
     # Configure pip mirror

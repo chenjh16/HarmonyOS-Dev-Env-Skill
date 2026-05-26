@@ -33,7 +33,8 @@
 # 4. Check TERM environment variable (SSH sessions usually set TERM)
 
 SSH_ENV_INDICATORS="${SSH_CONNECTION:-}${SSH_TTY:-}${SSH_CLIENT:-}"
-CLAUDE_ENTRY="/data/storage/el2/base/files/npm_global_modules/lib/node_modules/claude-code-ohos/bin/claude.js"
+NPM_GLOBAL_PREFIX="/data/storage/el2/base/files/npm_global_modules"
+CLAUDE_ENTRY="${CLAUDE_ENTRY:-$NPM_GLOBAL_PREFIX/lib/node_modules/claude-code-ohos/bin/claude.js}"
 
 # Additional SSH detection: check parent process
 PARENT_PROCESS=""

@@ -40,10 +40,28 @@ if [ "$SCOPE" = "project" ] && [ -z "$PROJECT_PATH" ]; then
 fi
 
 if [ "$SCOPE" = "project" ]; then
+    case "$PROJECT_PATH" in
+        ""|"/"|"."|"..")
+            echo "Error: unsafe project path: $PROJECT_PATH"
+            exit 1
+            ;;
+    esac
+    PROJECT_PATH="$(cd "$PROJECT_PATH" 2>/dev/null && pwd)" || {
+        echo "Error: project path does not exist: $PROJECT_PATH"
+        exit 1
+    }
     SKILL_DIR="$PROJECT_PATH/.claude/skills/harmonyos-dev-env"
 else
     SKILL_DIR="$HOME/.claude/skills/harmonyos-dev-env"
 fi
+
+case "$SKILL_DIR" in
+    "$HOME/.claude/skills/harmonyos-dev-env"|*/.claude/skills/harmonyos-dev-env) ;;
+    *)
+        echo "Error: refusing to remove unexpected skill target: $SKILL_DIR"
+        exit 1
+        ;;
+esac
 
 echo "=== Installing HarmonyOS-Dev-Env Skill ==="
 echo "Source: $SKILL_SRC"

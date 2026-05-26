@@ -68,11 +68,18 @@ echo "  Installed: $HOME/.claude/start-claude.sh"
 echo "[5/7] Installing global CLAUDE.md rules..."
 if [ ! -f "$HOME/.claude/CLAUDE.md" ]; then
     cp "$SKILL_DIR/assets/rules/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-    cp "$SKILL_DIR/assets/rules/CLAUDE.cn.md" "$HOME/.claude/CLAUDE.cn.md"
-    echo "  Installed: $HOME/.claude/CLAUDE.md + CLAUDE.cn.md"
+    echo "  Installed: $HOME/.claude/CLAUDE.md"
 else
     echo "  Already exists: $HOME/.claude/CLAUDE.md (not overwritten)"
     echo "  To update, run: cp $SKILL_DIR/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md"
+fi
+
+if [ ! -f "$HOME/.claude/CLAUDE.cn.md" ]; then
+    cp "$SKILL_DIR/assets/rules/CLAUDE.cn.md" "$HOME/.claude/CLAUDE.cn.md"
+    echo "  Installed: $HOME/.claude/CLAUDE.cn.md"
+else
+    echo "  Already exists: $HOME/.claude/CLAUDE.cn.md (not overwritten)"
+    echo "  To update, run: cp $SKILL_DIR/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md"
 fi
 
 # ── 6. Onboarding skip ───────────────────────────────────────────

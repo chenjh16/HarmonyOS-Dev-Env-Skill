@@ -53,7 +53,7 @@ cd "$BUILD_DIR"
 
 if [ ! -f "rustc.tar.gz" ]; then
     echo "[3/6] Downloading rustc (ohos version)..."
-    curl -L "$BASE_URL/rustc-$RUST_VERSION-aarch64-unknown-linux-ohos.tar.gz" -o rustc.tar.gz || {
+    curl -fL "$BASE_URL/rustc-$RUST_VERSION-aarch64-unknown-linux-ohos.tar.gz" -o rustc.tar.gz || {
         echo "Download failed! Try updating RUST_DATE in script."
         exit 1
     }
@@ -63,7 +63,7 @@ fi
 
 if [ ! -f "rust-std.tar.gz" ]; then
     echo "[3/6] Downloading rust-std (ohos version)..."
-    curl -L "$BASE_URL/rust-std-$RUST_VERSION-aarch64-unknown-linux-ohos.tar.gz" -o rust-std.tar.gz
+    curl -fL "$BASE_URL/rust-std-$RUST_VERSION-aarch64-unknown-linux-ohos.tar.gz" -o rust-std.tar.gz
 else
     echo "[3/6] rust-std already downloaded, skipping..."
 fi
@@ -71,7 +71,7 @@ fi
 if [ ! -f "cargo.tar.gz" ]; then
     echo "[3/6] Downloading cargo (MUSL version - IMPORTANT)..."
     # NOTE: Use musl version, not ohos version!
-    curl -L "$BASE_URL/cargo-$RUST_VERSION-aarch64-unknown-linux-musl.tar.gz" -o cargo.tar.gz
+    curl -fL "$BASE_URL/cargo-$RUST_VERSION-aarch64-unknown-linux-musl.tar.gz" -o cargo.tar.gz
 else
     echo "[3/6] cargo already downloaded, skipping..."
 fi
@@ -158,7 +158,7 @@ fi
 echo "[6/6] Configuring cargo..."
 mkdir -p "$INSTALL_DIR/.cargo"
 
-cat > "$INSTALL_DIR/.cargo/config.toml" << 'EOF'
+cat > "$INSTALL_DIR/.cargo/config.toml" << EOF
 [target.aarch64-unknown-linux-ohos]
 linker = "/data/service/hnp/bin/clang"
 
@@ -168,7 +168,7 @@ EOF
 
 # Download SSL certificates
 echo "[6/6] Downloading SSL certificates for cargo..."
-curl -L https://curl.se/ca/cacert.pem -o "$INSTALL_DIR/cacert.pem" || {
+curl -fL https://curl.se/ca/cacert.pem -o "$INSTALL_DIR/cacert.pem" || {
     echo "WARNING: SSL cert download failed, cargo may not access crates.io"
 }
 
