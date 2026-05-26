@@ -36,7 +36,7 @@
 /data/service/hnp/bin/binary-sign-tool display-sign -inFile <二进制>
 ```
 
-完整文档见 [code-signing.cn.md](~/.claude/skills/harmonyos-dev-env/docs/code-signing.cn.md)。
+完整文档见 code-signing.cn.md（位于 skill 的 `docs/` 目录）。
 
 ### 工具链 (无 gcc)
 
@@ -104,7 +104,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - `SSL_CERT_FILE` 设置为 `$HOME/.rust/cacert.pem` (用于 cargo crates.io 访问)
 - `TMPDIR` 设置为 `$HOME/Claude/tmpdir` (因为 HarmonyOS 上 `/tmp` 只读)
 
-**关键**: LD_LIBRARY_PATH 中 `/usr/lib` 必须在 `$HOME/.rust/lib` 前面，否则会导致 OpenSSL 符号版本冲突！详见 [ld-library-path.md](~/.claude/skills/harmonyos-dev-env/docs/ld-library-path.md)
+**关键**: LD_LIBRARY_PATH 中 `/usr/lib` 必须在 `$HOME/.rust/lib` 前面，否则会导致 OpenSSL 符号版本冲突！详见 ld-library-path.cn.md（位于 skill 的 `docs/` 目录）
 
 ### 代码签名
 
@@ -140,26 +140,33 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **扩展模块 (.so) 必须签名** 才能加载
 - **C/C++ 扩展包**: 安装前设置 `CC=/data/service/hnp/bin/clang` 和 `CXX=/data/service/hnp/bin/clang++`
 
-详见 [python-harmonyos.md](~/.claude/skills/harmonyos-dev-env/docs/python-harmonyos.md)。
+详见 python-harmonyos.cn.md（位于 skill 的 `docs/` 目录）。
 
 ### 适配经验
 
-详细适配指南位于 skill 的 `docs/` 目录（安装路径 `~/.claude/skills/harmonyos-dev-env/docs/`）。使用 Read 工具按完整路径读取：
-- [Claude Code for HarmonyOS](~/.claude/skills/harmonyos-dev-env/docs/claude-code-harmonyos.cn.md) — AI 编程助手、npm 包安装、SSH V8 崩溃解决方案
-- [Node.js (DevNode-OH)](~/.claude/skills/harmonyos-dev-env/docs/nodejs-harmonyos.cn.md) — Node.js 安装、TLS/V8 问题、npm 配置
-- [Python 环境说明](~/.claude/skills/harmonyos-dev-env/docs/python-harmonyos.cn.md) — 安装位置、配置、numpy/pillow/lxml 安装
-- [Python 包兼容性报告](~/.claude/skills/harmonyos-dev-env/docs/python-packages-harmonyos.cn.md) — 34 个包测试结果，C/Rust 扩展解决方案
-- [llama.cpp 适配记录](~/.claude/skills/harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md) — 构建、NEON/SVE 优化、ModelScope 模型下载
-- [Rust 适配记录](~/.claude/skills/harmonyos-dev-env/docs/rust-harmonyos.cn.md) — 工具链安装、签名、cargo 配置、FFI 互操作
-- [eza 适配记录](~/.claude/skills/harmonyos-dev-env/docs/eza-harmonyos.cn.md) — Rust 项目编译、SELinux/hmdfs 属性显示
-- [bat 适配记录](~/.claude/skills/harmonyos-dev-env/docs/bat-harmonyos.cn.md) — Rust 项目编译、语法高亮
-- [starship 适配记录](~/.claude/skills/harmonyos-dev-env/docs/starship-harmonyos.cn.md) — Rust 项目编译、errno 补丁、prompt 配置
-- [mihomo 适配记录](~/.claude/skills/harmonyos-dev-env/docs/mihomo-harmonyos.cn.md) — Go 工具链、代理配置、GEOIP/GEOSITE 分流规则
-- [PyTorch 适配记录](~/.claude/skills/harmonyos-dev-env/docs/pytorch-harmonyos.cn.md) — PyTorch v2.5.1 编译、15个关键适配、15/15 端到端测试全部通过（NumPy + LAPACK 已修复）、MNIST 训练
-- [Dropbear SSH 适配记录](~/.claude/skills/harmonyos-dev-env/docs/dropbear-harmonyos.cn.md) — SSH 服务器/客户端、5个源码补丁、V8 JIT 崩溃解决方案
-- [OpenSSH 适配记录](~/.claude/skills/harmonyos-dev-env/docs/openssh-harmonyos.cn.md) — OpenSSH 9.9p1 完整构建、16个源码补丁、scp/sftp/ssh-agent 全功能可用
-- [代码签名指南](~/.claude/skills/harmonyos-dev-env/docs/code-signing.cn.md) — 详细代码签名说明
-- [动态库路径指南](~/.claude/skills/harmonyos-dev-env/docs/ld-library-path.cn.md) — 动态库路径配置
-- [SELinux 根因分析](~/.claude/skills/harmonyos-dev-env/docs/selinux-analysis.cn.md) — .so 加载限制的根本原因
-- [IPC 可行性分析](~/.claude/skills/harmonyos-dev-env/docs/ipc-feasibility.cn.md) — Native Child Process API 分析
-- [故障排除指南](~/.claude/skills/harmonyos-dev-env/docs/troubleshooting.cn.md) — 综合问题解决参考
+详细适配指南位于 skill 的 `docs/` 目录。skill 安装目录取决于安装范围：
+- **全局安装**: `~/.claude/skills/harmonyos-dev-env/docs/`
+- **项目级安装**: `<项目>/.claude/skills/harmonyos-dev-env/docs/`
+
+使用 Read 工具按对应路径读取。可用指南：
+
+| 文件 | 说明 |
+|------|------|
+| claude-code-harmonyos.cn.md | AI 编程助手、npm 包安装、SSH V8 崩溃解决方案 |
+| nodejs-harmonyos.cn.md | Node.js 安装、TLS/V8 问题、npm 配置 |
+| python-harmonyos.cn.md | 安装位置、配置、numpy/pillow/lxml 安装 |
+| python-packages-harmonyos.cn.md | 34 个包测试结果，C/Rust 扩展解决方案 |
+| llama-cpp-harmonyos.cn.md | 构建、NEON/SVE 优化、ModelScope 模型下载 |
+| rust-harmonyos.cn.md | 工具链安装、签名、cargo 配置、FFI 互操作 |
+| eza-harmonyos.cn.md | Rust 项目编译、SELinux/hmdfs 属性显示 |
+| bat-harmonyos.cn.md | Rust 项目编译、语法高亮 |
+| starship-harmonyos.cn.md | Rust 项目编译、errno 补丁、prompt 配置 |
+| mihomo-harmonyos.cn.md | Go 工具链、代理配置、GEOIP/GEOSITE 分流规则 |
+| pytorch-harmonyos.cn.md | PyTorch v2.5.1 编译、15个关键适配、15/15 测试全部通过、MNIST 训练 |
+| dropbear-harmonyos.cn.md | SSH 服务器/客户端、5个源码补丁、V8 JIT 崩溃解决方案 |
+| openssh-harmonyos.cn.md | OpenSSH 9.9p1 完整构建、16个源码补丁、scp/sftp/ssh-agent 全功能可用 |
+| code-signing.cn.md | 详细代码签名说明 |
+| ld-library-path.cn.md | 动态库路径配置 |
+| selinux-analysis.cn.md | .so 加载限制的根本原因 |
+| ipc-feasibility.cn.md | Native Child Process API 分析 |
+| troubleshooting.cn.md | 综合问题解决参考 |

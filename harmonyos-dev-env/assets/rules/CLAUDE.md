@@ -36,7 +36,7 @@ For development/testing, use `-selfSign 1`. For production, use proper certifica
 /data/service/hnp/bin/binary-sign-tool display-sign -inFile <binary>
 ```
 
-See [code-signing.md](~/.claude/skills/harmonyos-dev-env/docs/code-signing.md) for full documentation.
+See code-signing.md for full documentation (in skill's `docs/` directory).
 
 ### Toolchain (no gcc available)
 
@@ -104,7 +104,7 @@ All third-party toolchains are configured in `$HOME/.zshenv` and auto-loaded on 
 - `SSL_CERT_FILE` set to `$HOME/.rust/cacert.pem` (for cargo crates.io access)
 - `TMPDIR` set to `$HOME/Claude/tmpdir` (because `/tmp` is read-only on HarmonyOS)
 
-**CRITICAL**: `/usr/lib` must come before `$HOME/.rust/lib` in LD_LIBRARY_PATH to avoid OpenSSL symbol version conflicts. See [ld-library-path.md](~/.claude/skills/harmonyos-dev-env/docs/ld-library-path.md) for details.
+**CRITICAL**: `/usr/lib` must come before `$HOME/.rust/lib` in LD_LIBRARY_PATH to avoid OpenSSL symbol version conflicts. See ld-library-path.md for details (in skill's `docs/` directory).
 
 ### Code Signing
 
@@ -140,26 +140,33 @@ All third-party toolchains are configured in `$HOME/.zshenv` and auto-loaded on 
 - **Extension modules (.so) must be code-signed** before loading
 - **C/C++ extensions**: Set `CC=/data/service/hnp/bin/clang` and `CXX=/data/service/hnp/bin/clang++` before pip install
 
-See [python-harmonyos.md](~/.claude/skills/harmonyos-dev-env/docs/python-harmonyos.md) for details.
+See python-harmonyos.md for details (in skill's `docs/` directory).
 
 ### Adaptation Experience
 
-Detailed adaptation guides are in the skill's `docs/` directory (installed at `~/.claude/skills/harmonyos-dev-env/docs/`). Read them with the Read tool using the full path:
-- [Claude Code for HarmonyOS](~/.claude/skills/harmonyos-dev-env/docs/claude-code-harmonyos.md) — AI programming assistant, npm package, SSH V8 crash workaround
-- [Node.js (DevNode-OH)](~/.claude/skills/harmonyos-dev-env/docs/nodejs-harmonyos.md) — Node.js installation, TLS/V8 issues, npm configuration
-- [Python Environment Guide](~/.claude/skills/harmonyos-dev-env/docs/python-harmonyos.md) — installation, configuration, numpy/pillow/lxml setup
-- [Python Package Compatibility](~/.claude/skills/harmonyos-dev-env/docs/python-packages-harmonyos.md) — 34 packages tested, solutions for C/Rust extensions
-- [llama.cpp Adaptation](~/.claude/skills/harmonyos-dev-env/docs/llama-cpp-harmonyos.md) — build, NEON/SVE optimization, ModelScope model download
-- [Rust Adaptation](~/.claude/skills/harmonyos-dev-env/docs/rust-harmonyos.md) — toolchain install, signing, cargo config, FFI interop
-- [eza Adaptation](~/.claude/skills/harmonyos-dev-env/docs/eza-harmonyos.md) — Rust build, SELinux/hmdfs attributes
-- [bat Adaptation](~/.claude/skills/harmonyos-dev-env/docs/bat-harmonyos.md) — Rust build, syntax highlighting
-- [starship Adaptation](~/.claude/skills/harmonyos-dev-env/docs/starship-harmonyos.md) — Rust build, errno patch, prompt config
-- [mihomo Adaptation](~/.claude/skills/harmonyos-dev-env/docs/mihomo-harmonyos.md) — Go toolchain, proxy config, GEOIP/GEOSITE rules
-- [PyTorch Adaptation](~/.claude/skills/harmonyos-dev-env/docs/pytorch-harmonyos.md) — PyTorch v2.5.1 compilation, 15 key adaptations, **15/15 e2e tests all passed** (NumPy + LAPACK fixed), MNIST training
-- [Dropbear SSH Adaptation](~/.claude/skills/harmonyos-dev-env/docs/dropbear-harmonyos.md) — SSH server/client, 5 source patches, V8 JIT crash workaround
-- [OpenSSH Adaptation](~/.claude/skills/harmonyos-dev-env/docs/openssh-harmonyos.md) — OpenSSH 9.9p1 full build, 16 source patches, scp/sftp/ssh-agent all working
-- [Code Signing Guide](~/.claude/skills/harmonyos-dev-env/docs/code-signing.md) — detailed code signing instructions
-- [LD_LIBRARY_PATH Guide](~/.claude/skills/harmonyos-dev-env/docs/ld-library-path.md) — dynamic library path configuration
-- [SELinux Analysis](~/.claude/skills/harmonyos-dev-env/docs/selinux-analysis.md) — root cause of .so loading restrictions
-- [IPC Feasibility](~/.claude/skills/harmonyos-dev-env/docs/ipc-feasibility.md) — Native Child Process API analysis
-- [Troubleshooting Guide](~/.claude/skills/harmonyos-dev-env/docs/troubleshooting.md) — consolidated problem-solving reference
+Detailed adaptation guides are in the skill's `docs/` directory. The skill install directory depends on installation scope:
+- **Global**: `~/.claude/skills/harmonyos-dev-env/docs/`
+- **Project-level**: `<project>/.claude/skills/harmonyos-dev-env/docs/`
+
+Use the Read tool with the appropriate path. Available guides:
+
+| File | Description |
+|------|-------------|
+| claude-code-harmonyos.md | AI programming assistant, npm package, SSH V8 crash workaround |
+| nodejs-harmonyos.md | Node.js installation, TLS/V8 issues, npm configuration |
+| python-harmonyos.md | Python installation, configuration, numpy/pillow/lxml setup |
+| python-packages-harmonyos.md | 34 packages tested, solutions for C/Rust extensions |
+| llama-cpp-harmonyos.md | Build, NEON/SVE optimization, ModelScope model download |
+| rust-harmonyos.md | Toolchain install, signing, cargo config, FFI interop |
+| eza-harmonyos.md | Rust build, SELinux/hmdfs attributes |
+| bat-harmonyos.md | Rust build, syntax highlighting |
+| starship-harmonyos.md | Rust build, errno patch, prompt config |
+| mihomo-harmonyos.md | Go toolchain, proxy config, GEOIP/GEOSITE rules |
+| pytorch-harmonyos.md | PyTorch v2.5.1, 15 key adaptations, **15/15 e2e tests all passed**, MNIST training |
+| dropbear-harmonyos.md | SSH server/client, 5 source patches, V8 JIT crash workaround |
+| openssh-harmonyos.md | OpenSSH 9.9p1, 16 source patches, scp/sftp/ssh-agent all working |
+| code-signing.md | Detailed code signing instructions |
+| ld-library-path.md | Dynamic library path configuration |
+| selinux-analysis.md | Root cause of .so loading restrictions |
+| ipc-feasibility.md | Native Child Process API analysis |
+| troubleshooting.md | Consolidated problem-solving reference |
