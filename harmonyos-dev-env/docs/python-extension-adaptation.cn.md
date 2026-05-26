@@ -149,24 +149,30 @@ done
 SIGN_DIR=$HOME/.local/lib/python3.12/site-packages/<包名>
 
 # 先清除残留的 .codesign 段（防止签名失败）
-for f in $(find "$SIGN_DIR" -name "*.so" -type f); do
-  /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$f" "$f.tmp"
-  mv "$f.tmp" "$f"
-done
+find "$SIGN_DIR" -name "*.so" -type f -exec sh -c '
+  for f do
+    /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$f" "$f.tmp"
+    mv "$f.tmp" "$f"
+  done
+' sh {} +
 
 # 签名所有 .so 文件
-for f in $(find "$SIGN_DIR" -name "*.so" -type f); do
-  /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
-    -inFile "$f" -outFile "${f}.signed"
-  mv "${f}.signed" "$f"
-done
+find "$SIGN_DIR" -name "*.so" -type f -exec sh -c '
+  for f do
+    /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+      -inFile "$f" -outFile "${f}.signed"
+    mv "${f}.signed" "$f"
+  done
+' sh {} +
 
 # 同时签名编译的 C 依赖库
-for f in $(find $HOME/.local/lib -name "*.so" -type f); do
-  /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
-    -inFile "$f" -outFile "${f}.signed"
-  mv "${f}.signed" "$f"
-done
+find "$HOME/.local/lib" -name "*.so" -type f -exec sh -c '
+  for f do
+    /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+      -inFile "$f" -outFile "${f}.signed"
+    mv "${f}.signed" "$f"
+  done
+' sh {} +
 ```
 
 ### 步骤 4.2: Patchelf NEEDED 路径前缀修复
@@ -181,12 +187,14 @@ done
 
 **修复**:
 ```bash
-for f in $(find "$SIGN_DIR" -name "*.so" -type f); do
-  # 去除 NEEDED 条目的 "lib/" 前缀
-  /data/service/hnp/bin/patchelf --replace-needed lib/libfoo.so libfoo.so "$f"
-  # 设置 RUNPATH 使链接器能找到依赖
-  /data/service/hnp/bin/patchelf --set-rpath '$ORIGIN:$HOME/.local/lib' "$f"
-done
+find "$SIGN_DIR" -name "*.so" -type f -exec sh -c '
+  for f do
+    # 去除 NEEDED 条目的 "lib/" 前缀
+    /data/service/hnp/bin/patchelf --replace-needed lib/libfoo.so libfoo.so "$f"
+    # 设置 RUNPATH 使链接器能找到依赖
+    /data/service/hnp/bin/patchelf --set-rpath '\''$ORIGIN:$HOME/.local/lib'\'' "$f"
+  done
+' sh {} +
 ```
 
 ### 步骤 4.3: Patchelf —add-needed 补充隐藏符号

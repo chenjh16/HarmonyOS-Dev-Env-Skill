@@ -149,24 +149,30 @@ Find and sign all .so files in the package directory:
 SIGN_DIR=$HOME/.local/lib/python3.12/site-packages/<package>
 
 # Remove stale .codesign sections first (prevents sign failures)
-for f in $(find "$SIGN_DIR" -name "*.so" -type f); do
-  /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$f" "$f.tmp"
-  mv "$f.tmp" "$f"
-done
+find "$SIGN_DIR" -name "*.so" -type f -exec sh -c '
+  for f do
+    /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "$f" "$f.tmp"
+    mv "$f.tmp" "$f"
+  done
+' sh {} +
 
 # Sign all .so files
-for f in $(find "$SIGN_DIR" -name "*.so" -type f); do
-  /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
-    -inFile "$f" -outFile "${f}.signed"
-  mv "${f}.signed" "$f"
-done
+find "$SIGN_DIR" -name "*.so" -type f -exec sh -c '
+  for f do
+    /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+      -inFile "$f" -outFile "${f}.signed"
+    mv "${f}.signed" "$f"
+  done
+' sh {} +
 
 # Also sign compiled C dependencies in $HOME/.local/lib/
-for f in $(find $HOME/.local/lib -name "*.so" -newer $HOME/.local/lib/libjpeg.so -type f); do
-  /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
-    -inFile "$f" -outFile "${f}.signed"
-  mv "${f}.signed" "$f"
-done
+find "$HOME/.local/lib" -name "*.so" -newer "$HOME/.local/lib/libjpeg.so" -type f -exec sh -c '
+  for f do
+    /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+      -inFile "$f" -outFile "${f}.signed"
+    mv "${f}.signed" "$f"
+  done
+' sh {} +
 ```
 
 ### Step 4.2: Patchelf NEEDED path prefix fix
@@ -181,12 +187,14 @@ If the package was built with Ninja/CMake, its `.so` files may have NEEDED entri
 
 **Fix**:
 ```bash
-for f in $(find "$SIGN_DIR" -name "*.so" -type f); do
-  # Strip "lib/" prefix from NEEDED entries
-  /data/service/hnp/bin/patchelf --replace-needed lib/libfoo.so libfoo.so "$f"
-  # Set RUNPATH so the linker can find dependencies
-  /data/service/hnp/bin/patchelf --set-rpath '$ORIGIN:$HOME/.local/lib' "$f"
-done
+find "$SIGN_DIR" -name "*.so" -type f -exec sh -c '
+  for f do
+    # Strip "lib/" prefix from NEEDED entries
+    /data/service/hnp/bin/patchelf --replace-needed lib/libfoo.so libfoo.so "$f"
+    # Set RUNPATH so the linker can find dependencies
+    /data/service/hnp/bin/patchelf --set-rpath '\''$ORIGIN:$HOME/.local/lib'\'' "$f"
+  done
+' sh {} +
 ```
 
 ### Step 4.3: Patchelf —add-needed for hidden symbols

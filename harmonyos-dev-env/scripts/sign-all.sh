@@ -29,6 +29,10 @@ echo "Signing all ELF binaries in $TARGET_DIR..."
 COUNT=0
 FAILED=0
 LIST_FILE="${TMPDIR:-$HOME/Claude/tmpdir}/sign-all-files.$$"
+cleanup() {
+    rm -f "$LIST_FILE"
+}
+trap cleanup EXIT HUP INT TERM
 mkdir -p "$(dirname "$LIST_FILE")"
 find "$TARGET_DIR" -type f 2>/dev/null > "$LIST_FILE"
 while IFS= read -r FILE; do
@@ -68,7 +72,8 @@ while IFS= read -r FILE; do
         FAILED=$((FAILED + 1))
     fi
 done < "$LIST_FILE"
-rm -f "$LIST_FILE"
+cleanup
+trap - EXIT HUP INT TERM
 
 if [ "$COUNT" -eq 0 ]; then
     echo "No ELF files found in $TARGET_DIR"

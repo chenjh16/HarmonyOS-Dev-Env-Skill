@@ -160,7 +160,7 @@ echo ""
 echo "=== IMPORTANT: Source patches require manual editing ==="
 echo "The 5 HarmonyOS patches must be applied to source files before building."
 echo "See tools/dropbear/build.md for detailed patch instructions."
-echo "After applying patches, re-run this script with --skip-patches flag."
+echo "After applying patches, re-run this script with --skip-patches."
 echo ""
 
 # Check if patches flag

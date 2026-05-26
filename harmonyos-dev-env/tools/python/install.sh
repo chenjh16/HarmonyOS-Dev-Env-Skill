@@ -155,12 +155,12 @@ $CLANG -shared --sysroot=$SYSROOT -B$LINKER_WRAPPER_DIR \
 
 # Sign and install extension modules
 for module in _pickle _datetime; do
-    /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign ${module}.so ${module}_unsigned.so
+    /data/service/hnp/bin/llvm-objcopy --remove-section=.codesign "${module}.so" "${module}_unsigned.so"
     $SIGN_TOOL sign -selfSign 1 \
-        -inFile ${module}_unsigned.so \
+        -inFile "${module}_unsigned.so" \
         -outFile "$INSTALL_DIR/lib/python3.12/lib-dynload/${module}.cpython-312-aarch64-linux-gnu.so" \
         -signAlg SHA256withECDSA
-    rm ${module}_unsigned.so ${module}.so
+    rm "${module}_unsigned.so" "${module}.so"
 done
 
 # Copy sysconfigdata
