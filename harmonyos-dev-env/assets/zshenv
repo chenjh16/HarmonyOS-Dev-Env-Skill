@@ -5,7 +5,6 @@
 # This Python exports 948+ Py symbols (1521 total), enabling extension module loading
 export LOCAL_PYTHON_HOME="$HOME/.local"
 export PATH="$LOCAL_PYTHON_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$LOCAL_PYTHON_HOME/lib:$LD_LIBRARY_PATH"
 
 # Rust (aarch64-unknown-linux-ohos + musl cargo)
 # NOTE: /usr/lib must come before $RUST_HOME/lib because:
@@ -14,14 +13,14 @@ export LD_LIBRARY_PATH="$LOCAL_PYTHON_HOME/lib:$LD_LIBRARY_PATH"
 # - musl-linked binaries (ssh, ssh-keygen) need standard OpenSSL symbols
 export RUST_HOME="$HOME/.rust"
 export PATH="$RUST_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="/usr/lib:$RUST_HOME/lib:/system/lib64:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/usr/lib:$RUST_HOME/lib:$LOCAL_PYTHON_HOME/lib:/system/lib64:${LD_LIBRARY_PATH:-}"
 export CARGO_HOME="$RUST_HOME"
 export RUSTUP_HOME="$RUST_HOME"
 
 # llama.cpp
 export LLAMA_HOME="$HOME/Claude/llama.cpp/build/bin"
 export PATH="$LLAMA_HOME:$PATH"
-export LD_LIBRARY_PATH="$LLAMA_HOME:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LLAMA_HOME"
 
 # eza (modern ls replacement, compiled from Rust)
 export EZA_HOME="$HOME/Claude/eza-build/eza/target/release"
@@ -61,5 +60,5 @@ export TMPDIR="$HOME/Claude/tmpdir"
 
 # PyTorch library path (if installed)
 if [ -d "$HOME/.local/lib/python3.12/site-packages/torch/lib" ]; then
-    export LD_LIBRARY_PATH="$HOME/.local/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/.local/lib/python3.12/site-packages/torch/lib"
 fi

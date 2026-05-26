@@ -61,7 +61,7 @@ always-enable: true
 | eza | 0.23.4 | `$HOME/Claude/eza-build/.../release` | modern ls |
 | bat | 0.26.1 | `$HOME/Claude/bat-build/.../release` | syntax-highlighted cat |
 | starship | 1.25.1 | `$HOME/Claude/starship-build/.../release` | cross-shell prompt |
-| Claude Code | 2.1.88-ohos | npm global | HarmonyOS native, ripgrep auto-signing |
+| Claude Code | 2.1.88-ohos.1 | npm global | HarmonyOS native, ripgrep auto-signing |
 
 ### Adaptation Guide Locations
 

@@ -210,4 +210,4 @@ Dropbear is recommended for HarmonyOS due to simpler build and bundled crypto li
 
 - Dropbear source: https://matt.ucc.asn.au/dropbear/releases/
 - Full build guide: `tools/dropbear/build.md`
-- SSH polyfill script: `config/.claude/ssh-fetch-polyfill.js`
+- SSH polyfill script: `scripts/ssh-fetch-polyfill.js`

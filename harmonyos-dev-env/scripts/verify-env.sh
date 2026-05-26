@@ -90,7 +90,7 @@ else
 fi
 
 # Node.js
-if command -v node &>/dev/null; then
+if command -v node >/dev/null 2>&1; then
     VERSION=$(node -v | tr -d 'v')
     if [ "$VERSION" = "24.13.0" ]; then
         pass "Node.js 24.13.0"

@@ -20,7 +20,7 @@ HarmonyOS-Dev-Env-Skill/
 │   │   ├── verify-env.sh     ← 环境验证
 │   │   ├── ssh-fetch-polyfill.js
 │   │   └── start-claude.sh
-│   ├── docs/                 ← 18 组双语适配文档（*.md + *.cn.md）
+│   ├── docs/                 ← 19 组双语适配文档（*.md + *.cn.md）
 │   ├── tools/                ← 11 工具构建指南 + install.sh
 │   └── assets/               ← 安装辅助资产（非 skill 知识本体）
 │       ├── zshenv            ← Shell 环境配置模板
@@ -78,7 +78,7 @@ HarmonyOS-Dev-Env-Skill/
 - 提供已知问题的故障排除章节
 - 交叉引用相关文档
 
-### 5. Git 提交
+### 6. Git 提交
 - 重要更改时维护双语提交信息
 - 同时更新两个语言版本
 - 引用 Co-Authored-By 行
@@ -89,24 +89,24 @@ HarmonyOS-Dev-Env-Skill/
 
 1. **代码签名**: 所有 ELF 二进制必须签名
 2. **PyTorch 版本说明**: 标注为 v2.5.1（git tag），内部版本字符串为 2.5.0a0+gita8d6fb（pre-release 标记），两者指向同一代码
-2. **/tmp 只读**: 使用 $HOME/Claude/tmpdir
-3. **LD_LIBRARY_PATH**: /usr/lib 必须在最前面
-4. **链接器封装**: SDK 的 lld 不工作，使用 ld.bfd 封装
-5. **无 gcc**: 只有 clang 可用
-6. **SSH V8 崩溃**: 使用 --jitless + node-fetch polyfill
-7. **SSH `-e` 参数**: Dropbear 必须使用 `-e` 参数启动，以传递环境变量（LD_LIBRARY_PATH、PATH）给子会话
-8. **make -j 失败**: mkfifo 返回"Operation not permitted"——使用 Ninja 进行并行构建
-9. **不要使用 CMAKE_TOOLCHAIN_FILE**: 不要将 CMAKE_TOOLCHAIN_FILE 配合 CMAKE_SYSTEM_NAME=Linux 使用——它会触发交叉编译模式导致 try_run() 失败；使用轻量级工具链文件（仅编译器+链接器封装，无 CMAKE_SYSTEM_NAME）或直接传递编译器标志
-10. **OpenBLAS/LAPACK**: 编译 OpenBLAS v0.3.28（NOFORTRAN=1，f2c LAPACK）；修改 Makefile.prebuild 添加 -B 封装+代码签名；从 .a 创建 .so；在 CMake 中显式设置 LAPACK_LIBRARIES 和 LAPACK_FOUND
-11. **Sleef NATIVE_BUILD_DIR 修复**: 修改 sleef CMakeLists.txt 的 add_host_executable，在 NATIVE_BUILD_DIR 提供时使用，即使无 CMAKE_CROSSCOMPILING——避免循环签名依赖
-12. **NumPy 增量补丁**: 如果 CMake 未找到 NumPy，重新编译 tensor_numpy.cpp（添加 -DUSE_NUMPY）并重新链接 libtorch_python.so——无需完整重构
-13. **CMake 4.1.2 ldd**: CMake 4.1.2 链接后运行 ldd；将 ldd 封装复制到 ~/.local/bin/ldd
-14. **PyTorch visibility hidden + supplement.so**: PyTorch 使用 `-fvisibility=hidden` 编译，导致 `RefcountedMapAllocator::decref/incref` 和 `at::internal::invoke_parallel` 从 libtorch_cpu.so 动态符号表中被隐藏。创建 `libtorch_supplement.so` 提供 stub 实现，通过 `patchelf --add-needed` 添加为 NEEDED 依赖
-15. **NEEDED 路径前缀修复**: Ninja 构建的库在 NEEDED 条目中使用 "lib/" 前缀（如 `lib/libtorch_cpu.so`）。使用 `patchelf --replace-needed` 去除前缀，并 `--set-rpath` 设置 `$ORIGIN:$HOME/.local/lib`
-16. **OpenSSH passwd_compat LD_PRELOAD**: sshd 需要 passwd_compat LD_PRELOAD，因为 uid 20020106 不在 /etc/passwd（只读）。子进程环境必须保留 LD_PRELOAD/LD_LIBRARY_PATH（patch session.c do_setup_env）。sshd_config 必须使用 SetEnv PATH 将 openssh-prefix/bin 放在首位（系统 /usr/bin/scp 会崩溃）。
-17. **OpenSSH 抽象socket**: ssh-agent bind() 对文件系统 Unix socket 返回 EPERM；回退到抽象命名空间（sun_path[0]='\0'）。SSH_AUTH_SOCK 使用 "abstract:" 前缀。
-18. **OpenSSH privsep 非致命**: HarmonyOS 不允许用户空间进程调用 chroot/setgroups/setegid/seteuid。Patch sshd-session.c 使 chroot 非致命（跳过后续权限降级）。uidswap.c：将 setgroups/setegid/seteuid 从 fatal 改为 debug。
-19. **OpenSSH authorized_keys UID**: 文件所有者为 uid 20001006（file_manager），sshd 运行在 uid 20020106。将 uid 20001006 加入 platform_sys_dir_uid()（类似 root）。safe_path() 对系统目录拥有的文件跳过 mode 检查（022 位掩码）。StrictModes=yes 正常工作。
+3. **/tmp 只读**: 使用 $HOME/Claude/tmpdir
+4. **LD_LIBRARY_PATH**: /usr/lib 必须在最前面
+5. **链接器封装**: SDK 的 lld 不工作，使用 ld.bfd 封装
+6. **无 gcc**: 只有 clang 可用
+7. **SSH V8 崩溃**: 使用 --jitless + node-fetch polyfill
+8. **SSH `-e` 参数**: Dropbear 必须使用 `-e` 参数启动，以传递环境变量（LD_LIBRARY_PATH、PATH）给子会话
+9. **make -j 失败**: mkfifo 返回"Operation not permitted"——使用 Ninja 进行并行构建
+10. **不要使用 CMAKE_TOOLCHAIN_FILE**: 不要将 CMAKE_TOOLCHAIN_FILE 配合 CMAKE_SYSTEM_NAME=Linux 使用——它会触发交叉编译模式导致 try_run() 失败；使用轻量级工具链文件（仅编译器+链接器封装，无 CMAKE_SYSTEM_NAME）或直接传递编译器标志
+11. **OpenBLAS/LAPACK**: 编译 OpenBLAS v0.3.28（NOFORTRAN=1，f2c LAPACK）；修改 Makefile.prebuild 添加 -B 封装+代码签名；从 .a 创建 .so；在 CMake 中显式设置 LAPACK_LIBRARIES 和 LAPACK_FOUND
+12. **Sleef NATIVE_BUILD_DIR 修复**: 修改 sleef CMakeLists.txt 的 add_host_executable，在 NATIVE_BUILD_DIR 提供时使用，即使无 CMAKE_CROSSCOMPILING——避免循环签名依赖
+13. **NumPy 增量补丁**: 如果 CMake 未找到 NumPy，重新编译 tensor_numpy.cpp（添加 -DUSE_NUMPY）并重新链接 libtorch_python.so——无需完整重构
+14. **CMake 4.1.2 ldd**: CMake 4.1.2 链接后运行 ldd；将 ldd 封装复制到 ~/.local/bin/ldd
+15. **PyTorch visibility hidden + supplement.so**: PyTorch 使用 `-fvisibility=hidden` 编译，导致 `RefcountedMapAllocator::decref/incref` 和 `at::internal::invoke_parallel` 从 libtorch_cpu.so 动态符号表中被隐藏。创建 `libtorch_supplement.so` 提供 stub 实现，通过 `patchelf --add-needed` 添加为 NEEDED 依赖
+16. **NEEDED 路径前缀修复**: Ninja 构建的库在 NEEDED 条目中使用 "lib/" 前缀（如 `lib/libtorch_cpu.so`）。使用 `patchelf --replace-needed` 去除前缀，并 `--set-rpath` 设置 `$ORIGIN:$HOME/.local/lib`
+17. **OpenSSH passwd_compat LD_PRELOAD**: sshd 需要 passwd_compat LD_PRELOAD，因为 uid 20020106 不在 /etc/passwd（只读）。子进程环境必须保留 LD_PRELOAD/LD_LIBRARY_PATH（patch session.c do_setup_env）。sshd_config 必须使用 SetEnv PATH 将 openssh-prefix/bin 放在首位（系统 /usr/bin/scp 会崩溃）。
+18. **OpenSSH 抽象socket**: ssh-agent bind() 对文件系统 Unix socket 返回 EPERM；回退到抽象命名空间（sun_path[0]='\0'）。SSH_AUTH_SOCK 使用 "abstract:" 前缀。
+19. **OpenSSH privsep 非致命**: HarmonyOS 不允许用户空间进程调用 chroot/setgroups/setegid/seteuid。Patch sshd-session.c 使 chroot 非致命（跳过后续权限降级）。uidswap.c：将 setgroups/setegid/seteuid 从 fatal 改为 debug。
+20. **OpenSSH authorized_keys UID**: 文件所有者为 uid 20001006（file_manager），sshd 运行在 uid 20020106。将 uid 20001006 加入 platform_sys_dir_uid()（类似 root）。safe_path() 对系统目录拥有的文件跳过 mode 检查（022 位掩码）。StrictModes=yes 正常工作。
 
 ## 相关文档
 

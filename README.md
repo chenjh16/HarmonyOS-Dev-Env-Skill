@@ -57,11 +57,11 @@ sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
 │   ├── verify-env.sh           ← 环境验证（检查所有工具链）
 │   ├── ssh-fetch-polyfill.js   ← SSH V8 崩溃 workaround
 │   └── start-claude.sh         ← Claude Code 启动脚本（SSH 检测）
-├── docs/                       ← 18 组双语适配文档（Agent 需要时主动 Read 查阅）
+├── docs/                       ← 19 组双语适配文档（Agent 需要时主动 Read 查阅）
 │   ├── python-harmonyos.md / .cn.md
 │   ├── openssh-harmonyos.md / .cn.md
 │   └── ...
-├── tools/                      ← 11 工具构建指南 + install.sh
+├── tools/                      ← 11 工具构建指南（6 个含 install.sh）
 │   ├── python/  ├── rust/  ├── go/  ├── llama-cpp/  ├── mihomo/
 │   ├── dropbear/ ├── openssh/ ├── pytorch/
 │   ├── bat/  ├── eza/  ├── starship/
@@ -107,7 +107,7 @@ source ~/.zshenv
 除了 Skill 机制外，还可以将规则文件安装到全局 `~/.claude/CLAUDE.md`（双重保障）：
 
 ```bash
-# env-setup.sh 步骤 [5/6] 会自动处理（如果 ~/.claude/CLAUDE.md 不存在）
+# env-setup.sh 步骤 [5/7] 会自动处理（如果 ~/.claude/CLAUDE.md 不存在）
 # 手动更新：
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
@@ -162,7 +162,7 @@ Claude Code 通过文件系统自动发现 Skills：
 | Node.js | 24.13.0 | 语言 | ✅ | [docs/nodejs-harmonyos.cn.md](harmonyos-dev-env/docs/nodejs-harmonyos.cn.md) |
 | Rust | 1.95.0 | 语言 | ✅ | [docs/rust-harmonyos.cn.md](harmonyos-dev-env/docs/rust-harmonyos.cn.md) |
 | Go | 1.22.5 | 语言 | ✅ | [tools/go/build.cn.md](harmonyos-dev-env/tools/go/build.cn.md) |
-| Claude Code | 2.1.88-ohos | AI工具 | ✅ | [docs/claude-code-harmonyos.cn.md](harmonyos-dev-env/docs/claude-code-harmonyos.cn.md) |
+| Claude Code | 2.1.88-ohos.1 | AI工具 | ✅ | [docs/claude-code-harmonyos.cn.md](harmonyos-dev-env/docs/claude-code-harmonyos.cn.md) |
 | PyTorch | 2.5.1 | ML框架 | ✅ | [docs/pytorch-harmonyos.cn.md](harmonyos-dev-env/docs/pytorch-harmonyos.cn.md) |
 | llama.cpp | b9073 | ML推理 | ✅ | [docs/llama-cpp-harmonyos.cn.md](harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md) |
 | mihomo | Meta | 网络 | ✅ | [docs/mihomo-harmonyos.cn.md](harmonyos-dev-env/docs/mihomo-harmonyos.cn.md) |
@@ -330,11 +330,11 @@ The installed Skill directory structure:
 │   ├── verify-env.sh           ← Environment verification (checks all toolchains)
 │   ├── ssh-fetch-polyfill.js   ← SSH V8 crash workaround
 │   └── start-claude.sh         ← Claude Code startup script (SSH detection)
-├── docs/                       ← 18 bilingual adaptation guides (Agent reads when needed)
+├── docs/                       ← 19 bilingual adaptation guides (Agent reads when needed)
 │   ├── python-harmonyos.md / .cn.md
 │   ├── openssh-harmonyos.md / .cn.md
 │   └── ...
-├── tools/                      ← 11 tool build guides + install.sh
+├── tools/                      ← 11 tool build guides (6 with install.sh)
 │   ├── python/  ├── rust/  ├── go/  ├── llama-cpp/  ├── mihomo/
 │   ├── dropbear/ ├── openssh/ ├── pytorch/
 │   ├── bat/  ├── eza/  ├── starship/
@@ -380,7 +380,7 @@ source ~/.zshenv
 In addition to the Skill mechanism, install rules to global `~/.claude/CLAUDE.md` (double guarantee):
 
 ```bash
-# env-setup.sh step [5/6] handles this automatically (if ~/.claude/CLAUDE.md doesn't exist)
+# env-setup.sh step [5/7] handles this automatically (if ~/.claude/CLAUDE.md doesn't exist)
 # Manual update:
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md
 cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
@@ -435,7 +435,7 @@ Claude Code auto-discovers Skills through the filesystem:
 | Node.js | 24.13.0 | Language | ✅ | [docs/nodejs-harmonyos.md](harmonyos-dev-env/docs/nodejs-harmonyos.md) |
 | Rust | 1.95.0 | Language | ✅ | [docs/rust-harmonyos.md](harmonyos-dev-env/docs/rust-harmonyos.md) |
 | Go | 1.22.5 | Language | ✅ | [tools/go/build.md](harmonyos-dev-env/tools/go/build.md) |
-| Claude Code | 2.1.88-ohos | AI Tool | ✅ | [docs/claude-code-harmonyos.md](harmonyos-dev-env/docs/claude-code-harmonyos.md) |
+| Claude Code | 2.1.88-ohos.1 | AI Tool | ✅ | [docs/claude-code-harmonyos.md](harmonyos-dev-env/docs/claude-code-harmonyos.md) |
 | PyTorch | 2.5.1 | ML Framework | ✅ | [docs/pytorch-harmonyos.md](harmonyos-dev-env/docs/pytorch-harmonyos.md) |
 | llama.cpp | b9073 | ML Inference | ✅ | [docs/llama-cpp-harmonyos.md](harmonyos-dev-env/docs/llama-cpp-harmonyos.md) |
 | mihomo | Meta | Network | ✅ | [docs/mihomo-harmonyos.md](harmonyos-dev-env/docs/mihomo-harmonyos.md) |

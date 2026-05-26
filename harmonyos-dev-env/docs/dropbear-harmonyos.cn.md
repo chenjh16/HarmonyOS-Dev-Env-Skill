@@ -96,7 +96,7 @@ tar xjf dropbear-2024.86.tar.bz2
 cd libtommath && make
 cd libtomcrypt && make -f makefile.unix
 
-# 3. 创建 config.h 和 options.h（详见 build.md）
+# 3. 创建 config.h 和 options.h（详见 build.cn.md）
 
 # 4. 使用自定义 Makefile 构建
 make dropbear dbclient dropbearkey dropbearconvert
@@ -182,7 +182,7 @@ fi
 
 ### V8 崩溃 (ENOMEM)
 
-使用 `--jitless` 模式 + node-fetch polyfill。详见 `tools/dropbear/build.md`。
+使用 `--jitless` 模式 + node-fetch polyfill。详见 `tools/dropbear/build.cn.md`。
 
 ## 生成的文件
 
@@ -209,5 +209,5 @@ fi
 ## 参考
 
 - Dropbear 源码: https://matt.ucc.asn.au/dropbear/releases/
-- 完整构建指南: `tools/dropbear/build.md`
-- SSH polyfill 脚本: `config/.claude/ssh-fetch-polyfill.js`
+- 完整构建指南: `tools/dropbear/build.cn.md`
+- SSH polyfill 脚本: `scripts/ssh-fetch-polyfill.js`

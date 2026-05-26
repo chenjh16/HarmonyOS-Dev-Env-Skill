@@ -34,7 +34,7 @@
       "source": "AppGallery DevNode-OH",
       "build_guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md",
       "install_script": "AppGallery install",
-      "install_dir": "/usr/lib/node_modules",
+      "install_dir": "AppGallery DevNode-OH / npm global at /data/storage/el2/base/files/npm_global_modules",
       "features": ["node", "npm", "DevNode-OH native", "TLS workaround", "--jitless SSH"]
     },
     {
@@ -183,6 +183,36 @@
       "name": "openssh-abstract-socket",
       "description": "ssh-agent bind() EPERM on filesystem sockets; uses abstract namespace fallback (SSH_AUTH_SOCK=abstract:name)",
       "guide": "harmonyos-dev-env/docs/openssh-harmonyos.md"
+    },
+    {
+      "name": "openssh-authorized-keys-uid",
+      "description": "authorized_keys files owned by uid 20001006 (file_manager), sshd runs as uid 20020106; platform_sys_dir_uid() accepts 20001006; StrictModes=yes works",
+      "guide": "harmonyos-dev-env/docs/openssh-harmonyos.md"
+    },
+    {
+      "name": "dropbear-e-flag",
+      "description": "Must start dropbear with -e flag to pass parent env to child sessions (LD_LIBRARY_PATH, PATH, etc.)",
+      "guide": "harmonyos-dev-env/docs/dropbear-harmonyos.md"
+    },
+    {
+      "name": "make-j-fails",
+      "description": "make -j fails because mkfifo returns Operation not permitted; use Ninja for parallel builds",
+      "guide": "harmonyos-dev-env/assets/rules/CLAUDE.md"
+    },
+    {
+      "name": "cmake-toolchain",
+      "description": "Do NOT combine CMAKE_TOOLCHAIN_FILE with CMAKE_SYSTEM_NAME — triggers cross-compile mode breaking try_run(); pass compiler flags directly",
+      "guide": "harmonyos-dev-env/assets/rules/CLAUDE.md"
+    },
+    {
+      "name": "musl-libc",
+      "description": "No crypt() (no password auth), no strerror_r (errno crate needs patch), limited locale support, __assert_fail uses int line without noexcept",
+      "guide": "harmonyos-dev-env/assets/rules/CLAUDE.md"
+    },
+    {
+      "name": "python-rdynamic",
+      "description": "Our Python exports 948+ Py symbols via -rdynamic, enabling signed .so extension modules from user paths",
+      "guide": "harmonyos-dev-env/docs/python-harmonyos.md"
     }
   ],
   "documentation": [

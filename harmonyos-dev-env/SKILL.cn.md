@@ -61,7 +61,7 @@ always-enable: true
 | eza | 0.23.4 | `$HOME/Claude/eza-build/.../release` | 现代 ls |
 | bat | 0.26.1 | `$HOME/Claude/bat-build/.../release` | 语法高亮 cat |
 | starship | 1.25.1 | `$HOME/Claude/starship-build/.../release` | 跨 shell 提示符 |
-| Claude Code | 2.1.88-ohos | npm global | 鸿蒙原生, ripgrep 自动签名 |
+| Claude Code | 2.1.88-ohos.1 | npm global | 鸿蒙原生, ripgrep 自动签名 |
 
 ### 适配指南位置
 

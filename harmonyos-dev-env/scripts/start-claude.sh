@@ -135,8 +135,8 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 export PATH=/data/storage/el2/base/files/npm_global_modules/bin:$PATH
 
 # HarmonyOS PC: /tmp is read-only, redirect temp to writable location
-export TMPDIR=$HOME/.claude/tmp
-export CLAUDE_CODE_TMPDIR=$HOME/.claude/tmp
+export TMPDIR=$HOME/Claude/tmpdir
+export CLAUDE_CODE_TMPDIR=$HOME/Claude/tmpdir
 mkdir -p "$TMPDIR"
 
 # Skip onboarding wizard
