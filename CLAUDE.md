@@ -22,23 +22,21 @@ HarmonyOS-Dev-Env-Skill/
 │   │   └── start-claude.sh
 │   ├── docs/                 ← 18 bilingual adaptation guides (*.md + *.cn.md)
 │   ├── tools/                ← 11 tool build guides + install scripts
-│   ├── config/
-│   │   ├── zshenv            ← Shell env template
-│   │   └── .claude/          ← SSH polyfill + startup script templates
-│   └── rules/
-│       ├── CLAUDE.md         ← Full platform rules (English)
-│       └── CLAUDE.cn.md      ← Full platform rules (Chinese)
+│   └── assets/               ← Installation assets (not skill knowledge per se)
+│       ├── zshenv            ← Shell env template
+│       └── rules/
+│           ├── CLAUDE.md     ← Global platform rules (English)
+│           └── CLAUDE.cn.md  ← Global platform rules (Chinese)
 ├── CLAUDE.md                 ← This file - project dev guide (English)
 ├── CLAUDE.cn.md              ← Project dev guide (Chinese)
 ├── README.md                 ← Project README (bilingual)
 ├── skill.json                ← Metadata
 ├── scripts/
 │   └── install-skill.sh      ← Simplified: just cp -r harmonyos-dev-env/
-├── .gitignore
-└── (top-level config/, docs/, rules/, tools/ are the repo source originals)
+└── .gitignore
 ```
 
-**Key principle**: `harmonyos-dev-env/` must be fully self-contained. Shell scripts use `SCRIPT_DIR` pattern to find sibling files. SKILL.md references docs with relative paths. All user-variable paths use `$HOME` (never `/storage/Users/currentUser`).
+**Key principle**: `harmonyos-dev-env/` must be fully self-contained. Shell scripts use `SCRIPT_DIR` pattern to find sibling files. SKILL.md references docs with relative paths. All user-variable paths use `$HOME` (never `/storage/Users/currentUser`). `assets/` contains non-skill-knowledge files (shell config, global rules) needed by env-setup.sh.
 
 ## Documentation Naming Convention
 
@@ -71,8 +69,7 @@ All documentation files follow bilingual naming:
 ### 4. File Organization
 - `harmonyos-dev-env/docs/` - General adaptation guides (platform-wide issues)
 - `harmonyos-dev-env/tools/` - Tool-specific build guides
-- `harmonyos-dev-env/rules/` - Target system rules (installed to ~/.claude/ by env-setup.sh)
-- `harmonyos-dev-env/config/` - Configuration templates and scripts
+- `harmonyos-dev-env/assets/` - Installation assets (zshenv, rules — not skill knowledge)
 - `harmonyos-dev-env/scripts/` - Utility scripts (sign-all, verify-env, env-setup)
 
 ### 5. Content Guidelines
@@ -115,7 +112,8 @@ When documenting tool adaptations, always cover:
 
 - Skill definition: `harmonyos-dev-env/SKILL.md`
 - One-time setup: `harmonyos-dev-env/scripts/env-setup.sh`
-- Target system rules: `harmonyos-dev-env/rules/CLAUDE.md`
+- Global rules template: `harmonyos-dev-env/assets/rules/CLAUDE.md`
+- Shell env template: `harmonyos-dev-env/assets/zshenv`
 - Code signing guide: `harmonyos-dev-env/docs/code-signing.md`
 - LD_LIBRARY_PATH: `harmonyos-dev-env/docs/ld-library-path.md`
 - OpenSSH adaptation: `harmonyos-dev-env/docs/openssh-harmonyos.md`

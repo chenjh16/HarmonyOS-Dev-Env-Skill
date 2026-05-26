@@ -61,12 +61,11 @@ sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
 │   ├── python/  ├── rust/  ├── go/  ├── llama-cpp/  ├── mihomo/
 │   ├── dropbear/ ├── openssh/ ├── pytorch/
 │   ├── bat/  ├── eza/  ├── starship/
-├── config/
-│   ├── zshenv                  ← Shell PATH/LD 配置模板
-│   └── .claude/                ← SSH polyfill + 启动脚本模板
-└── rules/
-    ├── CLAUDE.md               ← 完整平台规则（英文）
-    └── CLAUDE.cn.md            ← 完整平台规则（中文）
+└── assets/                     ← 安装辅助资产（非 skill 知识本体）
+    ├── zshenv                  ← Shell PATH/LD 配置模板
+    └── rules/
+        ├── CLAUDE.md           ← 全局平台规则（英文）
+        └── CLAUDE.cn.md        ← 全局平台规则（中文）
 ```
 
 ### 方式二：项目级安装
@@ -125,7 +124,7 @@ Claude Code 通过文件系统自动发现 Skills：
 | `~/.claude/CLAUDE.md` | 全局规则（强制注入核心知识） | 每次对话自动加载 |
 | `SKILL.md` 中的 `docs/` 引用 | 完整适配指南 | Agent 需要时主动 Read 查阅 |
 | `SKILL.md` 中的 `scripts/` | 签名/验证/启动脚本 | Agent 执行 Bash 命令时调用 |
-| `config/zshenv` | Shell PATH/LD 配置 | shell 启动时加载（env-setup.sh 自动安装） |
+| `assets/zshenv` | Shell PATH/LD 配置 | shell 启动时加载（env-setup.sh 自动安装） |
 
 ## 📋 平台特性
 
@@ -321,12 +320,11 @@ The installed Skill directory structure:
 │   ├── python/  ├── rust/  ├── go/  ├── llama-cpp/  ├── mihomo/
 │   ├── dropbear/ ├── openssh/ ├── pytorch/
 │   ├── bat/  ├── eza/  ├── starship/
-├── config/
-│   ├── zshenv                  ← Shell PATH/LD config template
-│   └── .claude/                ← SSH polyfill + startup script templates
-└── rules/
-    ├── CLAUDE.md               ← Full platform rules (English)
-    └── CLAUDE.cn.md            ← Full platform rules (Chinese)
+└── assets/                     ← Installation assets (not skill knowledge per se)
+    ├── zshenv                  ← Shell PATH/LD config template
+    └── rules/
+        ├── CLAUDE.md           ← Global platform rules (English)
+        └── CLAUDE.cn.md        ← Global platform rules (Chinese)
 ```
 
 ### Option B: Project-Level Install
@@ -385,7 +383,7 @@ Claude Code auto-discovers Skills through the filesystem:
 | `~/.claude/CLAUDE.md` | Global rules (force-inject core knowledge) | Auto-loaded every conversation |
 | `docs/` references in SKILL.md | Full adaptation guides | Agent reads when needed |
 | `scripts/` references in SKILL.md | Sign/verify/start scripts | Agent calls via Bash when executing |
-| `config/zshenv` | Shell PATH/LD config | Loaded at shell startup (env-setup.sh auto-installs) |
+| `assets/zshenv` | Shell PATH/LD config | Loaded at shell startup (env-setup.sh auto-installs) |
 
 ## 📋 Platform Characteristics
 

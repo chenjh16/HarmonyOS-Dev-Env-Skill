@@ -22,23 +22,21 @@ HarmonyOS-Dev-Env-Skill/
 │   │   └── start-claude.sh
 │   ├── docs/                 ← 18 组双语适配文档（*.md + *.cn.md）
 │   ├── tools/                ← 11 工具构建指南 + install.sh
-│   ├── config/
-│   │   ├── zshenv            ← Shell 环境配置模板
-│   │   └── .claude/          ← SSH polyfill + 启动脚本模板
-│   └── rules/
-│       ├── CLAUDE.md         ← 完整平台规则（英文）
-│       └── CLAUDE.cn.md      ← 完整平台规则（中文）
+│   └── assets/               ← 安装辅助资产（非 skill 知识本体）
+│       ├── zshenv            ← Shell 环境配置模板
+│       └── rules/
+│           ├── CLAUDE.md     ← 全局平台规则（英文）
+│           └── CLAUDE.cn.md  ← 全局平台规则（中文）
 ├── CLAUDE.md                 ← 本文件 - 项目开发指南（英文）
 ├── CLAUDE.cn.md              ← 项目开发指南（中文）
 ├── README.md                 ← 项目 README（双语合一）
 ├── skill.json                ← 元数据
 ├── scripts/
 │   └── install-skill.sh      ← 简化版：直接 cp -r harmonyos-dev-env/
-├── .gitignore
-└── (顶层 config/, docs/, rules/, tools/ 是仓库源码原始文件)
+└── .gitignore
 ```
 
-**关键原则**: `harmonyos-dev-env/` 必须完全自包含。Shell 脚本使用 `SCRIPT_DIR` 模式查找同级文件。SKILL.md 使用相对路径引用 docs。所有用户可变路径使用 `$HOME`（绝不使用 `/storage/Users/currentUser`）。
+**关键原则**: `harmonyos-dev-env/` 必须完全自包含。Shell 脚本使用 `SCRIPT_DIR` 模式查找同级文件。SKILL.md 使用相对路径引用 docs。所有用户可变路径使用 `$HOME`（绝不使用 `/storage/Users/currentUser`）。`assets/` 包含非 skill 知识的文件（shell 配置、全局规则），供 env-setup.sh 安装使用。
 
 ## 文档命名规范
 
@@ -71,8 +69,7 @@ HarmonyOS-Dev-Env-Skill/
 ### 4. 文件组织
 - `harmonyos-dev-env/docs/` - 通用适配指南（平台级别问题）
 - `harmonyos-dev-env/tools/` - 工具特定构建指南
-- `harmonyos-dev-env/rules/` - 目标系统规则（由 env-setup.sh 安装到 ~/.claude/）
-- `harmonyos-dev-env/config/` - 配置模板和脚本
+- `harmonyos-dev-env/assets/` - 安装辅助资产（zshenv、规则 — 非 skill 知识）
 - `harmonyos-dev-env/scripts/` - 工具脚本（签名、验证、环境设置）
 
 ### 5. 内容指南
@@ -115,7 +112,8 @@ HarmonyOS-Dev-Env-Skill/
 
 - Skill 定义: `harmonyos-dev-env/SKILL.md`
 - 一键环境设置: `harmonyos-dev-env/scripts/env-setup.sh`
-- 目标系统规则: `harmonyos-dev-env/rules/CLAUDE.cn.md`
+- 全局规则模板: `harmonyos-dev-env/assets/rules/CLAUDE.cn.md`
+- Shell 环境模板: `harmonyos-dev-env/assets/zshenv`
 - 代码签名指南: `harmonyos-dev-env/docs/code-signing.cn.md`
 - LD_LIBRARY_PATH: `harmonyos-dev-env/docs/ld-library-path.cn.md`
 - OpenSSH 适配指南: `harmonyos-dev-env/docs/openssh-harmonyos.cn.md`

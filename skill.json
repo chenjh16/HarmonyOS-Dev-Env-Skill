@@ -206,8 +206,8 @@
     {"name": "Troubleshooting", "path": "harmonyos-dev-env/docs/troubleshooting.md", "path_cn": "harmonyos-dev-env/docs/troubleshooting.cn.md"}
   ],
   "env_config": {
-    "shell_config": "harmonyos-dev-env/config/zshenv",
-    "claude_rules": ["harmonyos-dev-env/rules/CLAUDE.md", "harmonyos-dev-env/rules/CLAUDE.cn.md"],
+    "shell_config": "harmonyos-dev-env/assets/zshenv",
+    "claude_rules": ["harmonyos-dev-env/assets/rules/CLAUDE.md", "harmonyos-dev-env/assets/rules/CLAUDE.cn.md"],
     "ssh_polyfill": "harmonyos-dev-env/scripts/ssh-fetch-polyfill.js",
     "start_script": "harmonyos-dev-env/scripts/start-claude.sh",
     "env_setup_script": "harmonyos-dev-env/scripts/env-setup.sh"
