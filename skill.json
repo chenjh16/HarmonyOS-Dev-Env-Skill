@@ -152,7 +152,7 @@
     {
       "name": "tmpdir",
       "description": "/tmp is read-only, use $HOME/Claude/tmpdir",
-      "guide": "harmonyos-dev-env/rules/CLAUDE.md"
+      "guide": "harmonyos-dev-env/assets/rules/CLAUDE.md"
     },
     {
       "name": "ld-library-path",
@@ -162,12 +162,12 @@
     {
       "name": "linker-wrapper",
       "description": "SDK lld requires libxml2.so.16, use ld.bfd wrapper",
-      "guide": "harmonyos-dev-env/rules/CLAUDE.md"
+      "guide": "harmonyos-dev-env/assets/rules/CLAUDE.md"
     },
     {
       "name": "no-gcc",
       "description": "Only clang available, no gcc",
-      "guide": "harmonyos-dev-env/rules/CLAUDE.md"
+      "guide": "harmonyos-dev-env/assets/rules/CLAUDE.md"
     },
     {
       "name": "ssh-v8-crash",

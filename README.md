@@ -109,8 +109,8 @@ source ~/.zshenv
 ```bash
 # env-setup.sh 步骤 [5/6] 会自动处理（如果 ~/.claude/CLAUDE.md 不存在）
 # 手动更新：
-cp ~/.claude/skills/harmonyos-dev-env/rules/CLAUDE.md ~/.claude/CLAUDE.md
-cp ~/.claude/skills/harmonyos-dev-env/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md
+cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
 ```
 
 > **注意**: Skill 安装（方式一）和 CLAUDE.md 规则（方式三）是互补的。Skill 提供可调用的 `/harmonyos-dev-env` 命令和完整文档查阅能力，CLAUDE.md 规则在每次对话中强制注入核心平台知识。两者同时安装效果最佳。
@@ -382,8 +382,8 @@ In addition to the Skill mechanism, install rules to global `~/.claude/CLAUDE.md
 ```bash
 # env-setup.sh step [5/6] handles this automatically (if ~/.claude/CLAUDE.md doesn't exist)
 # Manual update:
-cp ~/.claude/skills/harmonyos-dev-env/rules/CLAUDE.md ~/.claude/CLAUDE.md
-cp ~/.claude/skills/harmonyos-dev-env/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
+cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.md ~/.claude/CLAUDE.md
+cp ~/.claude/skills/harmonyos-dev-env/assets/rules/CLAUDE.cn.md ~/.claude/CLAUDE.cn.md
 ```
 
 > **Note**: Option A (Skill install) and the CLAUDE.md rules are complementary. The Skill provides an invocable `/harmonyos-dev-env` command and full documentation access, while CLAUDE.md rules force-inject core platform knowledge in every conversation. Best results with both installed.

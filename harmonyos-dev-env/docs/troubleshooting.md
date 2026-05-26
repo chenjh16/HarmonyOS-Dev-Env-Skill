@@ -120,7 +120,7 @@ Then add `-B$HOME/Claude/lib/linker_wrapper` to clang commands:
 clang -B$HOME/Claude/lib/linker_wrapper ...
 ```
 
-**Full Guide**: [CLAUDE.md](../rules/CLAUDE.md)
+**Full Guide**: See the full platform rules in `assets/rules/CLAUDE.md` (at the skill install directory)
 
 ---
 

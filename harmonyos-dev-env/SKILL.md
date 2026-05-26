@@ -29,7 +29,7 @@ always-enable: true
 
 6. **make -j fails**: `mkfifo` returns "Operation not permitted" — use Ninja for parallel builds.
 
-7. **CMAKE_TOOLCHAIN_FILE**: Do NOT combine with `CMAKE_SYSTEM_NAME` — triggers cross-compile mode, breaking `try_run()`. Pass compiler flags directly via `-DCMAKE_C_COMPILER` and `-DCMAKE_CXX_COMPILER`.
+7. **CMAKE_TOOLCHAIN_FILE + CMAKE_SYSTEM_NAME**: Do NOT combine — triggers cross-compile mode, breaking `try_run()`. Pass compiler flags directly via `-DCMAKE_C_COMPILER` and `-DCMAKE_CXX_COMPILER`.
 
 8. **SSH V8 crash**: HarmonyOS PTY + V8 JIT crashes (ENOMEM). Use `node --jitless` + `node-fetch` polyfill for SSH sessions.
 
@@ -68,6 +68,7 @@ always-enable: true
 Full build guides are in this skill's `docs/` directory. When the user asks about a specific tool, read the corresponding guide using the Read tool with relative path from this SKILL.md's directory:
 
 - `docs/python-harmonyos.md` — Python 3.12.8 standalone build
+- `docs/python-packages-harmonyos.md` — 34 packages tested, solutions for C/Rust extensions
 - `docs/python-extension-adaptation.md` — **General guide for adapting C/Rust/C++ Python packages**
 - `docs/rust-harmonyos.md` — Rust ohos target installation
 - `docs/pytorch-harmonyos.md` — PyTorch v2.5.1, 15/15 e2e tests
@@ -83,6 +84,7 @@ Full build guides are in this skill's `docs/` directory. When the user asks abou
 - `docs/code-signing.md` — ELF/HAP signing guide
 - `docs/ld-library-path.md` — LD_LIBRARY_PATH ordering
 - `docs/selinux-analysis.md` — .so loading root cause
+- `docs/ipc-feasibility.md` — Native child process API
 - `docs/troubleshooting.md` — consolidated problem-solving
 
 Tool build guides with install scripts are in `tools/`:

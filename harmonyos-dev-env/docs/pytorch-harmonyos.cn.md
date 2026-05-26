@@ -515,4 +515,4 @@ python3 -c "import torch; print(torch.__version__)"
 
 - PyTorch 源码: https://github.com/pytorch/pytorch (v2.5.1)
 - HarmonyOS SDK: `/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/`
-- HarmonyOS 上的 Python: [python-harmonyos.md](python-harmonyos.md)
+- HarmonyOS 上的 Python: [python-harmonyos.cn.md](python-harmonyos.cn.md)

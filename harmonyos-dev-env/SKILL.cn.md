@@ -6,7 +6,7 @@ always-enable: true
 
 # HarmonyOS PC 开发环境技能包
 
-#### 关键平台规则
+### 关键平台规则
 
 1. **代码签名**: 所有 ELF 二进制（可执行文件 + .so）必须使用 `binary-sign-tool sign -selfSign 1 -inFile <unsigned> -outFile <signed> -signAlg SHA256withECDSA` 签名才能执行。未签名二进制立即崩溃。
 
@@ -45,7 +45,7 @@ always-enable: true
 
 14. **Python -rdynamic**: 我们的 Python 通过 `-rdynamic` 导出 948+ Py 符号，支持用户路径的签名 .so 扩展模块。无需仅限静态扩展。
 
-#### 工具链快速参考
+### 工具链快速参考
 
 | 工具 | 版本 | 安装路径 | 关键特性 |
 |------|------|----------|----------|
@@ -63,11 +63,12 @@ always-enable: true
 | starship | 1.25.1 | `$HOME/Claude/starship-build/.../release` | 跨 shell 提示符 |
 | Claude Code | 2.1.88-ohos | npm global | 鸿蒙原生, ripgrep 自动签名 |
 
-#### 适配指南位置
+### 适配指南位置
 
 完整构建指南在本 skill 的 `docs/` 目录中。当用户询问特定工具时，使用 Read 工具从本 SKILL.cn.md 目录的相对路径读取对应指南：
 
 - `docs/python-harmonyos.cn.md` — Python 3.12.8 独立构建
+- `docs/python-packages-harmonyos.cn.md` — 34 个包测试结果，C/Rust 扩展解决方案
 - `docs/python-extension-adaptation.cn.md` — **适配 C/Rust/C++ Python 包的通用指南**
 - `docs/rust-harmonyos.cn.md` — Rust ohos 目标安装
 - `docs/pytorch-harmonyos.cn.md` — PyTorch v2.5.1, 15/15 测试
@@ -83,12 +84,13 @@ always-enable: true
 - `docs/code-signing.cn.md` — ELF/HAP 签名指南
 - `docs/ld-library-path.cn.md` — LD_LIBRARY_PATH 顺序
 - `docs/selinux-analysis.cn.md` — .so 加载根因
+- `docs/ipc-feasibility.cn.md` — Native 子进程 API
 - `docs/troubleshooting.cn.md` — 综合故障排除
 
 带 install.sh 的工具构建指南在 `tools/` 目录中：
 - `tools/python/`, `tools/rust/`, `tools/go/`, `tools/llama-cpp/`, `tools/mihomo/`, `tools/dropbear/`, `tools/openssh/`, `tools/pytorch/`, `tools/bat/`, `tools/eza/`, `tools/starship/`
 
-#### 快捷命令
+### 快捷命令
 
 ```bash
 # 一次性环境设置（创建 $HOME/Claude 基础目录、tmpdir、linker wrapper、复制 zshenv）

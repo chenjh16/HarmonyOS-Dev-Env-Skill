@@ -120,7 +120,7 @@ chmod +x $HOME/Claude/lib/linker_wrapper/ld.lld
 clang -B$HOME/Claude/lib/linker_wrapper ...
 ```
 
-**完整指南**: [CLAUDE.cn.md](../rules/CLAUDE.cn.md)
+**完整指南**: 完整平台规则见 `assets/rules/CLAUDE.cn.md`（位于 skill 安装目录）
 
 ---
 

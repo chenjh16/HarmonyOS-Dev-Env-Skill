@@ -147,6 +147,8 @@ lxml 需要先编译 libxml2, libxslt 和 libexslt:
 
 ## 扩展模块编译模板
 
+> **适配 C/Rust/C++ Python 包的完整方法论**，见 [python-extension-adaptation.cn.md](python-extension-adaptation.cn.md) —— 包类型分类、构建环境、4 种编译策略、签名与 patchelf 修复、常见错误诊断。
+
 ```bash
 SYSROOT=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot
 
@@ -211,4 +213,4 @@ export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
 
 ## 相关文档
 
-- [python-packages-harmonyos.md](python-packages-harmonyos.md) — 包兼容性完整报告
+- [python-packages-harmonyos.cn.md](python-packages-harmonyos.cn.md) — 包兼容性完整报告

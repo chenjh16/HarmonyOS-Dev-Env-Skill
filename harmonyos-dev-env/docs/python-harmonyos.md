@@ -147,6 +147,8 @@ lxml requires compiling libxml2, libxslt and libexslt first:
 
 ## Extension Module Compilation Template
 
+> **For a comprehensive, step-by-step methodology for adapting any C/Rust/C++ Python package**, see [python-extension-adaptation.md](python-extension-adaptation.md) — it covers package type classification, build environment setup, 4 compilation strategies, code signing & patchelf repair, and common error diagnosis.
+
 ```bash
 SYSROOT=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot
 
