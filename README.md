@@ -27,7 +27,7 @@
 
 本项目是专为 **HarmonyOS (鸿蒙) PC** 设计的 Claude Code Skill Pack，让 AI Agent 在鸿蒙平台上也能获得完整的开发环境知识——包括平台特性、代码签名、工具链配置、常见问题解决方案等。
 
-**为什么需要这个 Skill?** HarmonyOS PC 的开发环境与标准 Linux 差异巨大（代码签名、只读 /tmp、无 gcc、SDK lld 损坏等）。没有这些知识的 Agent 会反复踩坑、编译失败。安装本 Skill 后，Claude Code Agent 会自动获得所有鸿蒙适配经验，直接产出可用的构建方案。
+**为什么需要这个 Skill?** HarmonyOS PC 的开发环境与标准 Linux 差异巨大，而且很多差异会直接阻断常规开发流程：所有 ELF 二进制和 `.so` 扩展模块都需要代码签名，`/tmp` 只读，系统无 gcc，SDK 自带 lld 因缺少 `libxml2.so.16` 无法直接使用，AppGallery 安装的 Python 开发环境难以支撑带原生 `.so` 的非纯 Python pip 包，系统没有开箱即用的原生 SSH 服务，也没有官方可直接使用的 Rust、Go、PyTorch 等开发环境。没有这些知识的 Agent 会反复踩坑、编译失败，甚至给出在标准 Linux 上正确但在 HarmonyOS PC 上不可执行的方案。安装本 Skill 后，Claude Code Agent 会自动获得完整的鸿蒙适配经验，直接产出可用的构建、签名、运行和排障方案。
 
 ## 📦 Skill 安装与使用
 
@@ -358,7 +358,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 
 This project is a **Claude Code Skill Pack** designed specifically for HarmonyOS PC. It gives AI Agents complete knowledge of the HarmonyOS development environment — platform quirks, code signing, toolchain configuration, and solutions to common pitfalls.
 
-**Why this Skill?** HarmonyOS PC differs drastically from standard Linux (code signing mandatory, read-only /tmp, no gcc, broken SDK lld, etc.). Without this knowledge, Agents will repeatedly fail at compilation tasks. After installing this Skill, Claude Code automatically carries all HarmonyOS adaptation experience and produces working build solutions directly.
+**Why this Skill?** HarmonyOS PC differs drastically from standard Linux, and many differences directly block normal development workflows: every ELF binary and `.so` extension module must be code-signed, `/tmp` is read-only, gcc is unavailable, the SDK-provided lld cannot be used directly because it requires the missing `libxml2.so.16`, the AppGallery Python development environment is difficult to use for non-pure-Python pip packages that ship native `.so` modules, there is no out-of-the-box native SSH service, and there are no officially ready-to-use Rust, Go, or PyTorch development environments. Without this knowledge, Agents will repeatedly hit platform-specific failures or suggest solutions that are correct on standard Linux but unusable on HarmonyOS PC. After installing this Skill, Claude Code automatically carries the full HarmonyOS adaptation experience and can produce working build, signing, runtime, and troubleshooting solutions directly.
 
 ## 📦 Skill Installation & Usage
 
