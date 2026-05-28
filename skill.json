@@ -218,6 +218,21 @@
       "name": "python-rdynamic",
       "description": "Our Python exports 948+ Py symbols via -rdynamic, enabling signed .so extension modules from user paths",
       "guide": "harmonyos-dev-env/docs/python-harmonyos.md"
+    },
+    {
+      "name": "maturin-platform-check",
+      "description": "maturin rejects build when platform.system() returns 'HarmonyOS' vs Rust target OS 'Linux'; fix via sitecustomize.py patch",
+      "guide": "harmonyos-dev-env/docs/cryptography-harmonyos.md"
+    },
+    {
+      "name": "openssl-dev-files",
+      "description": "System has libssl.so.3/libcrypto.so.3 but no headers/pkg-config; must download headers + create pkg-config files + unversioned symlinks",
+      "guide": "harmonyos-dev-env/docs/cryptography-harmonyos.md"
+    },
+    {
+      "name": "libffi-missing",
+      "description": "No libffi on HarmonyOS (no ffi.h, no libffi.so); must compile from source without autotools, handling FFI_HIDDEN C/asm split and memcpy-bcopy macro conflict",
+      "guide": "harmonyos-dev-env/docs/cryptography-harmonyos.md"
     }
   ],
   "documentation": [
@@ -226,6 +241,7 @@
     {"name": "Python Environment", "path": "harmonyos-dev-env/docs/python-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-harmonyos.cn.md"},
     {"name": "Python Packages", "path": "harmonyos-dev-env/docs/python-packages-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-packages-harmonyos.cn.md"},
     {"name": "Python Extension Adaptation", "path": "harmonyos-dev-env/docs/python-extension-adaptation.md", "path_cn": "harmonyos-dev-env/docs/python-extension-adaptation.cn.md"},
+    {"name": "cryptography", "path": "harmonyos-dev-env/docs/cryptography-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/cryptography-harmonyos.cn.md"},
     {"name": "llama.cpp", "path": "harmonyos-dev-env/docs/llama-cpp-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md"},
     {"name": "Rust", "path": "harmonyos-dev-env/docs/rust-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/rust-harmonyos.cn.md"},
     {"name": "PyTorch", "path": "harmonyos-dev-env/docs/pytorch-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/pytorch-harmonyos.cn.md"},

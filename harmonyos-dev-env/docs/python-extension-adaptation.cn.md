@@ -112,19 +112,62 @@ pip install pillow
 
 ### 策略 D: Rust 扩展（maturin 构建）
 
-适用于 PyO3 架构的包：
+适用于 PyO3 架构的包（bcrypt、cryptography 等）：
 
 ```bash
-# 安装 maturin
-pip install maturin
+# 步骤 1: 通过 cargo 安装 maturin
+CC=/data/service/hnp/bin/clang \
+RUSTFLAGS="-C linker=/data/service/hnp/bin/clang" \
+CARGO_HOME=$HOME/.rust \
+cargo install maturin
 
-# 构建 wheel
-maturin build --release --target aarch64-unknown-linux-ohos \
-  --cargo-flags="-C linker=/data/service/hnp/bin/clang"
+# 步骤 2: 签名 maturin 二进制
+/data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+  -inFile $HOME/.local/bin/maturin \
+  -outFile $HOME/.local/bin/maturin.signed -signAlg SHA256withECDSA
+mv $HOME/.local/bin/maturin.signed $HOME/.local/bin/maturin
 
-# 安装构建的 wheel
-pip install target/wheels/<包名>-*.whl
+# 步骤 3: 修复 platform.system() 不匹配（maturin 拒绝 "HarmonyOS" vs Rust "Linux"）
+# 创建 sitecustomize.py 补丁 platform.system()
+cat > $HOME/.local/lib/python3.12/site-packages/sitecustomize.py << 'EOF'
+import platform
+_original_system = platform.system
+def _patched_system():
+    result = _original_system()
+    if result == "HarmonyOS":
+        return "Linux"
+    return result
+platform.system = _patched_system
+EOF
+
+# 步骤 4: 使用 --no-build-isolation 安装（pip 隔离环境不继承 RUSTFLAGS/CC）
+TMPDIR=$HOME/Claude/tmpdir \
+CC=/data/service/hnp/bin/clang \
+CXX=/data/service/hnp/bin/clang++ \
+CFLAGS="-B$HOME/Claude/lib/linker_wrapper -I$HOME/.local/include" \
+LDFLAGS="-B$HOME/Claude/lib/linker_wrapper -L$HOME/.local/lib" \
+LD_LIBRARY_PATH="/usr/lib:$HOME/.local/lib:$HOME/.rust/lib:/system/lib64:$LD_LIBRARY_PATH" \
+RUSTFLAGS="-C linker=/data/service/hnp/bin/clang" \
+PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH" \
+pip install <包名> --no-build-isolation
 ```
+
+对于还需要 OpenSSL 的包（如 cryptography），添加额外的链接器路径：
+
+```bash
+# OpenSSL 依赖的 Rust 包需要额外参数
+LDFLAGS="-B$HOME/Claude/lib/linker_wrapper -L/usr/lib -L$HOME/.local/lib" \
+RUSTFLAGS="-C linker=/data/service/hnp/bin/clang -C link-args=-L/usr/lib -C link-args=-L$HOME/.local/lib" \
+PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig" \
+```
+
+**HarmonyOS 上 Rust 扩展的关键问题**:
+1. **maturin 平台检查**: maturin 比较 `platform.system()`（返回 "HarmonyOS"）与 Rust target OS（"Linux"），不匹配时拒绝构建。用 sitecustomize.py 补丁修复。
+2. **pip 构建隔离**: pip 的隔离构建环境不继承 RUSTFLAGS、CC、LD_LIBRARY_PATH。必须使用 `--no-build-isolation`。
+3. **cargo 链接器**: HarmonyOS 没有 `cc` 命令；必须设置 `RUSTFLAGS="-C linker=/data/service/hnp/bin/clang"`。
+4. **OpenSSL 开发文件**: 系统有 libssl.so.3/libcrypto.so.3 但无头文件/pkg-config。需手动下载头文件并创建 pkg-config 文件。
+
+完整工作示例见 [cryptography-harmonyos.cn.md](cryptography-harmonyos.cn.md)。
 
 ### .so 后缀修复
 
@@ -259,6 +302,10 @@ python3 -c "import <包名>; print('<包名> 导入成功')"
 | `Operation not permitted` (mkfifo) | HarmonyOS 上 make -j 失败 | 使用 Ninja |
 | `.so 加载失败 / 无错误信息崩溃` | .so 未签名 | `binary-sign-tool sign -selfSign 1` |
 | `undefined symbol: PyFloat_FromDouble` | 系统 Python 静态链接 | 使用 `-rdynamic` Python（`$HOME/.local/bin/python3`） |
+| `don't match ಠ_ಠ`（maturin） | platform.system() 返回 "HarmonyOS" vs Rust target "Linux" | 创建 sitecustomize.py 补丁 platform.system() |
+| `Package openssl was not found`（pkg-config） | 系统无 openssl.pc | 创建 $HOME/.local/lib/pkgconfig/ 下的 pkg-config 文件 |
+| `ld.lld: error: unable to find library -lssl` | 链接器找不到 libssl.so | RUSTFLAGS 添加 `-C link-args=-L/usr/lib` + 创建无版本号符号链接 |
+| `ModuleNotFoundError: No module named '_cffi_backend'` | .so 后缀不匹配或未签名 | 重命名为 `.cpython-312-aarch64-linux-gnu.so` + 签名 |
 
 ## 按难度分类的适配示例
 
@@ -285,6 +332,18 @@ python3 -c "import bcrypt; print(bcrypt.hashpw('test', bcrypt.gensalt()))"
 4. 修复 .so 后缀（如需要）
 5. 签名所有包 .so 文件
 6. 将 `$HOME/.local/lib` 添加到 LD_LIBRARY_PATH
+
+### 困难：带 C 依赖的 Rust 扩展（cryptography）
+
+1. 从源码编译 libffi（无 autotools，处理 FFI_HIDDEN C/汇编分离，删除 memcpy→bcopy 宏）
+2. 安装 cffi（签名 + 重命名 .so 后缀）
+3. cargo install maturin（签名二进制）
+4. 通过 sitecustomize.py 修复 maturin platform.system() 检查
+5. 下载 OpenSSL 头文件 + 创建 pkg-config 文件 + 无版本号符号链接
+6. 使用 --no-build-isolation 和完整环境变量（CC、RUSTFLAGS、PKG_CONFIG_PATH、LDFLAGS 含 -L/usr/lib）pip install cryptography
+7. 签名 cryptography .so 扩展
+
+完整细节见 [cryptography-harmonyos.cn.md](cryptography-harmonyos.cn.md)。
 
 ### 困难：复杂 C++ 框架（PyTorch）
 

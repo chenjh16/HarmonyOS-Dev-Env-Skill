@@ -112,19 +112,62 @@ pip install pillow
 
 ### Strategy D: Rust extension (maturin build)
 
-For PyO3-based packages:
+For PyO3-based packages (bcrypt, cryptography, etc.):
 
 ```bash
-# Install maturin
-pip install maturin
+# Step 1: Install maturin via cargo
+CC=/data/service/hnp/bin/clang \
+RUSTFLAGS="-C linker=/data/service/hnp/bin/clang" \
+CARGO_HOME=$HOME/.rust \
+cargo install maturin
 
-# Build wheel
-maturin build --release --target aarch64-unknown-linux-ohos \
-  --cargo-flags="-C linker=/data/service/hnp/bin/clang"
+# Step 2: Sign maturin binary
+/data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+  -inFile $HOME/.local/bin/maturin \
+  -outFile $HOME/.local/bin/maturin.signed -signAlg SHA256withECDSA
+mv $HOME/.local/bin/maturin.signed $HOME/.local/bin/maturin
 
-# Install built wheel
-pip install target/wheels/<package>-*.whl
+# Step 3: Fix platform.system() mismatch (maturin rejects "HarmonyOS" vs Rust "Linux")
+# Create sitecustomize.py to patch platform.system()
+cat > $HOME/.local/lib/python3.12/site-packages/sitecustomize.py << 'EOF'
+import platform
+_original_system = platform.system
+def _patched_system():
+    result = _original_system()
+    if result == "HarmonyOS":
+        return "Linux"
+    return result
+platform.system = _patched_system
+EOF
+
+# Step 4: Install with --no-build-isolation (pip isolation doesn't inherit RUSTFLAGS/CC)
+TMPDIR=$HOME/Claude/tmpdir \
+CC=/data/service/hnp/bin/clang \
+CXX=/data/service/hnp/bin/clang++ \
+CFLAGS="-B$HOME/Claude/lib/linker_wrapper -I$HOME/.local/include" \
+LDFLAGS="-B$HOME/Claude/lib/linker_wrapper -L$HOME/.local/lib" \
+LD_LIBRARY_PATH="/usr/lib:$HOME/.local/lib:$HOME/.rust/lib:/system/lib64:$LD_LIBRARY_PATH" \
+RUSTFLAGS="-C linker=/data/service/hnp/bin/clang" \
+PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH" \
+pip install <package> --no-build-isolation
 ```
+
+For packages that also need OpenSSL (e.g., cryptography), add extra linker paths:
+
+```bash
+# Additional flags for OpenSSL-dependent Rust packages
+LDFLAGS="-B$HOME/Claude/lib/linker_wrapper -L/usr/lib -L$HOME/.local/lib" \
+RUSTFLAGS="-C linker=/data/service/hnp/bin/clang -C link-args=-L/usr/lib -C link-args=-L$HOME/.local/lib" \
+PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig" \
+```
+
+**Key issues with Rust extensions on HarmonyOS**:
+1. **maturin platform check**: maturin compares `platform.system()` (returns "HarmonyOS") with Rust target OS ("Linux") and rejects mismatches. Fix with sitecustomize.py patch.
+2. **pip build isolation**: pip's isolated build environment doesn't inherit RUSTFLAGS, CC, LD_LIBRARY_PATH. Must use `--no-build-isolation`.
+3. **cargo linker**: No `cc` command on HarmonyOS; must set `RUSTFLAGS="-C linker=/data/service/hnp/bin/clang"`.
+4. **OpenSSL dev files**: System has libssl.so.3/libcrypto.so.3 but no headers/pkg-config. Need to download headers and create pkg-config files manually.
+
+See [cryptography-harmonyos.md](cryptography-harmonyos.md) for a complete worked example.
 
 ### .so suffix fix
 
@@ -259,6 +302,10 @@ python3 -c "import <package>; print('<package> imported successfully')"
 | `Operation not permitted` (mkfifo) | make -j fails on HarmonyOS | Use Ninja instead |
 | `unittest.SkipTest: cannot load extension module` | .so not signed | `binary-sign-tool sign -selfSign 1` |
 | `undefined symbol: PyFloat_FromDouble` (or other Py symbols) | System Python is statically linked | Use our `-rdynamic` Python at `$HOME/.local/bin/python3` |
+| `don't match ಠ_ಠ` (maturin) | platform.system() returns "HarmonyOS" vs Rust target "Linux" | Create sitecustomize.py to patch platform.system() |
+| `Package openssl was not found` (pkg-config) | No openssl.pc on system | Create pkg-config files in $HOME/.local/lib/pkgconfig |
+| `ld.lld: error: unable to find library -lssl` | Linker can't find libssl.so | Add `-C link-args=-L/usr/lib` to RUSTFLAGS + create unversioned symlinks |
+| `ModuleNotFoundError: No module named '_cffi_backend'` | .so suffix mismatch or not signed | Rename to `.cpython-312-aarch64-linux-gnu.so` + sign |
 
 ## Adaptation Examples by Difficulty
 
@@ -285,6 +332,18 @@ python3 -c "import bcrypt; print(bcrypt.hashpw('test', bcrypt.gensalt()))"
 4. Fix .so suffix if needed
 5. Sign all package .so files
 6. Add `$HOME/.local/lib` to LD_LIBRARY_PATH
+
+### Hard: Rust extension with C dependencies (cryptography)
+
+1. Compile libffi from source without autotools (handle FFI_HIDDEN C/asm split, remove memcpy→bcopy macro)
+2. Install cffi (sign + rename .so suffix)
+3. cargo install maturin (sign binary)
+4. Fix maturin platform.system() check via sitecustomize.py
+5. Download OpenSSL headers + create pkg-config files + unversioned symlinks
+6. pip install cryptography with --no-build-isolation and full env vars (CC, RUSTFLAGS, PKG_CONFIG_PATH, LDFLAGS with -L/usr/lib)
+7. Sign cryptography .so extension
+
+See [cryptography-harmonyos.md](cryptography-harmonyos.md) for complete details.
 
 ### Hard: Complex C++ framework (PyTorch)
 
