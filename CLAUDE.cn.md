@@ -17,6 +17,7 @@ HarmonyOS-Dev-Env-Skill/
 │   ├── scripts/
 │   │   ├── env-setup.sh      ← 一键环境设置（tmpdir + linker wrapper + zshenv）
 │   │   ├── sign-all.sh       ← 批量 ELF 签名
+│   │   ├── sign-node-addon.sh ← 签名并修补 Node.js .node 原生 addon
 │   │   ├── verify-env.sh     ← 环境验证
 │   │   ├── ssh-fetch-polyfill.js
 │   │   └── start-claude.sh
@@ -107,6 +108,8 @@ HarmonyOS-Dev-Env-Skill/
 18. **OpenSSH 抽象socket**: ssh-agent bind() 对文件系统 Unix socket 返回 EPERM；回退到抽象命名空间（sun_path[0]='\0'）。SSH_AUTH_SOCK 使用 "abstract:" 前缀。
 19. **OpenSSH privsep 非致命**: HarmonyOS 不允许用户空间进程调用 chroot/setgroups/setegid/seteuid。Patch sshd-session.c 使 chroot 非致命（跳过后续权限降级）。uidswap.c：将 setgroups/setegid/seteuid 从 fatal 改为 debug。
 20. **OpenSSH authorized_keys UID**: 文件所有者为 uid 20001006（file_manager），sshd 运行在 uid 20020106。将 uid 20001006 加入 platform_sys_dir_uid()（类似 root）。safe_path() 对系统目录拥有的文件跳过 mode 检查（022 位掩码）。StrictModes=yes 正常工作。
+21. **Node.js dlopen 签名**: HNP Node 二进制没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：创建签名副本（`binary-sign-tool sign -selfSign 1`）放在 `$HOME/.local/bin/node-harmonyos`，PATH 中 `$HOME/.local/bin` 优先。原生 addon 需要：`patchelf --add-needed libc++_shared.so` + 代码签名。使用 `sign-node-addon.sh` 脚本自动化。C++ addon 需要 libc++_shared.so，因为 Node 不导出 C++ 运行时符号（_Znwm/operator new）。
+22. **Node.js 原生 addon 编译环境**: `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper" CXXFLAGS="-B$HOME/Claude/lib/linker_wrapper" LDFLAGS="-B$HOME/Claude/lib/linker_wrapper" TMPDIR=$HOME/Claude/tmpdir npm install <addon>`
 
 ## 相关文档
 

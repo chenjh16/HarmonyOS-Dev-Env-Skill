@@ -79,7 +79,7 @@ set(CMAKE_C_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 ```
 - **Rust**: `rustc 1.95.0` (aarch64-unknown-linux-ohos) at `$HOME/.rust/bin/`; `cargo 1.95.0` (musl) at same path; must use `-C linker=/data/service/hnp/bin/clang`; all ELF binaries must be code-signed before execution
-- **Node.js**: v24.13.0 from DevNode-OH (AppGallery); Claude Code SSH sessions require `node --jitless` + node-fetch polyfill due to HarmonyOS PTY + V8 JIT crash
+- **Node.js**: v24.13.0; **CRITICAL**: HNP Node binary (`/data/service/hnp/bin/node`) has NO .codesign section → kernel blocks `process.dlopen()` for user-space .node/.so files. Fix: use signed copy at `$HOME/.local/bin/node-harmonyos` (with .codesign section); `$HOME/.local/bin` must come first in PATH. For native addons (bcrypt, better-sqlite3, etc.): compile with `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper"`, then `patchelf --add-needed libc++_shared.so <.node>` + `binary-sign-tool sign -selfSign 1`; use `sign-node-addon.sh` script for automation. Claude Code SSH sessions require `node --jitless` + node-fetch polyfill due to HarmonyOS PTY + V8 JIT crash. **23/23 e2e tests passed** (better-sqlite3, bcrypt, express, lodash, axios, dayjs, uuid, jsdom, ws, rxjs, socket.io, vitest, all core modules)
 - **llama.cpp**: built at `$HOME/Claude/llama.cpp/build/bin/`; `llama-cli`, `llama-server`, `llama-quantize` etc. available
 - **eza**: v0.23.4 at `$HOME/Claude/eza-build/eza/target/release/`; modern `ls` replacement with colors, icons, tree view
 - **bat**: v0.26.1 at `$HOME/Claude/bat-build/bat/target/release/`; `cat` clone with syntax highlighting
@@ -154,7 +154,7 @@ Use the Read tool with the appropriate path. Available guides:
 | File | Description |
 |------|-------------|
 | claude-code-harmonyos.md | AI programming assistant, npm package, SSH V8 crash workaround |
-| nodejs-harmonyos.md | Node.js installation, TLS/V8 issues, npm configuration |
+| nodejs-harmonyos.md | **Node.js dlopen fix, native addon signing, libc++_shared.so patchelf, 23/23 e2e tests** |
 | python-harmonyos.md | Python installation, configuration, numpy/pillow/lxml setup |
 | python-packages-harmonyos.md | 34 packages tested, solutions for C/Rust extensions |
 | python-extension-adaptation.md | **General guide for adapting C/Rust/C++ Python packages** (signing, patchelf, supplement.so, .so suffix) |

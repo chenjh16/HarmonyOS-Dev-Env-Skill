@@ -45,12 +45,14 @@ always-enable: true
 
 14. **Python -rdynamic**: Our Python exports 948+ Py symbols via `-rdynamic`, enabling signed .so extension modules from user paths. No need for static-only extensions.
 
+15. **Node.js dlopen signing**: HNP Node binary has NO .codesign section → kernel blocks `process.dlopen()` for user-space .node/.so files. Fix: create signed copy (`binary-sign-tool sign -selfSign 1`) at `$HOME/.local/bin/node-harmonyos`, put `$HOME/.local/bin` first in PATH. Native addons need: `patchelf --add-needed libc++_shared.so` + code signing. Use `sign-node-addon.sh` script for automation.
+
 ### Toolchain Quick Reference
 
 | Tool | Version | Install Path | Key Feature |
 |------|---------|-------------|-------------|
 | Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml |
-| Node.js | 24.13.0 | AppGallery | DevNode-OH, --jitless SSH workaround |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | Signed binary, native addons, 23/23 e2e tests |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos target |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 tests |
@@ -76,7 +78,7 @@ Full build guides are in this skill's `docs/` directory. When the user asks abou
 - `docs/dropbear-harmonyos.md` — Dropbear, 5 patches, V8 crash
 - `docs/llama-cpp-harmonyos.md` — NEON/SVE optimization, Qwen3.5
 - `docs/claude-code-harmonyos.md` — Claude Code ohos adaptation
-- `docs/nodejs-harmonyos.md` — DevNode-OH, TLS workaround
+- `docs/nodejs-harmonyos.md` — **Node.js dlopen fix, native addon signing, 23/23 e2e tests**
 - `docs/mihomo-harmonyos.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.md` — modern ls
 - `docs/bat-harmonyos.md` — syntax-highlighted cat
@@ -99,6 +101,9 @@ sh ~/.claude/skills/harmonyos-dev-env/scripts/env-setup.sh
 
 # Batch code signing for a directory
 sh ~/.claude/skills/harmonyos-dev-env/scripts/sign-all.sh <directory>
+
+# Sign a Node.js native addon (.node file)
+sh ~/.claude/skills/harmonyos-dev-env/scripts/sign-node-addon.sh <path-to-.node>
 
 # Verify environment (checks all toolchains)
 sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh

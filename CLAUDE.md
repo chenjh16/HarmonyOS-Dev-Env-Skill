@@ -17,6 +17,7 @@ HarmonyOS-Dev-Env-Skill/
 │   ├── scripts/
 │   │   ├── env-setup.sh      ← One-time env setup (tmpdir + linker wrapper + zshenv)
 │   │   ├── sign-all.sh       ← Batch ELF signing
+│   │   ├── sign-node-addon.sh ← Sign & patch Node.js .node addons
 │   │   ├── verify-env.sh     ← Environment verification
 │   │   ├── ssh-fetch-polyfill.js
 │   │   └── start-claude.sh
@@ -107,6 +108,8 @@ When documenting tool adaptations, always cover:
 18. **OpenSSH abstract socket**: ssh-agent bind() returns EPERM for filesystem Unix sockets; falls back to abstract namespace (sun_path[0]='\0'). SSH_AUTH_SOCK uses "abstract:" prefix.
 19. **OpenSSH privsep non-fatal**: HarmonyOS doesn't permit chroot/setgroups/setegid/seteuid for user-space processes. Patch sshd-session.c to make chroot non-fatal (skip subsequent privdrop). uidswap.c: change setgroups/setegid/seteuid from fatal to debug.
 20. **OpenSSH authorized_keys UID**: Files owned by uid 20001006 (file_manager), sshd runs as uid 20020106. Add uid 20001006 to platform_sys_dir_uid() (like root). safe_path() skips mode check (022 bitmask) for system-dir-owned files. StrictModes=yes works.
+21. **Node.js dlopen signing**: HNP Node binary has NO .codesign section → kernel blocks `process.dlopen()` for user-space .node/.so files. Fix: create signed copy (`binary-sign-tool sign -selfSign 1`) at `$HOME/.local/bin/node-harmonyos`, put `$HOME/.local/bin` first in PATH. Native addons need: `patchelf --add-needed libc++_shared.so` + code signing. Use `sign-node-addon.sh` script for automation. C++ addons need libc++_shared.so because Node doesn't export C++ runtime symbols (_Znwm/operator new).
+22. **Node.js native addon build env**: `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper" CXXFLAGS="-B$HOME/Claude/lib/linker_wrapper" LDFLAGS="-B$HOME/Claude/lib/linker_wrapper" TMPDIR=$HOME/Claude/tmpdir npm install <addon>`
 
 ## Related Documentation
 

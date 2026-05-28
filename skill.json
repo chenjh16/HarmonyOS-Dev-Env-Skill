@@ -33,9 +33,9 @@
       "category": "language",
       "source": "AppGallery DevNode-OH",
       "build_guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md",
-      "install_script": "AppGallery install",
-      "install_dir": "AppGallery DevNode-OH / npm global at /data/storage/el2/base/files/npm_global_modules",
-      "features": ["node", "npm", "DevNode-OH native", "TLS workaround", "--jitless SSH"]
+      "install_script": "harmonyos-dev-env/scripts/sign-node-addon.sh",
+      "install_dir": "$HOME/.local/bin/node-harmonyos",
+      "features": ["node", "npm", "signed binary for dlopen", "native addons (bcrypt, better-sqlite3)", "23/23 e2e tests", "TLS workaround", "--jitless SSH"]
     },
     {
       "name": "rust",
@@ -233,6 +233,11 @@
       "name": "libffi-missing",
       "description": "No libffi on HarmonyOS (no ffi.h, no libffi.so); must compile from source without autotools, handling FFI_HIDDEN C/asm split and memcpy-bcopy macro conflict",
       "guide": "harmonyos-dev-env/docs/cryptography-harmonyos.md"
+    },
+    {
+      "name": "nodejs-dlopen-signing",
+      "description": "HNP Node binary has NO .codesign section → kernel blocks process.dlopen() for user-space .node/.so files. Fix: create signed copy at $HOME/.local/bin/node-harmonyos, put $HOME/.local/bin first in PATH. Native addons need: patchelf --add-needed libc++_shared.so + code signing. Use sign-node-addon.sh script.",
+      "guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md"
     }
   ],
   "documentation": [

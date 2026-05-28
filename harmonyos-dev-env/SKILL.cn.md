@@ -45,12 +45,14 @@ always-enable: true
 
 14. **Python -rdynamic**: 我们的 Python 通过 `-rdynamic` 导出 948+ Py 符号，支持用户路径的签名 .so 扩展模块。无需仅限静态扩展。
 
+15. **Node.js dlopen 签名**: HNP Node 二进制没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：创建签名副本（`binary-sign-tool sign -selfSign 1`）放在 `$HOME/.local/bin/node-harmonyos`，PATH 中 `$HOME/.local/bin` 优先。原生 addon 需要：`patchelf --add-needed libc++_shared.so` + 代码签名。使用 `sign-node-addon.sh` 脚本自动化。
+
 ### 工具链快速参考
 
 | 工具 | 版本 | 安装路径 | 关键特性 |
 |------|------|----------|----------|
 | Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml |
-| Node.js | 24.13.0 | AppGallery | DevNode-OH, --jitless SSH workaround |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, 23/23 测试 |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos 目标 |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 测试 |
@@ -76,7 +78,7 @@ always-enable: true
 - `docs/dropbear-harmonyos.cn.md` — Dropbear, 5 补丁, V8 崩溃
 - `docs/llama-cpp-harmonyos.cn.md` — NEON/SVE 优化, Qwen3.5
 - `docs/claude-code-harmonyos.cn.md` — Claude Code ohos 适配
-- `docs/nodejs-harmonyos.cn.md` — DevNode-OH, TLS workaround
+- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, 23/23 测试**
 - `docs/mihomo-harmonyos.cn.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.cn.md` — 现代 ls
 - `docs/bat-harmonyos.cn.md` — 语法高亮 cat
@@ -99,6 +101,9 @@ sh ~/.claude/skills/harmonyos-dev-env/scripts/env-setup.sh
 
 # 批量代码签名
 sh ~/.claude/skills/harmonyos-dev-env/scripts/sign-all.sh <目录>
+
+# 签名 Node.js 原生 addon (.node 文件)
+sh ~/.claude/skills/harmonyos-dev-env/scripts/sign-node-addon.sh <.node-文件路径>
 
 # 环境验证
 sh ~/.claude/skills/harmonyos-dev-env/scripts/verify-env.sh

@@ -4,70 +4,157 @@
 
 ## Overview
 
-Node.js is available on HarmonyOS PC through **DevNode-OH**, a HarmonyOS-native Node.js distribution from the AppGallery.
+Node.js v24.13.0 is available on HarmonyOS PC through **DevNode-OH** (AppGallery) and the **HNP package** (`/data/service/hnp/node.org/node_v24.13.0/`).
 
-**Version**: v24.13.0 (verified working)
-**Source**: HarmonyOS AppGallery (DevNode-OH package)
+**Version**: v24.13.0
+**npm**: 11.6.2
+**Platform**: `openharmony` / `arm64`
+**Source**: HarmonyOS AppGallery (DevNode-OH) + HNP package
 
-## Installation
+## Critical Issue: process.dlopen Blocked for User-Space Libraries
 
-### Step 1: Install from AppGallery
+### The Problem
 
-1. Open **AppGallery (应用市场)** on HarmonyOS PC
-2. Search for **DevNode-OH**
-3. Install the application
-4. Close and reopen **HiShell** terminal
+The HNP-packaged Node.js binary (`/data/service/hnp/node.org/node_v24.13.0/bin/node`) has **no .codesign section**. HarmonyOS kernel enforces a security policy where **unsigned processes can only dlopen() libraries from system paths** (`/system/lib64`, `/usr/lib`). This means `process.dlopen()` — used by ALL native addon packages (bcrypt, better-sqlite3, canvas, etc.) — returns `ERR_DLOPEN_FAILED` with "Permission denied" for any `.node` or `.so` file in user-writable directories.
 
-### Step 2: Verify Installation
+**Evidence**:
+- `better-sqlite3.node`: "Permission denied" (ERR_DLOPEN_FAILED)
+- `libffi.so.8` (user-compiled): "Permission denied"
+- Same files load successfully via Python `ctypes.CDLL()` and standalone C `dlopen()`
 
-```bash
-node -v
-# → v24.13.0
+**Root Cause**: The restriction is NOT in Node.js source code (which uses standard `dlopen()` on POSIX). It's a HarmonyOS kernel-level enforcement: unsigned ELF processes are restricted to system-path dlopen only.
 
-npm -v
-# → 10.x.x
-```
+### The Fix: Add .codesign to Node Binary
 
-### Step 3: Configure PATH
-
-Add npm global bin to PATH:
+**No rebuild from source is needed.** Simply add a `.codesign` section to the Node binary:
 
 ```bash
-echo 'export PATH=$(npm prefix -g)/bin:$PATH' >> $HOME/.zshrc
-source $HOME/.zshrc
+# Create signed copy in user space
+cp /data/service/hnp/node.org/node_v24.13.0/bin/node $HOME/.local/bin/node-harmonyos
+
+/data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+  -inFile $HOME/.local/bin/node-harmonyos \
+  -outFile $HOME/.local/bin/node-harmonyos.signed \
+  -signAlg SHA256withECDSA
+
+mv $HOME/.local/bin/node-harmonyos.signed $HOME/.local/bin/node-harmonyos
+chmod +x $HOME/.local/bin/node-harmonyos
+
+# Create symlink so it's picked up by PATH
+ln -sf node-harmonyos $HOME/.local/bin/node
 ```
 
-## System Requirements
+**Ensure `$HOME/.local/bin` comes before `/data/service/hnp/bin` in PATH** so npm/npx also use the signed Node binary.
 
-### Privacy Settings (Critical)
+## Native Addon Build & Sign Workflow
 
-Before running Node.js applications that download binaries (like Claude Code):
+### Step 1: Compile with HarmonyOS Toolchain
 
-1. Open **Settings (设置)**
-2. Navigate to **Privacy & Security (隐私和安全)**
-3. Go to **Advanced (高级)**
-4. Enable **"Run extensions from non-AppGallery sources" (运行来自非应用市场的扩展程序)**
+```bash
+export PATH=$HOME/.local/bin:$PATH  # Signed Node first
+export CC=/data/service/hnp/bin/clang
+export CXX=/data/service/hnp/bin/clang++
+export CFLAGS="-B$HOME/Claude/lib/linker_wrapper"
+export CXXFLAGS="-B$HOME/Claude/lib/linker_wrapper"
+export LDFLAGS="-B$HOME/Claude/lib/linker_wrapper"
+export TMPDIR=$HOME/Claude/tmpdir
 
-This allows code-signed downloaded binaries to execute.
+npm install <native-addon-package>
+```
+
+**Note**: The `-B$HOME/Claude/lib/linker_wrapper` flag is **essential** — without it, clang invokes the broken `lld` linker which requires `libxml2.so.16` (not available on HarmonyOS).
+
+### Step 2: Sign & Patch the .node File
+
+All `.node` files (ELF shared objects) need two modifications:
+
+1. **Add `libc++_shared.so` dependency** — C++ addons need C++ runtime symbols (`_Znwm` / operator new) that Node doesn't export
+2. **Add `.codesign` section** — Required for `process.dlopen` to load from user space
+
+Use the automated script:
+
+```bash
+$HOME/.local/bin/sign-node-addon <path-to-.node-file>
+```
+
+Or manually:
+
+```bash
+# Remove existing .codesign (patchelf can't modify signed files)
+/data/service/hnp/bin/llvm-objcopy --remove-section=.codesign \
+  addon.node addon_unsigned.node
+
+# Add libc++_shared.so dependency
+/data/service/hnp/bin/patchelf --add-needed libc++_shared.so addon_unsigned.node
+
+# Sign
+/data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+  -inFile addon_unsigned.node -outFile addon_signed.node
+
+# Replace original
+cp addon_signed.node addon.node
+chmod 775 addon.node
+```
+
+**Batch signing** for all .node files in a project:
+
+```bash
+find node_modules -name "*.node" -type f -exec \
+  $HOME/.local/bin/sign-node-addon {} \;
+```
+
+## Verified Native Addons (E2E Tests)
+
+| Package | Version | Status | Notes |
+|---------|---------|--------|-------|
+| better-sqlite3 | 12.10.0 | ✓ Working | Full CRUD, prepared statements, parameter binding |
+| bcrypt | 6.0.0 | ✓ Working | hashSync, compareSync both functional |
+| express | 5.2.1 | ✓ Working | HTTP server, JSON responses |
+| lodash | 4.18.1 | ✓ Working | All utility functions |
+| axios | 1.16.1 | ✓ Working | HTTP client, external HTTPS requests |
+| dayjs | 1.11.21 | ✓ Working | Date formatting |
+| uuid | 14.0.0 | ✓ Working | v4 generation |
+| commander | 14.0.3 | ✓ Working | CLI argument parsing |
+| dotenv | 17.4.2 | ✓ Working | .env loading |
+| jsdom | 29.1.1 | ✓ Working | DOM manipulation |
+| ws | 8.21.0 | ✓ Working | WebSocket server/client |
+| rxjs | 7.8.2 | ✓ Working | Observable, of() |
+| socket.io | 4.8.3 | ✓ Working | Real-time bidirectional |
+| vitest | 4.1.7 | ✓ Working | Test framework (ESM import) |
+
+**Core modules**: All 14 tested (fs, crypto, http, net, os, path, child_process, worker_threads, stream, url, Intl, SQLite built-in, async/await, ESM) — 100% pass rate.
+
+**Total**: 23/23 e2e tests passed (100%).
+
+## Known Issues
+
+### 1. chalk v5 ESM-only
+
+chalk v5.6.2 uses `"type": "module"` in package.json. `require('chalk')` returns empty object (no methods). Use chalk v4 (CJS-compatible) or dynamic `import()` in ESM context.
+
+### 2. sharp — No Prebuilt Binary
+
+sharp requires libvips prebuilt binaries. No binary exists for `openharmony-arm64`. The WASM fallback also fails (npm enforces `cpu=wasm32` matching). Would require building libvips from source first.
+
+### 3. node-gyp V8 Crash with Unsigned Node
+
+When using the **unsigned** system Node (`/data/service/hnp/bin/node`), node-gyp's configure step crashes with V8 `Check failed: 12 == (*__errno_location())` (Signal 5/SIGTRAP). This is resolved when using the **signed** Node binary.
+
+### 4. canvas — Missing C Dependencies
+
+canvas requires pixman/cairo system libraries not available on HarmonyOS. Would need manual compilation of these C dependencies first.
 
 ## Key Differences from Standard Node.js
 
 ### 1. /tmp Read-Only
 
-HarmonyOS `/tmp` is read-only. Set TMPDIR:
-
 ```bash
 export TMPDIR=$HOME/Claude/tmpdir
 ```
 
-For Node.js apps:
-```bash
-export NODE_TMPDIR=$HOME/Claude/tmpdir
-```
+Node.js respects `TMPDIR` — `os.tmpdir()` returns `$HOME/Claude/tmpdir`.
 
 ### 2. TLS Certificate Issues
-
-System CA certificates may be incomplete. For web requests:
 
 ```bash
 export NODE_TLS_REJECT_UNAUTHORIZED=0
@@ -77,97 +164,41 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 ### 3. V8 JIT Crash in SSH Sessions
 
-When running Node.js in SSH sessions, V8 JIT may crash:
-
 ```
 # Fatal error in , line 0
 # Check failed: 12 == (*__errno_location()).
 ```
 
 **Solution**: Use `--jitless` mode:
-
 ```bash
 node --jitless your-app.js
 ```
 
 See [dropbear-harmonyos.md](dropbear-harmonyos.md) for SSH setup and V8 crash workaround details.
 
-## npm Usage
+### 4. process.platform = "openharmony"
 
-### Installing Global Packages
+`process.platform` returns `openharmony` (not `linux`). This may affect packages that check for specific platforms. Consider patching via sitecustomize.js (similar to Python's approach for maturin).
 
-```bash
-npm install -g <package>
-```
+## Privacy Settings (Critical)
 
-Example packages verified working:
-- `claude-code` (HarmonyOS port)
-- `typescript`
-- `eslint`
+Before running Node.js applications that download binaries:
 
-### Installing Local Packages
-
-```bash
-npm install <package>
-```
-
-### Using npm Mirrors
-
-For faster downloads in China:
-
-```bash
-npm config set registry https://registry.npmmirror.com
-```
-
-## Verified Applications
-
-| Application | Status | Notes |
-|-------------|--------|-------|
-| node -v | ✓ Working | v24.13.0 |
-| npm install | ✓ Working | Global and local |
-| Claude Code | ✓ Working | Requires HarmonyOS port |
-| TypeScript | ✓ Working | tsc compiles correctly |
-| V8 JIT | ⚠ SSH issue | Use --jitless in SSH |
-
-## Troubleshooting
-
-### "Permission denied" for downloaded binaries
-
-1. Enable privacy setting (see above)
-2. Ensure binary is code-signed:
-```bash
-/data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
-  -inFile <unsigned> -outFile <signed> \
-  -signAlg SHA256withECDSA
-```
-
-### npm install fails with network error
-
-1. Check proxy settings if using mihomo:
-```bash
-export HTTP_PROXY=http://127.0.0.1:7890
-export HTTPS_PROXY=http://127.0.0.1:7890
-```
-
-2. Or use npm mirror:
-```bash
-npm config set registry https://registry.npmmirror.com
-```
-
-### Node.js crashes in SSH
-
-Use `--jitless` flag:
-```bash
-node --jitless your-app.js
-```
+1. Open **Settings (设置)**
+2. Navigate to **Privacy & Security (隐私和安全)**
+3. Go to **Advanced (高级)**
+4. Enable **"Run extensions from non-AppGallery sources"**
 
 ## Related Documentation
 
-- [Claude Code for HarmonyOS](claude-code-harmonyos.md) — AI programming assistant
+- [Code Signing](code-signing.md) — Detailed code signing instructions
+- [LD_LIBRARY_PATH](ld-library-path.md) — Dynamic library path configuration
+- [Python Extension Adaptation](python-extension-adaptation.md) — General .so adaptation patterns
 - [Dropbear SSH](dropbear-harmonyos.md) — SSH server with V8 crash workaround
-- [mihomo](mihomo-harmonyos.md) — Proxy configuration
+- [SELinux Analysis](selinux-analysis.md) — HarmonyOS security enforcement analysis
 
 ---
 
-*Verified: 2026-05-20*
+*Verified: 2026-05-28*
 *Platform: HarmonyOS HongMeng Kernel 1.12.0*
+*E2E Tests: 23/23 passed (100%)*
