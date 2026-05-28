@@ -109,6 +109,8 @@ find node_modules -name "*.node" -type f -exec \
 |---------|---------|--------|-------|
 | better-sqlite3 | 12.10.0 | ✓ Working | Full CRUD, prepared statements, parameter binding |
 | bcrypt | 6.0.0 | ✓ Working | hashSync, compareSync both functional |
+| argon2 | 0.41.1 | ✓ Working | argon2id hash + verify, async API |
+| sqlite3 | 5.1.0 | ✓ Working | verbose mode, async DB operations |
 | express | 5.2.1 | ✓ Working | HTTP server, JSON responses |
 | lodash | 4.18.1 | ✓ Working | All utility functions |
 | axios | 1.16.1 | ✓ Working | HTTP client, external HTTPS requests |
@@ -124,7 +126,7 @@ find node_modules -name "*.node" -type f -exec \
 
 **Core modules**: All 14 tested (fs, crypto, http, net, os, path, child_process, worker_threads, stream, url, Intl, SQLite built-in, async/await, ESM) — 100% pass rate.
 
-**Total**: 23/23 e2e tests passed (100%).
+**Total**: 25/25 e2e tests passed (100%) (added argon2 + sqlite3 native addons).
 
 ## Known Issues
 

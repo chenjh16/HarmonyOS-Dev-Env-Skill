@@ -109,6 +109,8 @@ find node_modules -name "*.node" -type f -exec \
 |------|------|------|------|
 | better-sqlite3 | 12.10.0 | ✓ 正常 | 完整 CRUD、预编译语句、参数绑定 |
 | bcrypt | 6.0.0 | ✓ 正常 | hashSync、compareSync 均可用 |
+| argon2 | 0.41.1 | ✓ 正常 | argon2id hash + verify, 异步 API |
+| sqlite3 | 5.1.0 | ✓ 正常 | verbose 模式、异步 DB 操作 |
 | express | 5.2.1 | ✓ 正常 | HTTP 服务器、JSON 响应 |
 | lodash | 4.18.1 | ✓ 正常 | 所有实用函数 |
 | axios | 1.16.1 | ✓ 正常 | HTTP 客户端、外部 HTTPS 请求 |
@@ -124,7 +126,7 @@ find node_modules -name "*.node" -type f -exec \
 
 **核心模块**: 14 个全部通过（fs、crypto、http、net、os、path、child_process、worker_threads、stream、url、Intl、SQLite 内置、async/await、ESM）— 100% 通过率。
 
-**总计**: 23/23 端到端测试通过 (100%)。
+**总计**: 25/25 端到端测试通过 (100%)（新增 argon2 + sqlite3 原生 addon）。
 
 ## 已知问题
 
