@@ -47,12 +47,20 @@ always-enable: true
 
 15. **Node.js dlopen signing**: HNP Node binary has NO .codesign section → kernel blocks `process.dlopen()` for user-space .node/.so files. Fix: create signed copy (`binary-sign-tool sign -selfSign 1`) at `$HOME/.local/bin/node-harmonyos`, put `$HOME/.local/bin` first in PATH. Native addons need: `patchelf --add-needed libc++_shared.so` + code signing. Use `sign-node-addon.sh` script for automation.
 
+16. **psutil HarmonyOS patch**: `sys.platform.startswith("harmonyos")` should be treated as Linux. Patch `_common.py`: add `or sys.platform.startswith("harmonyos")` to LINUX check. Patch `net.c`: `#define sockaddr_storage __guard` before `#include <linux/if.h>` then `#undef` (prevent redefinition conflict).
+
+17. **maturin direct build**: pip build isolation breaks maturin on HarmonyOS. Build Rust/PyO3 packages directly with `maturin build --release --interpreter $HOME/.local/bin/python3`, then sign .so, rename suffix to `.cpython-312-aarch64-linux-gnu.so`, install manually to site-packages.
+
+18. **Meson auto-sign wrapper**: Create clang wrapper at `$HOME/Claude/lib/meson_wrapper/clang` that auto-signs all ELF outputs (including PIE/DYN type). Use as CC in meson native.ini. Build with mesonpy Python API.
+
+19. **sharp WASM32 fallback**: `npm install --force @img/sharp-wasm32`. Works for all operations, ~5-10x slower than native.
+
 ### Toolchain Quick Reference
 
 | Tool | Version | Install Path | Key Feature |
 |------|---------|-------------|-------------|
-| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml |
-| Node.js | 24.13.0 | `$HOME/.local/bin` | Signed binary, native addons, 23/23 e2e tests |
+| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | Signed binary, native addons, sharp WASM32, MCP SDK, 31/31 e2e tests |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos target |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 tests |
@@ -70,15 +78,15 @@ always-enable: true
 Full build guides are in this skill's `docs/` directory. When the user asks about a specific tool, read the corresponding guide using the Read tool with relative path from this SKILL.md's directory:
 
 - `docs/python-harmonyos.md` — Python 3.12.8 standalone build
-- `docs/python-packages-harmonyos.md` — 34 packages tested, solutions for C/Rust extensions
-- `docs/python-extension-adaptation.md` — **General guide for adapting C/Rust/C++ Python packages**
+- `docs/python-packages-harmonyos.md` — 59 packages tested (orjson, matplotlib, httpx, pytest, mcp, rpds-py all work; scipy/uvloop cannot build), solutions for C/Rust/Meson extensions
+- `docs/python-extension-adaptation.md` — **General guide for adapting C/Rust/C++/Meson Python packages**
 - `docs/rust-harmonyos.md` — Rust ohos target installation
 - `docs/pytorch-harmonyos.md` — PyTorch v2.5.1, 15/15 e2e tests
 - `docs/openssh-harmonyos.md` — OpenSSH 9.9p1, 16 patches
 - `docs/dropbear-harmonyos.md` — Dropbear, 5 patches, V8 crash
 - `docs/llama-cpp-harmonyos.md` — NEON/SVE optimization, Qwen3.5
 - `docs/claude-code-harmonyos.md` — Claude Code ohos adaptation
-- `docs/nodejs-harmonyos.md` — **Node.js dlopen fix, native addon signing, 23/23 e2e tests**
+- `docs/nodejs-harmonyos.md` — **Node.js dlopen fix, native addon signing, sharp WASM32, MCP SDK + Anthropic SDK, 31/31 e2e tests**
 - `docs/mihomo-harmonyos.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.md` — modern ls
 - `docs/bat-harmonyos.md` — syntax-highlighted cat

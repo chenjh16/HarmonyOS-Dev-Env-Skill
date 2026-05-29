@@ -13,7 +13,8 @@ Before starting, identify which category the package falls into:
 | Pure Python | No `.so` in wheel, no `setup.py` compile step | requests, flask | None — pip install directly |
 | C/C++ extension | `setup.py` has `ext_modules`, or wheel contains `.so` | numpy, greenlet, cffi | Medium — set CC/CXX, sign .so |
 | Mixed (C lib + Python binding) | Requires external C library | pillow (libjpeg), lxml (libxml2) | High — compile C deps first |
-| Rust extension (PyO3) | `Cargo.toml` present, uses maturin | bcrypt, cryptography | Medium-High — Rust toolchain + CC |
+| Rust extension (PyO3) | `Cargo.toml` present, uses maturin | bcrypt, cryptography, orjson | Medium-High — Rust toolchain + CC |
+| Meson-based | `meson.build` present, uses meson-python | pandas, matplotlib | High — auto-sign wrapper + mesonpy API |
 
 **Quick check**: Look at the package's PyPI page or GitHub repo. If it has `setup.py` with `Extension()` calls, `Cargo.toml`, or `.so` files in the wheel, it needs adaptation.
 
@@ -306,6 +307,16 @@ python3 -c "import <package>; print('<package> imported successfully')"
 | `Package openssl was not found` (pkg-config) | No openssl.pc on system | Create pkg-config files in $HOME/.local/lib/pkgconfig |
 | `ld.lld: error: unable to find library -lssl` | Linker can't find libssl.so | Add `-C link-args=-L/usr/lib` to RUSTFLAGS + create unversioned symlinks |
 | `ModuleNotFoundError: No module named '_cffi_backend'` | .so suffix mismatch or not signed | Rename to `.cpython-312-aarch64-linux-gnu.so` + sign |
+| `platform harmonyosHongMengKernel1 is not supported` | sys.platform not recognized | Patch platform detection (e.g., `sys.platform.startswith("harmonyos")` → treat as Linux) |
+| `redefinition of 'sockaddr_storage'` | HarmonyOS SDK has duplicate struct in linux/socket.h and sys/socket.h | `#define sockaddr_storage __guard` before `#include <linux/if.h>`, then `#undef` |
+| `Could not invoke sanity check executable: Permission denied` | Meson build intermediate not signed | Create auto-sign clang wrapper, sign PIE executables too |
+| `maturin: platform.system() don't match ಠ_ಠ` | maturin detects HarmonyOS vs Rust Linux target | sitecustomize.py patch or build directly with `maturin build` |
+| `.whl is not a supported wheel on this platform` | Wheel filename has spaces in platform tag | Manual install to site-packages |
+| `No module named 'typing_inspection'` | Missing dependency | `pip install typing_inspection --no-deps` |
+| `gfortran: command not found` | No Fortran compiler on HarmonyOS | Cannot build scipy or other Fortran-dependent packages |
+| `uvloop/libuv configure: cannot guess platform` | libuv autoconf can't detect HarmonyOS | Cannot build uvloop; musl libc lacks cpu_set_t, CPU_SETSIZE, mmsghdr |
+| `.so crashes with no error / ImportError after signing` | C++ extension needs libc++_shared.so | `patchelf --add-needed libc++_shared.so` on all .so files |
+| `pybind11 pkg-config not found` | matplotlib build needs pybind11 pkgconfig | Add `$HOME/.local/lib/python3.12/site-packages/pybind11/share/pkgconfig` to PKG_CONFIG_PATH |
 
 ## Adaptation Examples by Difficulty
 
@@ -344,6 +355,135 @@ python3 -c "import bcrypt; print(bcrypt.hashpw('test', bcrypt.gensalt()))"
 7. Sign cryptography .so extension
 
 See [cryptography-harmonyos.md](cryptography-harmonyos.md) for complete details.
+
+### Medium: Platform detection patch (psutil)
+
+psutil uses `sys.platform.startswith("linux")` to detect Linux. HarmonyOS returns `"harmonyos"` which doesn't match.
+
+1. Download source: `pip download psutil --no-binary :all:`
+2. Patch `_common.py`: Change `LINUX = sys.platform.startswith("linux")` to `LINUX = sys.platform.startswith("linux") or sys.platform.startswith("harmonyos")`
+3. Patch `psutil/arch/linux/net.c`: Wrap `#include <linux/if.h>` to prevent `sockaddr_storage` redefinition conflict:
+   ```c
+   #define sockaddr_storage __harmonyos_sockaddr_storage
+   #include <linux/if.h>
+   #undef sockaddr_storage
+   ```
+   (HarmonyOS SDK has `struct sockaddr_storage` defined in both `sys/socket.h` and `linux/socket.h`, causing redefinition error when `linux/if.h` includes `linux/socket.h`)
+4. Build: `CC=/data/service/hnp/bin/clang CFLAGS="-B$HOME/Claude/lib/linker_wrapper" python3 setup.py build`
+5. Install: `python3 setup.py install --skip-build`
+6. Copy Python files manually if needed: `cp -r psutil/*.py $HOME/.local/lib/python3.12/site-packages/psutil/`
+7. Sign all .abi3.so files in the package directory
+
+### Medium: Rust extension via maturin direct build (pydantic v2)
+
+pip's build isolation breaks maturin on HarmonyOS (doesn't inherit CC/RUSTFLAGS). Build pydantic-core directly with maturin instead.
+
+1. Download source and extract
+2. Build with maturin directly: `maturin build --release --interpreter $HOME/.local/bin/python3`
+3. Extract wheel, sign .so, rename suffix: `.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
+4. Fix WHEEL file platform tag (replace spaces with underscores)
+5. Install to site-packages manually (pip can't install HarmonyOS-tagged wheels)
+6. Install pydantic and fastapi: `pip install pydantic fastapi --no-deps`
+
+**Key insight**: maturin generates `.cpython-312.so` suffix, but HarmonyOS Python expects `.cpython-312-aarch64-linux-gnu.so`. Must rename after signing. Also, maturin wheel filenames contain spaces in the platform tag — pip rejects them. Manual installation is required.
+
+### Medium: Rust serialization via maturin direct build (orjson)
+
+orjson is a high-performance JSON serialization library built with Rust/PyO3. The build pattern is the same as pydantic-core.
+
+1. Download source: `pip download orjson --no-binary :all:`
+2. Build with maturin directly: `maturin build --release --interpreter $HOME/.local/bin/python3`
+3. Extract wheel, sign .so, rename suffix: `.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
+4. Fix WHEEL file platform tag (replace spaces with underscores)
+5. Install to site-packages manually (pip can't install HarmonyOS-tagged wheels)
+
+**e2e test results (7/7)**: basic serialization, datetime, numpy array, UTF-8, UUID, sort keys+pretty print, performance comparison.
+
+**Key insight**: Same maturin pattern as pydantic-core — .so suffix rename + WHEEL tag fix + manual install. No additional C dependencies needed.
+
+### Medium: Meson build with auto-sign wrapper (pandas)
+
+Meson builds need to execute sanity check binaries during configuration. On HarmonyOS, unsigned binaries can't execute.
+
+1. Create auto-sign clang wrapper at `$HOME/Claude/lib/meson_wrapper/clang`:
+   ```bash
+   #!/bin/sh
+   REAL_CC=/data/service/hnp/bin/clang
+   SIGN_TOOL=/data/service/hnp/bin/binary-sign-tool
+   TMPDIR="$HOME/Claude/tmpdir"
+   # Parse -o argument from command line
+   OUTPUT_FILE="" # ... parse logic ...
+   $REAL_CC "$@"
+   # Auto-sign if output is ELF and not .o/.so/.a
+   # NOTE: PIE executables have Type: DYN, not EXEC — must sign those too
+   # ...sign logic...
+   ```
+2. Create meson native.ini pointing CC/CXX to wrapper scripts
+3. Build with mesonpy: `python3 -c "import mesonpy; mesonpy.build_wheel('...')"`
+4. Sign all .so in resulting wheel
+5. Install manually to site-packages
+
+**Key insight**: The wrapper must sign ALL ELF outputs (including PIE/DYN type), not just EXEC type. Meson's sanity_check is a PIE executable.
+
+### Medium: Meson build with C++ dependencies (matplotlib)
+
+matplotlib uses mesonpy for its build system and has C++ extensions via pybind11 (kiwisolver) and C extensions (contourpy). The build requires additional pkg-config and build dependencies.
+
+1. Install build dependencies:
+   ```bash
+   pip install meson-python setuptools_scm pybind11 ninja
+   # setuptools_scm needs vcs_versioning plugin
+   pip install setuptools_scm_git_archive  # or equivalent vcs plugin
+   ```
+
+2. Set PKG_CONFIG_PATH to find pybind11:
+   ```bash
+   export PKG_CONFIG_PATH=$HOME/.local/lib/python3.12/site-packages/pybind11/share/pkgconfig:$PKG_CONFIG_PATH
+   ```
+
+3. Build with mesonpy Python API (same auto-sign clang wrapper as pandas):
+   ```bash
+   python3 -c "import mesonpy; mesonpy.build_wheel('$HOME/Claude/tmpdir/matplotlib_src')"
+   ```
+
+4. Extract the wheel, then for each .so file (8 total):
+   ```bash
+   # Sign all .so files
+   find "$WHEEL_DIR" -name "*.so" -type f -exec sh -c '
+     for f do
+       /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile "$f" -outFile "${f}.signed"
+       mv "${f}.signed" "$f"
+     done
+   ' sh {} +
+
+   # Add libc++_shared.so as NEEDED dependency (C++ extensions need it)
+   find "$WHEEL_DIR" -name "*.so" -type f -exec sh -c '
+     for f do
+       /data/service/hnp/bin/patchelf --add-needed libc++_shared.so "$f"
+     done
+   ' sh {} +
+
+   # Rename .so suffix
+   for f in *.cpython-312.so; do
+     mv "$f" "${f%.cpython-312.so}.cpython-312-aarch64-linux-gnu.so"
+   done
+   ```
+
+5. Install manually to site-packages
+
+**e2e test results (6/6)**: line plot (savefig), histogram, scatter plot, bar chart, subplots, contour plot.
+
+**Key insight**: matplotlib's C++ extensions (pybind11-based kiwisolver, C-based contourpy) need `libc++_shared.so` added via patchelf because HarmonyOS's Python doesn't export C++ runtime symbols. Also requires pybind11's pkgconfig path in PKG_CONFIG_PATH and setuptools_scm with vcs_versioning for version detection.
+
+### Easy: Node.js WASM32 fallback (sharp)
+
+sharp has no openharmony-arm64 prebuilt. The WASM32 mode works as a functional (though slower) fallback.
+
+1. `npm install sharp` (installs base package, but native module fails)
+2. `npm install --force @img/sharp-wasm32` (installs WASM32 fallback)
+3. sharp automatically detects WASM32 module and uses it
+
+**Performance**: WASM32 is ~5-10x slower than native libvips, but all image operations (resize, convert, metadata, stats) work correctly.
 
 ### Hard: Complex C++ framework (PyTorch)
 

@@ -47,12 +47,20 @@ always-enable: true
 
 15. **Node.js dlopen 签名**: HNP Node 二进制没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：创建签名副本（`binary-sign-tool sign -selfSign 1`）放在 `$HOME/.local/bin/node-harmonyos`，PATH 中 `$HOME/.local/bin` 优先。原生 addon 需要：`patchelf --add-needed libc++_shared.so` + 代码签名。使用 `sign-node-addon.sh` 脚本自动化。
 
+16. **psutil HarmonyOS 补丁**: `sys.platform.startswith("harmonyos")` 应视为 Linux。修补 `_common.py`：添加 `or sys.platform.startswith("harmonyos")` 到 LINUX 检查。修补 `net.c`：在 `#include <linux/if.h>` 前 `#define sockaddr_storage __guard` 然后 `#undef`（防止重定义冲突）。
+
+17. **maturin 直接构建**: pip 构建隔离破坏 HarmonyOS 上的 maturin。Rust/PyO3 包直接用 `maturin build --release --interpreter $HOME/.local/bin/python3` 构建，然后签名 .so、重命名后缀为 `.cpython-312-aarch64-linux-gnu.so`、手动安装到 site-packages。
+
+18. **Meson 自动签名包装器**: 在 `$HOME/Claude/lib/meson_wrapper/clang` 创建包装器，自动签名所有 ELF 输出（包括 PIE/DYN 类型）。用作 meson native.ini 的 CC。使用 mesonpy Python API 构建。
+
+19. **sharp WASM32 回退**: `npm install --force @img/sharp-wasm32`。所有操作正常工作，比原生慢约 5-10 倍。
+
 ### 工具链快速参考
 
 | 工具 | 版本 | 安装路径 | 关键特性 |
 |------|------|----------|----------|
-| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml |
-| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, 23/23 测试 |
+| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, sharp WASM32, MCP SDK + Anthropic SDK, 31/31 测试 |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos 目标 |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 测试 |
@@ -70,15 +78,15 @@ always-enable: true
 完整构建指南在本 skill 的 `docs/` 目录中。当用户询问特定工具时，使用 Read 工具从本 SKILL.cn.md 目录的相对路径读取对应指南：
 
 - `docs/python-harmonyos.cn.md` — Python 3.12.8 独立构建
-- `docs/python-packages-harmonyos.cn.md` — 34 个包测试结果，C/Rust 扩展解决方案
-- `docs/python-extension-adaptation.cn.md` — **适配 C/Rust/C++ Python 包的通用指南**
+- `docs/python-packages-harmonyos.cn.md` — 59 个包测试（orjson、matplotlib、httpx、pytest、mcp、rpds-py 均可用；scipy/uvloop 无法构建），C/Rust/Meson 扩展解决方案
+- `docs/python-extension-adaptation.cn.md` — **适配 C/Rust/C++/Meson Python 包的通用指南**
 - `docs/rust-harmonyos.cn.md` — Rust ohos 目标安装
 - `docs/pytorch-harmonyos.cn.md` — PyTorch v2.5.1, 15/15 测试
 - `docs/openssh-harmonyos.cn.md` — OpenSSH 9.9p1, 16 补丁
 - `docs/dropbear-harmonyos.cn.md` — Dropbear, 5 补丁, V8 崩溃
 - `docs/llama-cpp-harmonyos.cn.md` — NEON/SVE 优化, Qwen3.5
 - `docs/claude-code-harmonyos.cn.md` — Claude Code ohos 适配
-- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, 23/23 测试**
+- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, sharp WASM32, MCP SDK + Anthropic SDK, 31/31 测试**
 - `docs/mihomo-harmonyos.cn.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.cn.md` — 现代 ls
 - `docs/bat-harmonyos.cn.md` — 语法高亮 cat

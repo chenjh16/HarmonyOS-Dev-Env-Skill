@@ -79,7 +79,7 @@ set(CMAKE_C_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 ```
 - **Rust**: `rustc 1.95.0` (aarch64-unknown-linux-ohos) 位于 `$HOME/.rust/bin/`; `cargo 1.95.0` (musl) 同路径; 必须使用 `-C linker=/data/service/hnp/bin/clang`; 所有 ELF 二进制执行前必须代码签名
-- **Node.js**: v24.13.0; **关键问题**: HNP Node 二进制 (`/data/service/hnp/bin/node`) 没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：使用签名副本 `$HOME/.local/bin/node-harmonyos`（带 .codesign 段）；`$HOME/.local/bin` 必须在 PATH 中优先。原生 addon (bcrypt, better-sqlite3 等): 编译时设置 `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper"`，然后 `patchelf --add-needed libc++_shared.so <.node>` + `binary-sign-tool sign -selfSign 1`; 使用 `sign-node-addon.sh` 脚本自动化。Claude Code SSH 会话因 HarmonyOS PTY + V8 JIT 崩溃，需要 `node --jitless` + node-fetch polyfill。**23/23 端到端测试通过**（better-sqlite3, bcrypt, express, lodash, axios, dayjs, uuid, jsdom, ws, rxjs, socket.io, vitest, 所有核心模块）
+- **Node.js**: v24.13.0; **关键问题**: HNP Node 二进制 (`/data/service/hnp/bin/node`) 没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：使用签名副本 `$HOME/.local/bin/node-harmonyos`（带 .codesign 段）；`$HOME/.local/bin` 必须在 PATH 中优先。原生 addon (bcrypt, better-sqlite3 等): 编译时设置 `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper"`，然后 `patchelf --add-needed libc++_shared.so <.node>` + `binary-sign-tool sign -selfSign 1`; 使用 `sign-node-addon.sh` 脚本自动化。Claude Code SSH 会话因 HarmonyOS PTY + V8 JIT 崩溃，需要 `node --jitless` + node-fetch polyfill。**29/29 端到端测试通过**（better-sqlite3, bcrypt, express, lodash, axios, dayjs, uuid, jsdom, ws, rxjs, socket.io, vitest, typescript, esbuild, prettier, eslint, 所有核心模块）
 - **llama.cpp**: 构建于 `$HOME/Claude/llama.cpp/build/bin/`; `llama-cli`, `llama-server`, `llama-quantize` 等可用
 - **eza**: v0.23.4 位于 `$HOME/Claude/eza-build/eza/target/release/`; 现代 `ls` 替代品，带颜色、图标、树视图
 - **bat**: v0.26.1 位于 `$HOME/Claude/bat-build/bat/target/release/`; `cat` 替代品，带语法高亮
@@ -154,10 +154,10 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 | 文件 | 说明 |
 |------|------|
 | claude-code-harmonyos.cn.md | AI 编程助手、npm 包安装、SSH V8 崩溃解决方案 |
-| nodejs-harmonyos.cn.md | **Node.js dlopen 修复、原生 addon 签名、libc++_shared.so patchelf、23/23 测试** |
+| nodejs-harmonyos.cn.md | **Node.js dlopen 修复、原生 addon 签名、libc++_shared.so patchelf、sharp WASM32、29/29 测试** |
 | python-harmonyos.cn.md | 安装位置、配置、numpy/pillow/lxml 安装 |
-| python-packages-harmonyos.cn.md | 34 个包测试结果，C/Rust 扩展解决方案 |
-| python-extension-adaptation.cn.md | **适配 C/Rust/C++ Python 包的通用指南**（签名、patchelf、supplement.so、.so 后缀） |
+| python-packages-harmonyos.cn.md | 59 个包测试（orjson、matplotlib、httpx、pytest、**mcp**、**rpds-py** 均可用；scipy/uvloop 无法构建），C/Rust/Meson 扩展解决方案 |
+| python-extension-adaptation.cn.md | **适配 C/Rust/C++/Meson Python 包的通用指南**（签名、patchelf、supplement.so、.so 后缀、meson 包装器、maturin 直接构建、psutil 补丁） |
 | llama-cpp-harmonyos.cn.md | 构建、NEON/SVE 优化、ModelScope 模型下载 |
 | rust-harmonyos.cn.md | 工具链安装、签名、cargo 配置、FFI 互操作 |
 | eza-harmonyos.cn.md | Rust 项目编译、SELinux/hmdfs 属性显示 |

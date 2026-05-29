@@ -25,7 +25,7 @@
       "build_guide": "harmonyos-dev-env/tools/python/build.md",
       "install_script": "harmonyos-dev-env/tools/python/install.sh",
       "install_dir": "$HOME/.local",
-      "features": ["pip", "extension modules", "numpy", "pillow", "lxml"]
+      "features": ["pip", "extension modules", "numpy", "pillow", "lxml", "psutil", "pydantic v2", "pandas", "orjson", "matplotlib", "httpx", "pytest", "mcp 1.27.1", "rpds-py"]
     },
     {
       "name": "nodejs",
@@ -35,7 +35,7 @@
       "build_guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md",
       "install_script": "harmonyos-dev-env/scripts/sign-node-addon.sh",
       "install_dir": "$HOME/.local/bin/node-harmonyos",
-      "features": ["node", "npm", "signed binary for dlopen", "native addons (bcrypt, better-sqlite3)", "23/23 e2e tests", "TLS workaround", "--jitless SSH"]
+      "features": ["node", "npm", "signed binary for dlopen", "native addons (bcrypt, better-sqlite3)", "sharp WASM32", "typescript", "esbuild", "prettier", "eslint", "@modelcontextprotocol/sdk", "@anthropic-ai/sdk", "31/31 e2e tests", "TLS workaround", "--jitless SSH"]
     },
     {
       "name": "rust",
@@ -237,6 +237,36 @@
     {
       "name": "nodejs-dlopen-signing",
       "description": "HNP Node binary has NO .codesign section → kernel blocks process.dlopen() for user-space .node/.so files. Fix: create signed copy at $HOME/.local/bin/node-harmonyos, put $HOME/.local/bin first in PATH. Native addons need: patchelf --add-needed libc++_shared.so + code signing. Use sign-node-addon.sh script.",
+      "guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md"
+    },
+    {
+      "name": "psutil-sockaddr-storage",
+      "description": "HarmonyOS SDK has struct sockaddr_storage in both sys/socket.h and linux/socket.h, causing redefinition error. Fix: #define guard before #include <linux/if.h>. Also patch LINUX detection to accept sys.platform.startswith('harmonyos')",
+      "guide": "harmonyos-dev-env/docs/python-extension-adaptation.md"
+    },
+    {
+      "name": "maturin-direct-build",
+      "description": "pip build isolation breaks maturin on HarmonyOS (doesn't inherit CC/RUSTFLAGS). Build Rust/PyO3 packages directly with maturin build, then sign .so + rename suffix + manual install to site-packages",
+      "guide": "harmonyos-dev-env/docs/python-extension-adaptation.md"
+    },
+    {
+      "name": "meson-auto-sign-wrapper",
+      "description": "Meson builds need to execute sanity check binaries during configuration. Create auto-sign clang wrapper that signs ALL ELF outputs (including PIE/DYN type). Use as CC in meson native.ini. Build with mesonpy Python API",
+      "guide": "harmonyos-dev-env/docs/python-extension-adaptation.md"
+    },
+    {
+      "name": "sharp-wasm32-fallback",
+      "description": "sharp has no openharmony-arm64 prebuilt. Use WASM32 mode: npm install --force @img/sharp-wasm32. Works for all operations, ~5-10x slower than native",
+      "guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md"
+    },
+    {
+      "name": "mcp-python-dependencies",
+      "description": "Python MCP (mcp 1.27.1) requires rpds-py (Rust/PyO3, built via maturin) as dependency. Install rpds-py first (maturin build + sign .so + rename suffix), then pip install mcp --no-deps and install remaining deps (httpx_sse, pydantic-settings, python-dotenv, jsonschema, etc.) manually",
+      "guide": "harmonyos-dev-env/docs/python-packages-harmonyos.md"
+    },
+    {
+      "name": "node-mcp-sdk-submodule-import",
+      "description": "Node.js MCP SDK (@modelcontextprotocol/sdk) cannot be imported via top-level require. Must use submodule imports: require('@modelcontextprotocol/sdk/server/index.js') for Server, require('@modelcontextprotocol/sdk/server/stdio.js') for StdioServerTransport, require('@modelcontextprotocol/sdk/client/index.js') for Client. Requires capabilities declaration: { capabilities: { tools: {}, resources: {}, prompts: {} } }",
       "guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md"
     }
   ],

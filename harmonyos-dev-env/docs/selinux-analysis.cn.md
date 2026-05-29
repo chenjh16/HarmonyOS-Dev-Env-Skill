@@ -8,7 +8,7 @@
 
 **影响范围**: 原影响 numpy、pandas、pillow 及所有通过 pip 安装的包含编译扩展的包。
 
-> **更新 (2026-05-22)**: 此问题已**完全解决**。本地编译的 `-rdynamic` Python 导出 948+ Py 符号（1521 总导出），**所有签名的 .so 扩展模块现在可以从用户路径正常加载**。34/34 测试包（包括 numpy、pillow、lxml、bcrypt、greenlet）全部正常工作。详见 [python-packages-harmonyos.cn.md](python-packages-harmonyos.cn.md)。
+
 
 ## 根因分析
 
@@ -44,7 +44,7 @@ SELinux 状态:
 - 系统 Python 扩展 ✓
 - 纯 Python 包 ✓
 - **从 `$HOME/.local/lib/` 加载的签名 .so 扩展模块** ✓（通过代码签名 + `-rdynamic` Python 解决）
-- **pip 安装的带编译扩展的包** ✓（34/34 测试全部通过，从 `$HOME/.local/lib/python3.12/site-packages/` 正常加载）
+
 
 **历史问题（已解决）**:
 以下项目之前不工作，但已通过 `-rdynamic` Python + 代码签名**解决**:
@@ -80,7 +80,7 @@ SELinux 状态:
 
 我们本地编译的 Python (见 [python-harmonyos.cn.md](python-harmonyos.cn.md)) 使用 `-rdynamic` 导出 948+ Py 符号（1521 总导出），允许使用 `-DPy_BUILD_CORE_MODULE` 编译的扩展模块在不需要 `libpython.so` 的情况下解析符号。
 
-**现在用户路径中的扩展也能正常加载**。`-rdynamic` Python + 对所有 .so 文件进行代码签名的组合方案解决了 SELinux 阻止问题。34/34 测试包（包括 numpy、pillow、lxml、bcrypt、greenlet 等）全部从 `$HOME/.local/lib/python3.12/site-packages/` 正常加载。详见 [python-packages-harmonyos.cn.md](python-packages-harmonyos.cn.md)。
+
 
 ## 可能的解决方案
 
@@ -146,7 +146,7 @@ allow hishell_hap hmdfs:file { execute execmod map };
 
 ## 结论
 
-> **更新 (2026-05-22)**: 以下原始结论已过时。该问题已通过 `-rdynamic` Python + 代码签名**解决**。34/34 含 .so 编译扩展的包现在可以从用户路径正常加载。
+
 
 **原始分析 (2026-05-12)**: 从用户路径加载编译 .so 文件被 HarmonyOS SELinux 策略阻止，具体是:
 1. 路径标签分配 (hmdfs vs hnp_file)
@@ -155,7 +155,7 @@ allow hishell_hap hmdfs:file { execute execmod map };
 
 **已解决方案**: `-rdynamic` Python 构建导出 948+ Py 符号（1521 总导出），使扩展模块无需 `libpython.so` 即可解析符号。配合对所有 .so 文件的代码签名，编译扩展现在可以从用户路径 (`$HOME/.local/lib/python3.12/site-packages/`) 正常加载。此方案有效绕过了 Python 用例的 SELinux 限制。
 
-详见 [python-packages-harmonyos.cn.md](python-packages-harmonyos.cn.md) 获取完整的 34/34 包兼容性报告。
+
 
 ## 测试命令
 

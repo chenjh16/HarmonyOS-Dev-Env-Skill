@@ -110,6 +110,10 @@ HarmonyOS-Dev-Env-Skill/
 20. **OpenSSH authorized_keys UID**: 文件所有者为 uid 20001006（file_manager），sshd 运行在 uid 20020106。将 uid 20001006 加入 platform_sys_dir_uid()（类似 root）。safe_path() 对系统目录拥有的文件跳过 mode 检查（022 位掩码）。StrictModes=yes 正常工作。
 21. **Node.js dlopen 签名**: HNP Node 二进制没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：创建签名副本（`binary-sign-tool sign -selfSign 1`）放在 `$HOME/.local/bin/node-harmonyos`，PATH 中 `$HOME/.local/bin` 优先。原生 addon 需要：`patchelf --add-needed libc++_shared.so` + 代码签名。使用 `sign-node-addon.sh` 脚本自动化。C++ addon 需要 libc++_shared.so，因为 Node 不导出 C++ 运行时符号（_Znwm/operator new）。
 22. **Node.js 原生 addon 编译环境**: `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper" CXXFLAGS="-B$HOME/Claude/lib/linker_wrapper" LDFLAGS="-B$HOME/Claude/lib/linker_wrapper" TMPDIR=$HOME/Claude/tmpdir npm install <addon>`
+23. **psutil HarmonyOS 补丁**: `sys.platform.startswith("harmonyos")` 应视为 Linux。修补 `_common.py`：`LINUX = sys.platform.startswith("linux") or sys.platform.startswith("harmonyos")`。修补 `net.c`：在 `#include <linux/if.h>` 前 `#define sockaddr_storage __harmonyos_sockaddr_storage`，然后 `#undef`（防止与 `sys/socket.h` 的重定义冲突）
+24. **maturin 直接构建（不走 pip）**: pip 构建隔离在 HarmonyOS 上不继承 CC/RUSTFLAGS。Rust/PyO3 包直接用 `maturin build --release --interpreter $HOME/.local/bin/python3` 构建，然后签名 .so、重命名后缀为 `.cpython-312-aarch64-linux-gnu.so`、修复 WHEEL 平台标签（空格→下划线）、手动安装到 site-packages。pip 无法安装 HarmonyOS 标签的 wheel（文件名含空格）
+25. **Meson 自动签名 clang wrapper**: 在 `$HOME/Claude/lib/meson_wrapper/clang` 创建包装器，自动签名所有 ELF 输出（包括 PIE/DYN 类型，不仅是 EXEC）。Meson 的 sanity_check 是 PIE 可执行文件。在 meson native.ini 中用 wrapper 作为 CC。使用 mesonpy Python API 构建：`python3 -c "import mesonpy; mesonpy.build_wheel('...')"`
+26. **Node.js sharp WASM32 回退**: sharp 没有 openharmony-arm64 预编译。使用 WASM32：`npm install --force @img/sharp-wasm32`。所有操作（resize、转换、metadata）正常工作，性能比原生慢约 5-10 倍。
 
 ## 相关文档
 

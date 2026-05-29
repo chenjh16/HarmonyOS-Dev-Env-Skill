@@ -192,7 +192,7 @@ ImportError: cannot load numpy: Permission denied
 - 系统路径 .so 文件 (`/data/service/hnp/`)
 - 纯 Python 包
 - 本地编译带 `-rdynamic` 的 Python
-- **从 `$HOME/.local/lib/` 加载的签名 .so 扩展模块**（34/34 包测试全部通过 — 见 [python-packages-harmonyos.cn.md](python-packages-harmonyos.cn.md)）
+
 - PyTorch、numpy、pillow、lxml、bcrypt、greenlet 等从用户安装路径加载的编译扩展
 
 **可能有问题**:

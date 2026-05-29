@@ -8,7 +8,7 @@
 
 **Scope**: Originally affected numpy, pandas, pillow, and all packages with compiled extensions installed via pip.
 
-> **UPDATE (2026-05-22)**: This issue has been **fully resolved**. Our locally compiled Python with `-rdynamic` exports 948+ Py symbols (1521 total), and **all signed .so extension modules now load successfully from user paths**. 34/34 tested packages (including numpy, pillow, lxml, bcrypt, greenlet) work correctly. See [python-packages-harmonyos.md](python-packages-harmonyos.md) for the full compatibility report.
+
 
 ## Root Cause Analysis
 
@@ -44,7 +44,7 @@ SELinux status:
 - System Python extensions ✓
 - Pure Python packages ✓
 - **Signed .so extension modules from `$HOME/.local/lib/`** ✓ (resolved via code signing + `-rdynamic` Python)
-- **pip-installed packages with compiled extensions** ✓ (34/34 tested, all working from `$HOME/.local/lib/python3.12/site-packages/`)
+
 
 **Historical Issues (Resolved)**:
 The following items previously did not work but have been **resolved** via `-rdynamic` Python + code signing:
@@ -80,7 +80,7 @@ User .so:
 
 Our locally compiled Python (see [python-harmonyos.md](python-harmonyos.md)) uses `-rdynamic` to export 948+ Py symbols (1521 total), allowing extension modules compiled with `-DPy_BUILD_CORE_MODULE` to resolve symbols without needing `libpython.so`.
 
-**This now works for extensions in user paths as well**. The combination of `-rdynamic` Python + code signing for all .so files resolves the SELinux blocking issue. 34/34 tested packages with compiled extensions (numpy, pillow, lxml, bcrypt, greenlet, etc.) all load successfully from `$HOME/.local/lib/python3.12/site-packages/`. See [python-packages-harmonyos.md](python-packages-harmonyos.md) for details.
+
 
 ## Possible Solutions
 
@@ -146,7 +146,7 @@ Run Python with compiled extensions on a remote server, communicate via HTTP/Web
 
 ## Conclusion
 
-> **UPDATE (2026-05-22)**: The original conclusion below is outdated. The issue has been **resolved** via `-rdynamic` Python + code signing. 34/34 packages with compiled .so extensions now load successfully from user paths.
+
 
 **Original Analysis (2026-05-12)**: The loading of compiled .so files from user paths was blocked by HarmonyOS SELinux policy, specifically:
 1. Path-based label assignment (hmdfs vs hnp_file)
@@ -155,7 +155,7 @@ Run Python with compiled extensions on a remote server, communicate via HTTP/Web
 
 **Resolved Solution**: Our `-rdynamic` Python build exports 948+ Py symbols (1521 total), enabling extension modules to resolve symbols without `libpython.so`. Combined with code signing for all .so files, compiled extensions now load from user paths (`$HOME/.local/lib/python3.12/site-packages/`). This effectively bypasses the SELinux restriction for Python use cases.
 
-See [python-packages-harmonyos.md](python-packages-harmonyos.md) for the full 34/34 package compatibility report.
+
 
 ## Test Commands
 

@@ -13,7 +13,8 @@
 | 纯 Python | wheel 中无 `.so`，无编译步骤 | requests, flask | 无——直接 pip install |
 | C/C++ 扩展 | `setup.py` 有 `ext_modules`，或 wheel 包含 `.so` | numpy, greenlet, cffi | 中——设置 CC/CXX，签名 .so |
 | 混合依赖（C 库 + Python 绑定） | 需要外部 C 库 | pillow (libjpeg), lxml (libxml2) | 高——需先编译 C 依赖 |
-| Rust 扩展 (PyO3) | 有 `Cargo.toml`，使用 maturin | bcrypt, cryptography | 中高——Rust 工具链 + CC |
+| Rust 扩展 (PyO3) | 有 `Cargo.toml`，使用 maturin | bcrypt, cryptography, orjson | 中高——Rust 工具链 + CC |
+| Meson 构建 | 有 `meson.build`，使用 meson-python | pandas, matplotlib | 高——自动签名 wrapper + mesonpy API |
 
 **快速判断**: 查看 PyPI 页面或 GitHub 仓库。如果有 `setup.py` 的 `Extension()` 调用、`Cargo.toml`，或 wheel 中有 `.so` 文件，就需要适配。
 
@@ -306,6 +307,16 @@ python3 -c "import <包名>; print('<包名> 导入成功')"
 | `Package openssl was not found`（pkg-config） | 系统无 openssl.pc | 创建 $HOME/.local/lib/pkgconfig/ 下的 pkg-config 文件 |
 | `ld.lld: error: unable to find library -lssl` | 链接器找不到 libssl.so | RUSTFLAGS 添加 `-C link-args=-L/usr/lib` + 创建无版本号符号链接 |
 | `ModuleNotFoundError: No module named '_cffi_backend'` | .so 后缀不匹配或未签名 | 重命名为 `.cpython-312-aarch64-linux-gnu.so` + 签名 |
+| `platform harmonyosHongMengKernel1 is not supported` | sys.platform 不被识别 | 修补平台检测（如 `sys.platform.startswith("harmonyos")` → 视为 Linux） |
+| `redefinition of 'sockaddr_storage'` | HarmonyOS SDK 在 linux/socket.h 和 sys/socket.h 中有重复定义 | 在 `#include <linux/if.h>` 前 `#define sockaddr_storage __guard`，然后 `#undef` |
+| `Could not invoke sanity check executable: Permission denied` | Meson 构建中间文件未签名 | 创建自动签名 clang 包装器，PIE 可执行文件也需签名 |
+| `maturin: platform.system() don't match ಠ_ಠ` | maturin 检测到 HarmonyOS vs Rust Linux target | sitecustomize.py 补丁或直接用 `maturin build` 构建 |
+| `.whl is not a supported wheel on this platform` | wheel 文件名中平台标签含空格 | 手动安装到 site-packages |
+| `No module named 'typing_inspection'` | 缺少依赖 | `pip install typing_inspection --no-deps` |
+| `gfortran: command not found` | HarmonyOS 无 Fortran 编译器 | 无法构建 scipy 或其他依赖 Fortran 的包 |
+| `uvloop/libuv configure: cannot guess platform` | libuv autoconf 无法检测 HarmonyOS | 无法构建 uvloop；musl libc 缺少 cpu_set_t、CPU_SETSIZE、mmsghdr |
+| `.so 签名后仍崩溃 / ImportError 无错误信息` | C++ 扩展需要 libc++_shared.so | 对所有 .so 文件执行 `patchelf --add-needed libc++_shared.so` |
+| `pybind11 pkg-config 未找到` | matplotlib 构建需要 pybind11 pkgconfig | 将 `$HOME/.local/lib/python3.12/site-packages/pybind11/share/pkgconfig` 加入 PKG_CONFIG_PATH |
 
 ## 按难度分类的适配示例
 
@@ -344,6 +355,135 @@ python3 -c "import bcrypt; print(bcrypt.hashpw('test', bcrypt.gensalt()))"
 7. 签名 cryptography .so 扩展
 
 完整细节见 [cryptography-harmonyos.cn.md](cryptography-harmonyos.cn.md)。
+
+### 中等：平台检测补丁（psutil）
+
+psutil 使用 `sys.platform.startswith("linux")` 来检测 Linux。HarmonyOS 返回 `"harmonyos"`，不匹配。
+
+1. 下载源码：`pip download psutil --no-binary :all:`
+2. 修补 `_common.py`：将 `LINUX = sys.platform.startswith("linux")` 改为 `LINUX = sys.platform.startswith("linux") or sys.platform.startswith("harmonyos")`
+3. 修补 `psutil/arch/linux/net.c`：在 `#include <linux/if.h>` 前用 #define 防止 `sockaddr_storage` 重定义冲突：
+   ```c
+   #define sockaddr_storage __harmonyos_sockaddr_storage
+   #include <linux/if.h>
+   #undef sockaddr_storage
+   ```
+   （HarmonyOS SDK 在 `sys/socket.h` 和 `linux/socket.h` 中都定义了 `struct sockaddr_storage`，当 `linux/if.h` 包含 `linux/socket.h` 时导致重定义错误）
+4. 构建：`CC=/data/service/hnp/bin/clang CFLAGS="-B$HOME/Claude/lib/linker_wrapper" python3 setup.py build`
+5. 安装：`python3 setup.py install --skip-build`
+6. 如需要，手动复制 Python 文件：`cp -r psutil/*.py $HOME/.local/lib/python3.12/site-packages/psutil/`
+7. 签名包目录中所有 .abi3.so 文件
+
+### 中等：Rust 扩展 maturin 直接构建（pydantic v2）
+
+pip 的构建隔离会破坏 HarmonyOS 上的 maturin（不继承 CC/RUSTFLAGS）。直接用 maturin 构建 pydantic-core。
+
+1. 下载源码并解压
+2. 直接用 maturin 构建：`maturin build --release --interpreter $HOME/.local/bin/python3`
+3. 提取 wheel，签名 .so，重命名后缀：`.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
+4. 修复 WHEEL 文件的平台标签（将空格替换为下划线）
+5. 手动安装到 site-packages（pip 无法安装 HarmonyOS 标签的 wheel）
+6. 安装 pydantic 和 fastapi：`pip install pydantic fastapi --no-deps`
+
+**关键洞察**：maturin 生成 `.cpython-312.so` 后缀，但 HarmonyOS Python 期望 `.cpython-312-aarch64-linux-gnu.so`。必须在签名后重命名。另外 maturin wheel 文件名中的平台标签含空格——pip 会拒绝。需要手动安装。
+
+### 中等：Rust 序列化 maturin 直接构建（orjson）
+
+orjson 是高性能 JSON 序列化库，基于 Rust/PyO3 构建。构建模式与 pydantic-core 相同。
+
+1. 下载源码：`pip download orjson --no-binary :all:`
+2. 直接用 maturin 构建：`maturin build --release --interpreter $HOME/.local/bin/python3`
+3. 提取 wheel，签名 .so，重命名后缀：`.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
+4. 修复 WHEEL 文件的平台标签（将空格替换为下划线）
+5. 手动安装到 site-packages（pip 无法安装 HarmonyOS 标签的 wheel）
+
+**e2e 测试结果（7/7）**：基础序列化、datetime、numpy 数组、UTF-8、UUID、排序键+美化打印、性能对比。
+
+**关键洞察**：与 pydantic-core 相同的 maturin 模式——.so 后缀重命名 + WHEEL 标签修复 + 手动安装。不需要额外的 C 依赖。
+
+### 中等：Meson 构建自动签名包装器（pandas）
+
+Meson 构建需要在配置阶段执行 sanity check 二进制文件。在 HarmonyOS 上，未签名的二进制无法执行。
+
+1. 在 `$HOME/Claude/lib/meson_wrapper/clang` 创建自动签名 clang 包装器：
+   ```bash
+   #!/bin/sh
+   REAL_CC=/data/service/hnp/bin/clang
+   SIGN_TOOL=/data/service/hnp/bin/binary-sign-tool
+   TMPDIR="$HOME/Claude/tmpdir"
+   # 从命令行解析 -o 参数
+   OUTPUT_FILE="" # ... 解析逻辑 ...
+   $REAL_CC "$@"
+   # 如果输出是 ELF 且不是 .o/.so/.a，自动签名
+   # 注意：PIE 可执行文件的 Type 是 DYN，不是 EXEC——也必须签名
+   # ...签名逻辑...
+   ```
+2. 创建 meson native.ini，将 CC/CXX 指向包装器脚本
+3. 使用 mesonpy 构建：`python3 -c "import mesonpy; mesonpy.build_wheel('...')"`
+4. 签名结果 wheel 中的所有 .so
+5. 手动安装到 site-packages
+
+**关键洞察**：包装器必须签名所有 ELF 输出（包括 PIE/DYN 类型），不能只签 EXEC 类型。Meson 的 sanity_check 是 PIE 可执行文件。
+
+### 中等：带 C++ 依赖的 Meson 构建（matplotlib）
+
+matplotlib 使用 mesonpy 构建系统，包含基于 pybind11 的 C++ 扩展（kiwisolver）和 C 扩展（contourpy）。构建需要额外的 pkg-config 和构建依赖。
+
+1. 安装构建依赖：
+   ```bash
+   pip install meson-python setuptools_scm pybind11 ninja
+   # setuptools_scm 需要 vcs_versioning 插件
+   pip install setuptools_scm_git_archive  # 或等效的 vcs 插件
+   ```
+
+2. 设置 PKG_CONFIG_PATH 以找到 pybind11：
+   ```bash
+   export PKG_CONFIG_PATH=$HOME/.local/lib/python3.12/site-packages/pybind11/share/pkgconfig:$PKG_CONFIG_PATH
+   ```
+
+3. 使用 mesonpy Python API 构建（与 pandas 相同的自动签名 clang 包装器）：
+   ```bash
+   python3 -c "import mesonpy; mesonpy.build_wheel('$HOME/Claude/tmpdir/matplotlib_src')"
+   ```
+
+4. 提取 wheel，然后对每个 .so 文件（共 8 个）：
+   ```bash
+   # 签名所有 .so 文件
+   find "$WHEEL_DIR" -name "*.so" -type f -exec sh -c '
+     for f do
+       /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 -inFile "$f" -outFile "${f}.signed"
+       mv "${f}.signed" "$f"
+     done
+   ' sh {} +
+
+   # 添加 libc++_shared.so 作为 NEEDED 依赖（C++ 扩展需要）
+   find "$WHEEL_DIR" -name "*.so" -type f -exec sh -c '
+     for f do
+       /data/service/hnp/bin/patchelf --add-needed libc++_shared.so "$f"
+     done
+   ' sh {} +
+
+   # 重命名 .so 后缀
+   for f in *.cpython-312.so; do
+     mv "$f" "${f%.cpython-312.so}.cpython-312-aarch64-linux-gnu.so"
+   done
+   ```
+
+5. 手动安装到 site-packages
+
+**e2e 测试结果（6/6）**：折线图（savefig）、直方图、散点图、柱状图、子图、等高线图。
+
+**关键洞察**：matplotlib 的 C++ 扩展（基于 pybind11 的 kiwisolver、C 语言的 contourpy）需要通过 patchelf 添加 `libc++_shared.so`，因为 HarmonyOS 的 Python 不导出 C++ 运行时符号。还需要将 pybind11 的 pkgconfig 路径加入 PKG_CONFIG_PATH，以及 setuptools_scm 配合 vcs_versioning 进行版本检测。
+
+### 简单：Node.js WASM32 回退方案（sharp）
+
+sharp 没有 openharmony-arm64 预编译二进制。WASM32 模式可以作为功能完整（但较慢）的回退方案。
+
+1. `npm install sharp`（安装基础包，但原生模块失败）
+2. `npm install --force @img/sharp-wasm32`（安装 WASM32 回退）
+3. sharp 自动检测 WASM32 模块并使用它
+
+**性能**：WASM32 比原生 libvips 慢约 5-10 倍，但所有图像操作（resize、格式转换、metadata、stats）均正常工作。
 
 ### 困难：复杂 C++ 框架（PyTorch）
 

@@ -192,7 +192,7 @@ ImportError: cannot load numpy: Permission denied
 - System path .so files (`/data/service/hnp/`)
 - Pure Python packages
 - Locally compiled Python with `-rdynamic`
-- **Signed .so extension modules from `$HOME/.local/lib/`** (34/34 packages tested, all working — see [python-packages-harmonyos.md](python-packages-harmonyos.md))
+
 - PyTorch, numpy, pillow, lxml, bcrypt, greenlet and other compiled extensions from user-installed paths
 
 **What May Have Issues**:
