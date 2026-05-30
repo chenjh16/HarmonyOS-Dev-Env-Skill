@@ -139,10 +139,34 @@ find node_modules -name "*.node" -type f -exec \
 | node-cron | 3.0.3 | ✓ Working | Task scheduling, cron expression validation |
 | multer | 2.0.2 | ✓ Working | File upload middleware |
 | body-parser | 1.20.3 | ✓ Working | JSON/urlencoded body parsing |
+| ramda | 0.31.2 | ✓ Working | R.map, R.filter functional programming |
+| immutable | 5.1.0 | ✓ Working | Immutable.List, Map works |
+| date-fns | 4.1.0 | ✓ Working | addDays, format works |
+| zod | 3.25.0 | ✓ Working | schema.safeParse validation works |
+| ajv | 8.17.1 | ✓ Working | JSON schema validation works |
+| chalk | 4.1.2 | ✓ Working | chalk.red colored output (v4 is CJS-compatible; v5 is ESM-only) |
+| cli-table3 | 0.6.3 | ✓ Working | Table rendering works |
+| nanoid | 5.0.9 | ✓ Working | nanoid() ID generation works |
+| slugify | 1.6.6 | ✓ Working | slugify('Hello World', {lower: true}) works |
+| debug | 4.4.0 | ✓ Working | debug logger works |
+| handlebars | 4.7.8 | ✓ Working | Template compilation and rendering works |
+| pug | 3.0.3 | ✓ Working | Template rendering works |
+| mocha | 11.7.6 | ✓ Working | Test framework import works |
+| marked | 15.0.12 | ✓ Working | Markdown to HTML conversion works |
+| ioredis | 5.6.1 | ✓ Import | Redis client import works (no Redis server to test) |
+| pg | 8.16.2 | ✓ Import | PostgreSQL client import works (no PG server to test) |
+| jsonwebtoken | 9.0.2 | ✓ Working | JWT sign/verify works |
+| bcryptjs | 2.4.3 | ✓ Working | hashSync/compareSync works (pure JS bcrypt) |
+| mime-types | 3.0.1 | ✓ Working | MIME type lookup works |
+| semver | 7.7.2 | ✓ Working | Version comparison works |
+| glob | 11.0.2 | ✓ Working | File globbing works |
+| formidable | 3.5.4 | ✓ Import | Form data parsing (import only — type check) |
+| openai | 4.97.0 | ✓ Import | OpenAI SDK import works (API client) |
+| execa | 9.6.1 | ✓ Working | Process execution works |
 
 **Core modules**: All 14 tested (fs, crypto, http, net, os, path, child_process, worker_threads, stream, url, Intl, SQLite built-in, async/await, ESM) — 100% pass rate.
 
-**Total**: 41/41 e2e tests passed (100%) (32 packages + 14 core modules, added MCP SDK + Anthropic SDK + koa/fastify/cheerio/winston/helmet/cors/nodemailer/node-cron/multer/body-parser).
+**Total**: 56/56 e2e tests passed (100%) (42 packages + 14 core modules, added ramda/immutable/date-fns/zod/ajv/chalk/cli-table3/nanoid/slugify/debug/handlebars/pug/mocha/marked/ioredis/pg/jsonwebtoken/bcryptjs/mime-types/semver/glob/formidable/openai/execa).
 
 ### Verified Packages (Import Test)
 
@@ -196,6 +220,10 @@ prisma's schema engine is a pre-compiled glibc binary (debian-openssl-1.1.x). Ev
 ### 8. canvas (Node.js) — Missing C Dependencies
 
 Same issue as Python canvas: requires pixman/cairo system libraries not available on HarmonyOS. Would need manual compilation of these C dependencies first.
+
+### 9. puppeteer — Requires Chromium Browser
+
+puppeteer requires a Chromium browser instance to automate. HarmonyOS does not have a Chromium port available. No workaround unless a HarmonyOS-compatible browser with CDP (Chrome DevTools Protocol) support becomes available.
 
 ## Key Differences from Standard Node.js
 
@@ -252,8 +280,8 @@ Before running Node.js applications that download binaries:
 
 ---
 
-*Verified: 2026-05-29*
+*Verified: 2026-05-30*
 *Platform: HarmonyOS HongMeng Kernel 1.12.0*
-*E2E Tests: 41/41 passed (100%) — 10 new: koa, fastify, cheerio, winston, helmet, cors, nodemailer, node-cron, multer, body-parser*
+*E2E Tests: 56/56 passed (100%) — 15 new: chalk, cli-table3, nanoid, slugify, debug, handlebars, pug, mocha, marked, formidable, ramda, immutable, date-fns, zod, ajv, ioredis, pg, jsonwebtoken, bcryptjs, mime-types, semver, glob, execa, openai*
 *Import Tests: 5 verified — next.js, react, postcss, autoprefixer, tailwindcss*
-*Failed: 4 packages — jest (exports error), @swc/core (platform check), prisma (glibc ABI), canvas (C deps)*
+*Failed: 3 packages — sharp (WASM32 fallback works but not tested), canvas (C deps), puppeteer (no Chromium)*

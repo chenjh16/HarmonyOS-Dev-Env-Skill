@@ -18,18 +18,31 @@
 | 数据可视化 | 3/3 | 0 | matplotlib 3.10.3 (mesonpy 构建), contourpy 1.3.3, kiwisolver 1.5.0 |
 | 图像处理 | 1/1 | 0 | pillow 12.2.0 (编译 libjpeg/libpng) |
 | XML 处理 | 1/1 | 0 | lxml 6.1.0 (编译 libxml2/libxslt) |
-| Web/HTTP | 10/10 | 0 | requests, urllib3, flask, werkzeug, django, aiohttp, tornado, httpx, uvicorn, websockets |
+| Web/HTTP | 11/11 | 0 | requests, urllib3, flask, werkzeug, django, aiohttp, tornado, httpx, uvicorn, websockets, python-multipart |
 | 模板 | 2/2 | 0 | jinja2, markupsafe |
 | CLI/工具 | 5/5 | 0 | click, six, colorama, tqdm, rich |
 | 测试 | 1/1 | 0 | pytest |
-| 安全 | 3/3 | 0 | itsdangerous, blinker, bcrypt, hiredis, tiktoken |
+| 安全 | 8/8 | 0 | itsdangerous, blinker, bcrypt, cryptography, cffi, hiredis, passlib, pycryptodome |
 | 数据库 | 1/1 | 0 | sqlalchemy (with greenlet) |
-| 序列化 | 6/6 | 0 | msgpack, orjson, lz4, zstd, cbor2, ruamel.yaml |
+| 序列化 | 7/7 | 0 | msgpack, lz4, zstd, cbor2, ruamel.yaml, ijson, toml |
 | 构建工具 | 4/4 | 0 | setuptools, wheel, cython, packaging |
-| 杂项 | 10/10 | 0 | certifi, charset_normalizer, idna, pip, typing_extensions, pyparsing, cattrs, aiofiles, pytz, tabulate |
+| 日志 | 1/1 | 0 | loguru |
+| 文档 | 1/1 | 0 | docutils |
+| 语法高亮 | 1/1 | 0 | pygments |
+| 配置/工具 | 3/3 | 0 | python-dotenv, distro, wcwidth |
+| 日期/时间 | 2/2 | 0 | python-dateutil, arrow |
+| 任务调度 | 1/1 | 0 | schedule |
+| 重试/容错 | 1/1 | 0 | tenacity |
+| 数据结构 | 1/1 | 0 | pyrsistent |
+| 装饰器 | 1/1 | 0 | wrapt |
+| 编码检测 | 2/2 | 0 | charset_normalizer, cchardet |
+| 杂项 | 10/10 | 0 | certifi, idna, pip, typing_extensions, pyparsing, cattrs, aiofiles, pytz, tabulate, autopage |
+| 数据/验证 | 3/3 | 0 | pydantic v2、fastapi、pandas |
+| 系统/进程 | 1/1 | 0 | psutil |
+| 基础设施 | 1/1 | 0 | docker |
 | MCP/AI SDK | 3/3 | 0 | mcp 1.27.1、rpds-py 2026.5.1、tiktoken 0.13.0 |
-| **总计（可用）** | **74/74** | **0** | 所有已测试软件包均正常工作 |
-| **总计（不可构建）** | — | **2** | scipy（需要 gfortran）、uvloop（libuv 无法配置） |
+| **总计（可用）** | **97/97** | **0** | 所有已测试软件包均正常工作 |
+| **总计（不可构建）** | — | **7** | scipy, uvloop, polars, pynacl, orjson, tokenizers, structlog |
 
 ## 详细测试结果
 
@@ -169,7 +182,6 @@
 | 软件包 | 版本 | 测试 |
 |---------|---------|------|
 | msgpack | 1.1.1 | pack/unpack 正常 |
-| orjson | 3.11.9 | 基础序列化、datetime、numpy 数组、UTF-8、UUID、排序键+美化打印、性能 — 7/7 e2e 测试（Rust/PyO3/maturin 构建，签名 .so，重命名后缀，修复 WHEEL 标签） |
 
 ### Web/HTTP — 扩展（全部通过）
 
@@ -233,6 +245,43 @@
 |---------|---------|------|
 | docker | 7.1.0 | 导入正常（纯 Python，Docker API 客户端） |
 
+### 新增软件包 — 第二轮（全部通过）
+
+#### 纯 Python 软件包（全部通过）
+
+| 软件包 | 版本 | 测试 |
+|---------|---------|------|
+| toml | 0.10.2 | toml.loads/dumps 正常 |
+| python-dateutil | 2.9.0 | 日期字符串解析正常 |
+| aiofiles | 24.1.0 | 异步文件 I/O 导入正常 |
+| loguru | 0.7.2 | logger.info 正常 |
+| docutils | 0.23 | publish_string 正常 |
+| pygments | 2.20.0 | 代码高亮到 HTML 正常 |
+| passlib | 1.7.4 | sha256_crypt hash/verify 正常 |
+| python-dotenv | 1.2.2 | load_dotenv 正常 |
+| distro | 1.9.0 | distro.id() 正常 |
+| packaging | 26.2 | Version 解析正常 |
+| arrow | 1.4.0 | arrow.now(), shift() 正常 |
+| schedule | 1.2.2 | schedule.every() 正常 |
+| tenacity | 9.1.4 | retry 装饰器正常 |
+| python-multipart | 0.0.29 | MultipartParser 导入正常 |
+| wcwidth | 0.7.0 | wcwidth('A')=1, wcswidth('你好')=4 正常 |
+| pyrsistent | 0.20.0 | pvector 不可变集合正常 |
+| ijson | 3.5.0 | 流式 JSON 解析正常 |
+| autopage | 0.6.0 | 终端分页正常 |
+
+#### C 扩展软件包（全部通过）
+
+| 软件包 | 版本 | 测试 | 备注 |
+|---------|---------|------|------|
+| msgpack | 1.1.2 | packb/unpackb 正常 | C 扩展，需签名 + 后缀重命名 |
+| cchardet | 2.1.7 | UTF-8/ASCII 检测正常 | C 扩展，C++ — 需在 setup.py 中设置 `libraries=['c++_shared']`，签名 .so + 后缀重命名 |
+| greenlet | 3.5.1 | greenlet 切换正常 | C 扩展 |
+| bcrypt | 5.0.0 | hashpw/checkpw 正常 | C 扩展（Rust），需 CC/CXX 环境变量 |
+| pycryptodome | 3.23.0 | AES 加密/解密正常 | C 扩展，abi3 wheel — 签名 .so + 后缀重命名 |
+| charset_normalizer | 3.4.7 | 编码检测正常 | C 扩展，需签名 |
+| wrapt | 2.2.1 | 装饰器包装正常 | 现为纯 Python wheel |
+
 ## 已适配 — 之前失败的软件包
 
 | 软件包 | 错误 | 解决方案 | 状态 |
@@ -245,7 +294,6 @@
 | psutil | sockaddr_storage compile error | 修补 _common.py: LINUX 判断添加 `or sys.platform.startswith("harmonyos")`; 修补 net.c: 在 `#include <linux/if.h>` 前用 #define 防止 sockaddr_storage 重定义冲突 | ✅ WORKS |
 | pydantic v2 | maturin 构建隔离 | 使用 `maturin build --release --interpreter $HOME/.local/bin/python3` 构建 pydantic-core，签名 .so，重命名后缀为 `.cpython-312-aarch64-linux-gnu.so`，手动安装 | ✅ WORKS |
 | fastapi | 依赖 pydantic v2 | 先手动安装 pydantic-core，然后 `pip install fastapi --no-deps` | ✅ WORKS |
-| orjson | Rust/PyO3/maturin 构建 | 使用 `maturin build --release --interpreter $HOME/.local/bin/python3` 构建，签名 .so，重命名后缀为 `.cpython-312-aarch64-linux-gnu.so`，修复 WHEEL 标签（空格→下划线），手动安装 | ✅ WORKS |
 | matplotlib | mesonpy 构建，pybind11 pkg-config | 使用 mesonpy API 构建，签名 8 个 .so 文件，对每个 .so 执行 patchelf --add-needed libc++_shared.so，重命名后缀，手动安装；需要将 pybind11 的 pkgconfig 路径加入 PKG_CONFIG_PATH，依赖 setuptools_scm + vcs_versioning | ✅ WORKS |
 | contourpy | C 扩展，缺少 libc++_shared.so | 签名 .so + patchelf --add-needed libc++_shared.so + 重命名后缀 | ✅ WORKS |
 | kiwisolver | C 扩展，缺少 libc++_shared.so | 签名 .so + patchelf --add-needed libc++_shared.so + 重命名后缀 | ✅ WORKS |
@@ -266,6 +314,9 @@
 | polars | cargo metadata 失败 | Polars 是复杂的 Rust/PyO3 软件包；pip 构建时 cargo metadata 失败。需要下载源码手动构建。 | ❌ 无法构建（过于复杂） |
 | pynacl | libsodium C 扩展 + cffi 版本冲突 | pip 构建隔离触发 cffi 2.0.0 重新构建失败（找不到 ffi.h）。已安装 cffi 1.17.1。需要手动编译 libsodium + 固定 cffi 版本。 | ❌ 无法构建（cffi 冲突） |
 | paramiko (nacl 依赖) | 依赖 pynacl | pynacl 因 cffi 版本冲突无法构建。paramiko 本身是纯 Python，但没有 nacl.signing 无法运行。 | ❌ 导入失败（缺少 nacl） |
+| orjson | maturin 构建脚本签名 | maturin 直接构建失败，因为 cargo 构建脚本是 ELF 可执行文件，在 HarmonyOS 上执行前需要签名 — 递归依赖（签名脚本 → cargo 重建 → 新的未签名脚本）。无法在 HarmonyOS 上通过 maturin 构建。 | ❌ 无法构建（maturin） |
+| tokenizers | maturin 构建脚本签名 | 与 orjson 相同的 maturin 构建脚本签名问题。 | ❌ 无法构建（maturin） |
+| structlog | 导入时段错误 | 导入时段错误（可能是日志状态冲突） | ❌ 导入失败（段错误） |
 
 ## 正在构建的软件包
 
@@ -290,19 +341,20 @@
 
 | 类别 | 可用性 | 示例 | 备注 |
 |----------|-------|---------|-------|
-| 纯 Python | 100% | requests, flask, jinja2, django, httpx, rich, pytest, pyparsing | 直接使用 pip 安装 |
+| 纯 Python | 100% | requests, flask, jinja2, django, httpx, rich, pytest, pyparsing, toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson, autopage | 直接使用 pip 安装 |
 | 基于 NumPy | 100% | numpy, after signing | 需要重命名 wheel + 签名 .so |
 | 图像处理 | 100% | pillow | 从源码编译 libjpeg/libpng |
 | XML 解析 | 100% | lxml | 从源码编译 libxml2/libxslt |
 | 数据可视化 | 100% | matplotlib, contourpy, kiwisolver | mesonpy 构建 + 签名 .so + libc++_shared.so patchelf + 后缀重命名 |
-| C/C++ 扩展 | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver, hiredis, lz4, zstd, cbor2 | 设置 CC/CXX 环境; 部分需要 libc++_shared.so + 后缀重命名; psutil 需要 sockaddr_storage 补丁 |
-| 基于 Rust | 100% | cryptography, pydantic-core, orjson, rpds-py, tiktoken | 需要 CC 环境 + Rust 工具链; maturin 直接构建(不走 pip); tiktoken 可直接 pip install |
+| C/C++ 扩展 | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver, hiredis, lz4, zstd, cbor2, msgpack, cchardet, pycryptodome, charset_normalizer, wrapt | 设置 CC/CXX 环境; 部分需要 libc++_shared.so + 后缀重命名; psutil 需要 sockaddr_storage 补丁; wrapt 现为纯 Python wheel |
+| 基于 Rust | 100% | cryptography, pydantic-core, rpds-py, tiktoken | 需要 CC 环境 + Rust 工具链; maturin 直接构建(不走 pip); tiktoken 可直接 pip install |
 | pydantic v2 + fastapi | 100% | pydantic 2.13, fastapi 0.136 | 手动构建 pydantic-core + .so 重命名 + 签名 |
 | 基于 Meson | 100% | pandas 3.0.3, matplotlib 3.10.3 | 自动签名 clang wrapper + mesonpy API 构建 + .so 签名+重命名; matplotlib 还需要 libc++_shared.so |
 | MCP/AI SDK | 100% | mcp 1.27.1, rpds-py 2026.5.1, tiktoken 0.13.0 | rpds-py/tiktoken: maturin 构建 + 签名 + 重命名; mcp: 纯 Python（安装 rpds-py 后 pip install --no-deps） |
 | Node.js WASM32 | 可用 | sharp (WASM32) | npm install --force @img/sharp-wasm32 |
 | 依赖 Fortran | 0% | scipy | HarmonyOS 没有 Fortran 编译器 |
 | 依赖 libuv | 0% | uvloop | libuv autoconf 无法在 HarmonyOS 上配置 |
+| maturin 构建脚本 | 0% | orjson, tokenizers | Cargo 构建脚本是 ELF 可执行文件，执行前需要签名 — HarmonyOS 上的递归依赖 |
 
 ## lxml 的运行时要求
 
@@ -316,25 +368,22 @@ export LD_LIBRARY_PATH=$HOME/.local/lib:/data/service/hnp/ohos-sdk.org/ohos-sdk_
 
 ## 建议
 
-1. **纯 Python 软件包**：直接使用 pip 安装，100% 兼容（httpx、rich、pytest、pyparsing、cattrs、aiofiles、pytz、tabulate 均可直接安装）
+1. **纯 Python 软件包**：直接使用 pip 安装，100% 兼容（httpx、rich、pytest、pyparsing、toml、python-dateutil、aiofiles、loguru、docutils、pygments、passlib、python-dotenv、distro、packaging、arrow、schedule、tenacity、python-multipart、wcwidth、pyrsistent、ijson、autopage 均可直接安装）
 2. **numpy**：使用 HarmonyOS wheel + 签名扩展模块
 3. **C/C++ 扩展软件包**：在 pip install 前设置 `CC=/data/service/hnp/bin/clang` 和 `CXX=/data/service/hnp/bin/clang++` 环境变量；C++ 扩展可能需要签名后 `patchelf --add-needed libc++_shared.so` + 后缀重命名
-4. **基于 Rust 的软件包 (maturin)**：使用 `maturin build --release --interpreter $HOME/.local/bin/python3` 直接构建（不走 pip），然后签名 + 重命名 .so 后缀 + 修复 WHEEL 标签（空格→下划线）+ 手动安装到 site-packages。pip 的构建隔离会破坏 HarmonyOS 上的 maturin。适用于 orjson、pydantic-core、cryptography。
+4. **基于 Rust 的软件包 (maturin)**：使用 `maturin build --release --interpreter $HOME/.local/bin/python3` 直接构建（不走 pip），然后签名 + 重命名 .so 后缀 + 修复 WHEEL 标签（空格→下划线）+ 手动安装到 site-packages。pip 的构建隔离会破坏 HarmonyOS 上的 maturin。适用于 pydantic-core、cryptography、rpds-py、tiktoken。
 5. **psutil**：修补 `_common.py`（LINUX 判断添加 `or sys.platform.startswith("harmonyos")`) 和 `arch/linux/net.c`（用 #define 防止 sockaddr_storage 重定义冲突）。使用 `python3 setup.py build_ext` 构建 + 手动安装 + 签名 .so。
 6. **pydantic v2 + fastapi**：用 maturin 构建匹配版本的 pydantic-core，签名 .so，重命名为 `.cpython-312-aarch64-linux-gnu.so`，安装到 site-packages，然后 `pip install pydantic fastapi --no-deps`。
 7. **图像处理 (pillow)**：✅ 可用 - 已从源码编译 libjpeg-turbo 和 libpng
 8. **XML 解析 (lxml)**：✅ 可用 - 已从源码编译 libxml2、libxslt 和 libexslt
 9. **pandas**：✅ 可用 - 使用 mesonpy + 自动签名 clang wrapper 构建，45 个 .so 签名+重命名+手动安装
 10. **matplotlib**：使用 mesonpy API 构建，需将 pybind11 的 pkgconfig 路径加入 PKG_CONFIG_PATH，依赖 setuptools_scm + vcs_versioning。8 个 .so 文件需签名 + `patchelf --add-needed libc++_shared.so` + 后缀重命名。详见 python-extension-adaptation.cn.md。
-11. **orjson**：Rust/PyO3 包 — maturin 构建，签名 .so，重命名后缀，修复 WHEEL 标签（空格→下划线），手动安装。与 pydantic-core 相同的模式。
+11. **orjson/tokenizers**：❌ 不可用 - maturin 构建脚本是 ELF 可执行文件，在 HarmonyOS 上执行前需要签名，造成递归依赖。可使用 msgpack 或 ijson 作为替代。
 12. **Node.js 图像处理 (sharp)**：✅ 可用 - 使用 WASM32 模式 `npm install --force @img/sharp-wasm32`
 13. **终端 UI (curses)**：不可用 - autoconf 问题，跳过依赖 curses 的应用
 14. **scipy**：不可用 - 需要 gfortran（Fortran 编译器），HarmonyOS 上不存在
 15. **uvloop**：不可用 - libuv 供应商无法在 HarmonyOS 上配置；musl libc 缺少 cpu_set_t/CPU_SETSIZE/mmsghdr
 16. **MCP（模型上下文协议）**：✅ 可用 — mcp 1.27.1 正常工作。需要 rpds-py（Rust/PyO3，通过 maturin 构建），然后单独安装 mcp 及其依赖（httpx_sse、pydantic-settings、python-dotenv、jsonschema 等）。FastMCP 服务器创建、工具/资源/提示注册、jsonschema 验证均已验证 — 9/9 e2e 测试通过。
-17. **tiktoken**：✅ 可用 — Rust/PyO3 BPE tokenizer。pip install 直接成功，然后签名 .so + 重命名后缀。cl100k_base 编码/解码正常。
-18. **hiredis**：✅ 可用 — Redis 协议解析器（C 扩展）。设置 CC/CXX 环境变量 pip install 成功，然后签名 .so + 重命名后缀。
-19. **lz4/zstd/cbor2**：✅ 可用 — 高性能序列化库（C 扩展）。设置 CC/CXX 环境变量 pip install 成功，然后签名 .so + 重命名后缀。lz4 有 3 个 .so 文件。
-20. **cattrs**：✅ 可用 — 纯 Python，直接 pip install。dataclass/结构体 unstructure/structure 正常。
-21. **docker**：✅ 可用 — 纯 Python Docker API 客户端，直接 pip install。
-22. **networkx**：✅ 可用 — 纯 Python 图论库，直接 pip install。Graph 创建、边操作、度计算正常。
+17. **pycryptodome**：✅ 可用 — abi3 wheel，签名 .so + 重命名后缀。AES 加密/解密已验证。
+18. **cchardet**：✅ 可用 — C++ 扩展，需在 setup.py 中设置 `libraries=['c++_shared']`，签名 .so + 后缀重命名。编码检测已验证。
+19. **新增纯 Python 工具库**：✅ toml、python-dateutil、aiofiles、loguru、docutils、pygments、passlib、python-dotenv、distro、packaging、arrow、schedule、tenacity、python-multipart、wcwidth、pyrsistent、ijson、autopage — 均可直接 pip install，100% 兼容。
