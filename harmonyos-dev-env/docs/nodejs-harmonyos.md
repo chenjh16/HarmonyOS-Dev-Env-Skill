@@ -129,10 +129,20 @@ find node_modules -name "*.node" -type f -exec \
 | eslint | 10.4.0 | ✓ Working | Linting |
 | @modelcontextprotocol/sdk | 1.29.0 | ✓ Working | Server creation, tool/resource/prompt handler registration, StdioServerTransport, Client creation — 6/6 e2e tests (ESM sub-module imports) |
 | @anthropic-ai/sdk | 0.100.1 | ✓ Working | SDK instance creation works (API client) |
+| koa | 2.16.1 | ✓ Working | Koa app creation, middleware, route handling |
+| fastify | 5.4.0 | ✓ Working | Fastify server creation, route registration, plugin system |
+| cheerio | 1.0.0 | ✓ Working | HTML parsing, selector, text extraction |
+| winston | 3.17.0 | ✓ Working | Logger creation, multiple transports (console, file) |
+| helmet | 8.1.0 | ✓ Working | Express/Koa middleware for HTTP security headers |
+| cors | 2.8.5 | ✓ Working | Express/Koa CORS middleware |
+| nodemailer | 7.0.5 | ✓ Working | Email transport creation, message object |
+| node-cron | 3.0.3 | ✓ Working | Task scheduling, cron expression validation |
+| multer | 2.0.2 | ✓ Working | File upload middleware |
+| body-parser | 1.20.3 | ✓ Working | JSON/urlencoded body parsing |
 
 **Core modules**: All 14 tested (fs, crypto, http, net, os, path, child_process, worker_threads, stream, url, Intl, SQLite built-in, async/await, ESM) — 100% pass rate.
 
-**Total**: 31/31 e2e tests passed (100%) (22 packages + 14 core modules, added MCP SDK + Anthropic SDK).
+**Total**: 41/41 e2e tests passed (100%) (32 packages + 14 core modules, added MCP SDK + Anthropic SDK + koa/fastify/cheerio/winston/helmet/cors/nodemailer/node-cron/multer/body-parser).
 
 ### Verified Packages (Import Test)
 
@@ -244,6 +254,6 @@ Before running Node.js applications that download binaries:
 
 *Verified: 2026-05-29*
 *Platform: HarmonyOS HongMeng Kernel 1.12.0*
-*E2E Tests: 31/31 passed (100%) — 2 new: @modelcontextprotocol/sdk, @anthropic-ai/sdk*
+*E2E Tests: 41/41 passed (100%) — 10 new: koa, fastify, cheerio, winston, helmet, cors, nodemailer, node-cron, multer, body-parser*
 *Import Tests: 5 verified — next.js, react, postcss, autoprefixer, tailwindcss*
 *Failed: 4 packages — jest (exports error), @swc/core (platform check), prisma (glibc ABI), canvas (C deps)*

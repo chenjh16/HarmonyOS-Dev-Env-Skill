@@ -156,7 +156,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 | claude-code-harmonyos.cn.md | AI 编程助手、npm 包安装、SSH V8 崩溃解决方案 |
 | nodejs-harmonyos.cn.md | **Node.js dlopen 修复、原生 addon 签名、libc++_shared.so patchelf、sharp WASM32、29/29 测试** |
 | python-harmonyos.cn.md | 安装位置、配置、numpy/pillow/lxml 安装 |
-| python-packages-harmonyos.cn.md | 59 个包测试（orjson、matplotlib、httpx、pytest、**mcp**、**rpds-py** 均可用；scipy/uvloop 无法构建），C/Rust/Meson 扩展解决方案 |
+| python-packages-harmonyos.cn.md | 74 个包测试（orjson、matplotlib、httpx、pytest、**mcp**、**rpds-py**、**tiktoken**、**lz4**、**zstd**、**hiredis** 均可用；scipy/uvloop/polars 无法构建），C/Rust/Meson 扩展解决方案 |
 | python-extension-adaptation.cn.md | **适配 C/Rust/C++/Meson Python 包的通用指南**（签名、patchelf、supplement.so、.so 后缀、meson 包装器、maturin 直接构建、psutil 补丁） |
 | llama-cpp-harmonyos.cn.md | 构建、NEON/SVE 优化、ModelScope 模型下载 |
 | rust-harmonyos.cn.md | 工具链安装、签名、cargo 配置、FFI 互操作 |

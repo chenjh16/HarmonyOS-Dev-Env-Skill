@@ -156,7 +156,7 @@ Use the Read tool with the appropriate path. Available guides:
 | claude-code-harmonyos.md | AI programming assistant, npm package, SSH V8 crash workaround |
 | nodejs-harmonyos.md | **Node.js dlopen fix, native addon signing, libc++_shared.so patchelf, sharp WASM32, 29/29 e2e tests** |
 | python-harmonyos.md | Python installation, configuration, numpy/pillow/lxml setup |
-| python-packages-harmonyos.md | 59 packages tested (orjson, matplotlib, httpx, pytest, **mcp**, **rpds-py** all work; scipy/uvloop cannot build), solutions for C/Rust/Meson extensions |
+| python-packages-harmonyos.md | 74 packages tested (orjson, matplotlib, httpx, pytest, **mcp**, **rpds-py**, **tiktoken**, **lz4**, **zstd**, **hiredis** all work; scipy/uvloop/polars cannot build), solutions for C/Rust/Meson extensions |
 | python-extension-adaptation.md | **General guide for adapting C/Rust/C++/Meson Python packages** (signing, patchelf, supplement.so, .so suffix, meson wrapper, maturin direct build, psutil patch) |
 | llama-cpp-harmonyos.md | Build, NEON/SVE optimization, ModelScope model download |
 | rust-harmonyos.md | Toolchain install, signing, cargo config, FFI interop |

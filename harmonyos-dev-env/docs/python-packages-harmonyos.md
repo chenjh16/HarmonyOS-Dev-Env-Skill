@@ -1,6 +1,6 @@
 # HarmonyOS Python Package Compatibility Report
 
-## Test Date: 2026-05-29 (Updated)
+## Test Date: 2026-05-30 (Updated)
 
 ## Environment
 
@@ -13,22 +13,22 @@
 | Category | PASS | FAIL | Notes |
 |----------|------|------|-------|
 | Core Python | 13/13 | 0 | json, datetime, hashlib, ctypes, sqlite3, csv, xml, multiprocessing, urllib, re, collections, asyncio, unittest |
-| Data Processing | 4/4 | 0 | numpy, pyyaml, beautifulsoup4, sqlalchemy |
+| Data Processing | 5/5 | 0 | numpy, pyyaml, beautifulsoup4, sqlalchemy, networkx |
 | Math/Symbolic | 1/1 | 0 | sympy |
 | Data Visualization | 3/3 | 0 | matplotlib 3.10.3 (mesonpy build), contourpy 1.3.3, kiwisolver 1.5.0 |
 | Image Processing | 1/1 | 0 | pillow 12.2.0 (compiled libjpeg/libpng) |
 | XML Processing | 1/1 | 0 | lxml 6.1.0 (compiled libxml2/libxslt) |
-| Web/HTTP | 8/8 | 0 | requests, urllib3, flask, werkzeug, django, aiohttp, tornado, httpx |
+| Web/HTTP | 10/10 | 0 | requests, urllib3, flask, werkzeug, django, aiohttp, tornado, httpx, uvicorn, websockets |
 | Templates | 2/2 | 0 | jinja2, markupsafe |
 | CLI/Utilities | 5/5 | 0 | click, six, colorama, tqdm, rich |
 | Testing | 1/1 | 0 | pytest |
-| Security | 3/3 | 0 | itsdangerous, blinker, bcrypt |
+| Security | 3/3 | 0 | itsdangerous, blinker, bcrypt, hiredis, tiktoken |
 | Database | 1/1 | 0 | sqlalchemy (with greenlet) |
-| Serialization | 2/2 | 0 | msgpack, orjson |
+| Serialization | 6/6 | 0 | msgpack, orjson, lz4, zstd, cbor2, ruamel.yaml |
 | Build Tools | 4/4 | 0 | setuptools, wheel, cython, packaging |
-| Misc | 6/6 | 0 | certifi, charset_normalizer, idna, pip, typing_extensions, pyparsing |
+| Misc | 10/10 | 0 | certifi, charset_normalizer, idna, pip, typing_extensions, pyparsing, cattrs, aiofiles, pytz, tabulate |
 | MCP/AI SDK | 2/2 | 0 | mcp 1.27.1, rpds-py 2026.5.1 |
-| **Total (working)** | **59/59** | **0** | All tested packages work |
+| **Total (working)** | **74/74** | **0** | All tested packages work |
 | **Total (cannot build)** | — | **2** | scipy (needs gfortran), uvloop (libuv can't configure) |
 
 ## Detailed Test Results
@@ -58,6 +58,7 @@
 | numpy | 2.4.4 | array, random, linalg, sin all work |
 | pyyaml | 6.0.3 | safe_load works |
 | beautifulsoup4 | 4.14.3 | HTML parsing works |
+| networkx | 3.6.1 | Graph creation, add_edges_from, degree calculation all work |
 
 ### Math/Symbolic (All PASS)
 
@@ -88,7 +89,11 @@
 
 | Package | Version | Test |
 |---------|---------|------|
-| msgpack | 1.1.1 | pack/unpack works |
+| msgpack | 1.1.2 | pack/unpack works |
+| lz4 | 4.4.5 | frame compress/decompress works (C extension, 3 .so files need sign + suffix rename) |
+| zstd | 1.5.7 | compress/decompress works (C extension, 1 .so file needs sign + suffix rename) |
+| cbor2 | 6.1.1 | dumps/loads works (C extension, 1 .so file needs sign + suffix rename) |
+| ruamel.yaml | 0.19.1 | YAML roundtrip dump/load works (pure Python) |
 
 ### Templates (All PASS)
 
@@ -115,6 +120,7 @@
 | bcrypt | 5.0.0 | hashpw, gensalt, checkpw work (compiled with CC/CXX env) |
 | cryptography | 48.0.0 | AES, RSA, ECDSA, hashes all work (see cryptography-harmonyos.md) |
 | cffi | 1.17.1 | import works (cryptography dependency) |
+| hiredis | 3.3.1 | Reader, pack_command work (C extension, 1 .so needs sign + suffix rename) |
 
 ### Build Tools (All PASS)
 
@@ -177,6 +183,8 @@
 | aiohttp | 3.12.14 | async HTTP client works |
 | tornado | 6.5.1 | IOLoop import works |
 | httpx | 0.28.1 | HTTP GET works (pure Python) |
+| uvicorn | 0.48.0 | import works (pure Python, ASGI server) |
+| websockets | 16.0 | import works (pure Python) |
 
 ### CLI/Utilities — Extended (All PASS)
 
@@ -200,6 +208,7 @@
 |---------|---------|------|
 | mcp | 1.27.1 | FastMCP server creation, tool registration, resource registration, prompt registration, list tools/resources/prompts, jsonschema validation — 9/9 e2e tests (pure Python, depends on rpds-py) |
 | rpds-py | 2026.5.1 | HashTrieSet, HashTrieMap, List, Queue, Stack all work (Rust/PyO3/maturin build, sign .so + rename suffix) |
+| tiktoken | 0.13.0 | cl100k_base encode/decode works (Rust/PyO3, 1 .so needs sign + suffix rename) |
 
 ### Misc — Extended (All PASS)
 
@@ -212,6 +221,17 @@
 | typing_extensions | 4.15.0 | import works |
 | soupsieve | 2.8.3 | import works |
 | pyparsing | 3.3.2 | import works (pure Python, matplotlib dependency) |
+| cattrs | 26.1.0 | unstructure dataclass works (pure Python) |
+| aiofiles | 24.1.0 | async file I/O import works (pure Python) |
+| pytz | 2026.2 | timezone creation works (pure Python) |
+| python-dateutil | 2.9.0 | date string parsing works (pure Python) |
+| tabulate | 0.9.0 | table formatting works (pure Python) |
+
+### Infrastructure (All PASS)
+
+| Package | Version | Test |
+|---------|---------|------|
+| docker | 7.1.0 | import works (pure Python, Docker API client) |
 
 ## Previously Failed Packages — Now Adapted
 
@@ -231,6 +251,18 @@
 | kiwisolver | C extension, libc++_shared.so missing | Sign .so + patchelf --add-needed libc++_shared.so + rename suffix | ✅ WORKS |
 | rpds-py | Rust/PyO3/maturin build | Build with `maturin build --release --interpreter $HOME/.local/bin/python3`, sign .so, rename suffix to `.cpython-312-aarch64-linux-gnu.so`, install manually | ✅ WORKS |
 | mcp | depends on rpds-py | Install rpds-py first (maturin build), then `pip install mcp --no-deps` and install remaining deps (httpx_sse, pydantic-settings, python-dotenv, jsonschema, jsonschema-specifications, referencing, sse-starlette, starlette, anyio) manually | ✅ WORKS |
+| tiktoken | Rust/PyO3, pip install works | pip install succeeds (Rust/PyO3 wheel built by pip), then sign .so + rename suffix | ✅ WORKS |
+| hiredis | C extension, pip install works | pip install with CC/CXX env succeeds, then sign .so + rename suffix | ✅ WORKS |
+| lz4 | C extension, pip install works | pip install with CC/CXX env succeeds, 3 .so files need sign + suffix rename | ✅ WORKS |
+| zstd | C extension, pip install works | pip install with CC/CXX env succeeds, 1 .so file needs sign + suffix rename | ✅ WORKS |
+| cbor2 | C extension, pip install works | pip install succeeds, 1 .so file needs sign + suffix rename | ✅ WORKS |
+| rpds-py | Rust/PyO3/maturin build | Build with `maturin build --release --interpreter $HOME/.local/bin/python3`, sign .so, rename suffix to `.cpython-312-aarch64-linux-gnu.so`, install manually | ✅ WORKS |
+| mcp | depends on rpds-py | Install rpds-py first (maturin build), then `pip install mcp --no-deps` and install remaining deps (httpx_sse, pydantic-settings, python-dotenv, jsonschema, jsonschema-specifications, referencing, sse-starlette, starlette, anyio) manually | ✅ WORKS |
+| tiktoken | Rust/PyO3 extension | pip install with CC/CXX env, then sign .so + rename suffix | ✅ WORKS |
+| hiredis | C extension | pip install with CC/CXX env, then sign .so + rename suffix | ✅ WORKS |
+| lz4 | C extension | pip install with CC/CXX env, then sign 3 .so files + rename suffix | ✅ WORKS |
+| zstd | C extension | pip install with CC/CXX env, then sign .so + rename suffix | ✅ WORKS |
+| cbor2 | C extension | pip install with CC/CXX env, then sign .so + rename suffix | ✅ WORKS |
 
 ## Packages That Cannot Build
 
@@ -238,6 +270,9 @@
 |---------|-------|--------|--------|
 | scipy | needs gfortran (Fortran compiler) | HarmonyOS has no Fortran compiler (gfortran). scipy's C/Fortran extension modules cannot be compiled without it. | ❌ CANNOT BUILD |
 | uvloop | libuv vendor can't configure on HarmonyOS | libuv's autoconf can't guess the HarmonyOS platform; musl libc lacks cpu_set_t, CPU_SETSIZE, and mmsghdr. Requires significant libuv source patching. | ❌ CANNOT BUILD |
+| polars | cargo metadata failed | Polars is a complex Rust/PyO3 package; cargo metadata fails during pip build. Requires downloading source and building manually. | ❌ CANNOT BUILD (too complex) |
+| pynacl | libsodium C extension + cffi version conflict | pip build isolation triggers cffi 2.0.0 rebuild which fails (ffi.h not found). We have cffi 1.17.1 installed. Would need manual libsodium compilation + cffi pin. | ❌ CANNOT BUILD (cffi conflict) |
+| paramiko (nacl dependency) | depends on pynacl | pynacl cannot build due to cffi version conflict. paramiko itself is pure Python but cannot function without nacl.signing. | ❌ IMPORT FAILS (missing nacl) |
 
 ## Packages Still in Progress
 | Package | Error | Solution | Status |
@@ -266,11 +301,11 @@
 | Image processing | 100% | pillow | Compiled libjpeg/libpng from source |
 | XML parsing | 100% | lxml | Compiled libxml2/libxslt from source |
 | Data Visualization | 100% | matplotlib, contourpy, kiwisolver | mesonpy build + sign .so + libc++_shared.so patchelf + suffix rename |
-| C/C++ extensions | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver | Set CC/CXX env; some need libc++_shared.so + suffix rename; psutil needs sockaddr_storage patch |
-| Rust-based | 100% | cryptography, pydantic-core, orjson, rpds-py | Need CC env + Rust toolchain; maturin direct build (not pip) |
+| C/C++ extensions | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver, hiredis, lz4, zstd, cbor2 | Set CC/CXX env; some need libc++_shared.so + suffix rename; psutil needs sockaddr_storage patch |
+| Rust-based | 100% | cryptography, pydantic-core, orjson, rpds-py, tiktoken | Need CC env + Rust toolchain; maturin direct build (not pip); tiktoken pip install works directly |
 | Pydantic v2 + fastapi | 100% | pydantic 2.13, fastapi 0.136 | Manual pydantic-core build + .so rename + signing |
 | Meson-based | 100% | pandas 3.0.3, matplotlib 3.10.3 | Auto-sign clang wrapper + mesonpy API build + .so sign+rename; matplotlib also needs libc++_shared.so |
-| MCP/AI SDK | 100% | mcp 1.27.1, rpds-py 2026.5.1 | rpds-py: maturin build + sign + rename; mcp: pure Python (pip install --no-deps after rpds-py) |
+| MCP/AI SDK | 100% | mcp 1.27.1, rpds-py 2026.5.1, tiktoken 0.13.0 | rpds-py/tiktoken: maturin build + sign + rename; mcp: pure Python (pip install --no-deps after rpds-py) |
 | Node.js WASM32 | Works | sharp (WASM32) | npm install --force @img/sharp-wasm32 |
 | Fortran-dependent | 0% | scipy | No Fortran compiler on HarmonyOS |
 | libuv-dependent | 0% | uvloop | libuv autoconf can't configure on HarmonyOS |

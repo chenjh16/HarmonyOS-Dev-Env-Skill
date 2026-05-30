@@ -60,7 +60,7 @@ always-enable: true
 | 工具 | 版本 | 安装路径 | 关键特性 |
 |------|------|----------|----------|
 | Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas |
-| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, sharp WASM32, MCP SDK + Anthropic SDK, 31/31 测试 |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, sharp WASM32, MCP SDK + Anthropic SDK, koa/fastify/cheerio/winston, 41/41 测试 |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos 目标 |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 测试 |
@@ -78,7 +78,7 @@ always-enable: true
 完整构建指南在本 skill 的 `docs/` 目录中。当用户询问特定工具时，使用 Read 工具从本 SKILL.cn.md 目录的相对路径读取对应指南：
 
 - `docs/python-harmonyos.cn.md` — Python 3.12.8 独立构建
-- `docs/python-packages-harmonyos.cn.md` — 59 个包测试（orjson、matplotlib、httpx、pytest、mcp、rpds-py 均可用；scipy/uvloop 无法构建），C/Rust/Meson 扩展解决方案
+- `docs/python-packages-harmonyos.cn.md` — 74 个包测试（orjson、matplotlib、httpx、pytest、mcp、rpds-py、tiktoken、lz4、zstd、hiredis 均可用；scipy/uvloop/polars 无法构建），C/Rust/Meson 扩展解决方案
 - `docs/python-extension-adaptation.cn.md` — **适配 C/Rust/C++/Meson Python 包的通用指南**
 - `docs/rust-harmonyos.cn.md` — Rust ohos 目标安装
 - `docs/pytorch-harmonyos.cn.md` — PyTorch v2.5.1, 15/15 测试
@@ -86,7 +86,7 @@ always-enable: true
 - `docs/dropbear-harmonyos.cn.md` — Dropbear, 5 补丁, V8 崩溃
 - `docs/llama-cpp-harmonyos.cn.md` — NEON/SVE 优化, Qwen3.5
 - `docs/claude-code-harmonyos.cn.md` — Claude Code ohos 适配
-- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, sharp WASM32, MCP SDK + Anthropic SDK, 31/31 测试**
+- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, sharp WASM32, MCP SDK + Anthropic SDK, koa/fastify/cheerio/winston, 41/41 测试**
 - `docs/mihomo-harmonyos.cn.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.cn.md` — 现代 ls
 - `docs/bat-harmonyos.cn.md` — 语法高亮 cat

@@ -129,10 +129,20 @@ find node_modules -name "*.node" -type f -exec \
 | eslint | 10.4.0 | ✓ 正常 | 代码检查 |
 | @modelcontextprotocol/sdk | 1.29.0 | ✓ 正常 | Server 创建、tool/resource/prompt handler 注册、StdioServerTransport、Client 创建 — 6/6 端到端测试（ESM 子模块导入） |
 | @anthropic-ai/sdk | 0.100.1 | ✓ 正常 | SDK 实例创建正常（API 客户端） |
+| koa | 2.16.1 | ✓ 正常 | Koa 应用创建、中间件、路由处理 |
+| fastify | 5.4.0 | ✓ 正常 | Fastify 服务器创建、路由注册、插件系统 |
+| cheerio | 1.0.0 | ✓ 正常 | HTML 解析、选择器、文本提取 |
+| winston | 3.17.0 | ✓ 正常 | 日志器创建、多种传输方式 |
+| helmet | 8.1.0 | ✓ 正常 | HTTP 安全头中间件 |
+| cors | 2.8.5 | ✓ 正常 | CORS 中间件 |
+| nodemailer | 7.0.5 | ✓ 正常 | 邮件传输创建 |
+| node-cron | 3.0.3 | ✓ 正常 | 任务调度、cron 表达式验证 |
+| multer | 2.0.2 | ✓ 正常 | 文件上传中间件 |
+| body-parser | 1.20.3 | ✓ 正常 | JSON/urlencoded body 解析 |
 
 **核心模块**: 14 个全部通过（fs、crypto、http、net、os、path、child_process、worker_threads、stream、url、Intl、SQLite 内置、async/await、ESM）— 100% 通过率。
 
-**总计**: 31/31 端到端测试通过 (100%)（22 个包 + 14 个核心模块，新增 MCP SDK + Anthropic SDK）。
+**总计**: 41/41 端到端测试通过 (100%)（32 个包 + 14 个核心模块，新增 MCP SDK + Anthropic SDK + koa/fastify/cheerio/winston/helmet/cors/nodemailer/node-cron/multer/body-parser）。
 
 ### 已验证的包（导入测试）
 
@@ -244,6 +254,6 @@ node --jitless your-app.js
 
 *验证日期: 2026-05-29*
 *平台: HarmonyOS HongMeng Kernel 1.12.0*
-*端到端测试: 31/31 通过 (100%) — 新增 2 个: @modelcontextprotocol/sdk、@anthropic-ai/sdk*
+*端到端测试: 41/41 通过 (100%) — 新增 10 个: koa, fastify, cheerio, winston, helmet, cors, nodemailer, node-cron, multer, body-parser*
 *导入测试: 5 个已验证 — next.js、react、postcss、autoprefixer、tailwindcss*
 *失败: 4 个包 — jest (导出错误)、@swc/core (平台检查)、prisma (glibc ABI)、canvas (C 依赖)*
