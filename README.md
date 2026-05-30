@@ -649,7 +649,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | Document | Description |
 |----------|-------------|
 | [Claude Code](harmonyos-dev-env/docs/claude-code-harmonyos.md) | AI assistant, npm install, SSH V8 fix |
-| [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.md) | Node.js setup, TLS/V8, 61/61 e2e tests |
+| [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.md) | Node.js setup, TLS/V8, 61 packages, 66 e2e tests |
 | [Python Environment](harmonyos-dev-env/docs/python-harmonyos.md) | Python 3.12.8, pip, numpy, extensions |
 | [Python Packages](harmonyos-dev-env/docs/python-packages-harmonyos.md) | 97 packages compatibility report |
 | [Python Extension Adaptation](harmonyos-dev-env/docs/python-extension-adaptation.md) | General guide for adapting C/Rust/C++ Python packages |

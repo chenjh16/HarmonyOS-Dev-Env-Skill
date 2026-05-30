@@ -166,7 +166,7 @@ find node_modules -name "*.node" -type f -exec \
 
 **Core modules**: All 14 tested (fs, crypto, http, net, os, path, child_process, worker_threads, stream, url, Intl, SQLite built-in, async/await, ESM) — 100% pass rate.
 
-**Total**: 56/56 e2e tests passed (100%) (42 packages + 14 core modules, added ramda/immutable/date-fns/zod/ajv/chalk/cli-table3/nanoid/slugify/debug/handlebars/pug/mocha/marked/ioredis/pg/jsonwebtoken/bcryptjs/mime-types/semver/glob/formidable/openai/execa).
+**Total**: 61 packages verified (52 e2e + 9 import-only), 66 e2e tests (52 packages + 14 core modules).
 
 ### Verified Packages (Import Test)
 
@@ -282,6 +282,6 @@ Before running Node.js applications that download binaries:
 
 *Verified: 2026-05-30*
 *Platform: HarmonyOS HongMeng Kernel 1.12.0*
-*E2E Tests: 56/56 passed (100%) — 15 new: chalk, cli-table3, nanoid, slugify, debug, handlebars, pug, mocha, marked, formidable, ramda, immutable, date-fns, zod, ajv, ioredis, pg, jsonwebtoken, bcryptjs, mime-types, semver, glob, execa, openai*
+*E2E Tests: 66/66 passed (100%) — 52 packages + 14 core modules; new: ramda, immutable, date-fns, zod, ajv, chalk@4, cli-table3, nanoid, slugify, debug, handlebars, pug, mocha, marked, highlight.js, ioredis, pg, jsonwebtoken, bcryptjs, mime-types, semver, glob, xml2js, formidable, openai, execa*
 *Import Tests: 5 verified — next.js, react, postcss, autoprefixer, tailwindcss*
 *Failed: 3 packages — sharp (WASM32 fallback works but not tested), canvas (C deps), puppeteer (no Chromium)*

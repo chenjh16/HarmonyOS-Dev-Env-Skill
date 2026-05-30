@@ -60,7 +60,7 @@ always-enable: true
 | 工具 | 版本 | 安装路径 | 关键特性 |
 |------|------|----------|----------|
 | Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas |
-| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, sharp WASM32, MCP SDK + Anthropic SDK, ramda/zod/ajv/ioredis/pg, 61/61 测试 |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, sharp WASM32, MCP SDK, 61 包, 66 测试 |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos 目标 |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 测试 |
@@ -86,7 +86,7 @@ always-enable: true
 - `docs/dropbear-harmonyos.cn.md` — Dropbear, 5 补丁, V8 崩溃
 - `docs/llama-cpp-harmonyos.cn.md` — NEON/SVE 优化, Qwen3.5
 - `docs/claude-code-harmonyos.cn.md` — Claude Code ohos 适配
-- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, sharp WASM32, MCP SDK + Anthropic SDK, ramda/zod/ajv/ioredis/pg, 61/61 测试**
+- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, sharp WASM32, MCP SDK, 61 包, 66 测试**
 - `docs/mihomo-harmonyos.cn.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.cn.md` — 现代 ls
 - `docs/bat-harmonyos.cn.md` — 语法高亮 cat

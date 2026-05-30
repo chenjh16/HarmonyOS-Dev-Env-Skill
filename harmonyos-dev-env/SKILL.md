@@ -60,7 +60,7 @@ always-enable: true
 | Tool | Version | Install Path | Key Feature |
 |------|---------|-------------|-------------|
 | Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas |
-| Node.js | 24.13.0 | `$HOME/.local/bin` | Signed binary, native addons, sharp WASM32, MCP SDK, 61/61 e2e tests |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | Signed binary, native addons, sharp WASM32, MCP SDK, 61 packages, 66 e2e tests |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos target |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 tests |
@@ -86,7 +86,7 @@ Full build guides are in this skill's `docs/` directory. When the user asks abou
 - `docs/dropbear-harmonyos.md` — Dropbear, 5 patches, V8 crash
 - `docs/llama-cpp-harmonyos.md` — NEON/SVE optimization, Qwen3.5
 - `docs/claude-code-harmonyos.md` — Claude Code ohos adaptation
-- `docs/nodejs-harmonyos.md` — **Node.js dlopen fix, native addon signing, sharp WASM32, MCP SDK + Anthropic SDK, koa/fastify/cheerio/winston, ramda/zod/ajv/ioredis/pg/jsonwebtoken, 61/61 e2e tests**
+- `docs/nodejs-harmonyos.md` — **Node.js dlopen fix, native addon signing, sharp WASM32, MCP SDK + Anthropic SDK, ramda/zod/ajv/ioredis/pg/jsonwebtoken, 61 packages, 66 e2e tests**
 - `docs/mihomo-harmonyos.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.md` — modern ls
 - `docs/bat-harmonyos.md` — syntax-highlighted cat

@@ -166,7 +166,7 @@ find node_modules -name "*.node" -type f -exec \
 
 **核心模块**: 14 个全部通过（fs、crypto、http、net、os、path、child_process、worker_threads、stream、url、Intl、SQLite 内置、async/await、ESM）— 100% 通过率。
 
-**总计**: 56/56 端到端测试通过 (100%)（42 个包 + 14 个核心模块，新增 ramda/immutable/date-fns/zod/ajv/chalk/cli-table3/nanoid/slugify/debug/handlebars/pug/mocha/marked/ioredis/pg/jsonwebtoken/bcryptjs/mime-types/semver/glob/formidable/openai/execa）。
+**总计**: 61 个包已验证 (52 e2e + 9 仅导入), 66 e2e 测试 (52 个包 + 14 个核心模块)。
 
 ### 已验证的包（导入测试）
 
@@ -282,6 +282,6 @@ node --jitless your-app.js
 
 *验证日期: 2026-05-30*
 *平台: HarmonyOS HongMeng Kernel 1.12.0*
-*端到端测试: 56/56 通过 (100%) — 新增 15 个: chalk, cli-table3, nanoid, slugify, debug, handlebars, pug, mocha, marked, formidable, ramda, immutable, date-fns, zod, ajv, ioredis, pg, jsonwebtoken, bcryptjs, mime-types, semver, glob, execa, openai*
+*端到端测试: 66/66 通过 (100%) — 52 个包 + 14 个核心模块; 新增: ramda, immutable, date-fns, zod, ajv, chalk@4, cli-table3, nanoid, slugify, debug, handlebars, pug, mocha, marked, highlight.js, ioredis, pg, jsonwebtoken, bcryptjs, mime-types, semver, glob, xml2js, formidable, openai, execa*
 *导入测试: 5 个已验证 — next.js、react、postcss、autoprefixer、tailwindcss*
 *失败: 3 个包 — sharp (WASM32 回退可用但未测试)、canvas (C 依赖)、puppeteer (无 Chromium)*

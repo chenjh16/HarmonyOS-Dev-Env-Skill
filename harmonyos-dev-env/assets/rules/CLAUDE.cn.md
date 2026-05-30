@@ -154,7 +154,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 | 文件 | 说明 |
 |------|------|
 | claude-code-harmonyos.cn.md | AI 编程助手、npm 包安装、SSH V8 崩溃解决方案 |
-| nodejs-harmonyos.cn.md | **Node.js dlopen 修复、原生 addon 签名、libc++_shared.so patchelf、sharp WASM32、61/61 测试** |
+| nodejs-harmonyos.cn.md | **Node.js dlopen 修复、原生 addon 签名、libc++_shared.so patchelf、sharp WASM32、61 包、66 测试** |
 | python-harmonyos.cn.md | 安装位置、配置、numpy/pillow/lxml 安装 |
 | python-packages-harmonyos.cn.md | 97 个包测试（cchardet、msgpack、pycryptodome、bcrypt、loguru、pygments、httpx、pytest、**mcp**、**rpds-py**、**tiktoken**、**lz4**、**zstd**、**hiredis** 均可用；scipy/uvloop/polars/orjson/tokenizers 无法构建），C/Rust/Meson 扩展解决方案 |
 | python-extension-adaptation.cn.md | **适配 C/Rust/C++/Meson Python 包的通用指南**（签名、patchelf、supplement.so、.so 后缀、meson 包装器、maturin 直接构建、psutil 补丁） |

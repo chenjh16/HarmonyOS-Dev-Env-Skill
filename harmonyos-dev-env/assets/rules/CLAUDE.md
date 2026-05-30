@@ -154,7 +154,7 @@ Use the Read tool with the appropriate path. Available guides:
 | File | Description |
 |------|-------------|
 | claude-code-harmonyos.md | AI programming assistant, npm package, SSH V8 crash workaround |
-| nodejs-harmonyos.md | **Node.js dlopen fix, native addon signing, libc++_shared.so patchelf, sharp WASM32, MCP SDK + Anthropic SDK, ramda/zod/ajv/ioredis/pg, 61/61 e2e tests** |
+| nodejs-harmonyos.md | **Node.js dlopen fix, native addon signing, libc++_shared.so patchelf, sharp WASM32, MCP SDK, 61 packages, 66 e2e tests** |
 | python-harmonyos.md | Python installation, configuration, numpy/pillow/lxml setup |
 | python-packages-harmonyos.md | 97 packages tested (cchardet, msgpack, pycryptodome, bcrypt, loguru, pygments, httpx, pytest, **mcp**, **rpds-py**, **tiktoken**, **lz4**, **zstd**, **hiredis** all work; scipy/uvloop/polars/orjson/tokenizers cannot build), solutions for C/Rust/Meson extensions |
 | python-extension-adaptation.md | **General guide for adapting C/Rust/C++/Meson Python packages** (signing, patchelf, supplement.so, .so suffix, meson wrapper, maturin direct build, psutil patch) |

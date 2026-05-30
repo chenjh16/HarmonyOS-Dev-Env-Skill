@@ -35,7 +35,7 @@
       "build_guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md",
       "install_script": "harmonyos-dev-env/scripts/sign-node-addon.sh",
       "install_dir": "$HOME/.local/bin/node-harmonyos",
-      "features": ["node", "npm", "signed binary for dlopen", "native addons (bcrypt, better-sqlite3)", "sharp WASM32", "typescript", "esbuild", "prettier", "eslint", "@modelcontextprotocol/sdk", "@anthropic-ai/sdk", "koa", "fastify", "cheerio", "winston", "helmet", "cors", "nodemailer", "node-cron", "multer", "body-parser", "pino", "bull", "rate-limiter-flexible", "ramda", "immutable", "date-fns", "zod", "ajv", "chalk@4", "cli-table3", "nanoid", "slugify", "debug", "handlebars", "pug", "mocha", "marked", "highlight.js", "ioredis", "pg", "jsonwebtoken", "bcryptjs", "openai", "xml2js", "61/61 e2e tests", "TLS workaround", "--jitless SSH"]
+      "features": ["node", "npm", "signed binary for dlopen", "native addons (bcrypt, better-sqlite3)", "sharp WASM32", "typescript", "esbuild", "prettier", "eslint", "@modelcontextprotocol/sdk", "@anthropic-ai/sdk", "koa", "fastify", "cheerio", "winston", "helmet", "cors", "nodemailer", "node-cron", "multer", "body-parser", "pino", "bull", "rate-limiter-flexible", "ramda", "immutable", "date-fns", "zod", "ajv", "chalk@4", "cli-table3", "nanoid", "slugify", "debug", "handlebars", "pug", "mocha", "marked", "highlight.js", "ioredis", "pg", "jsonwebtoken", "bcryptjs", "openai", "xml2js", "61 packages, 66 e2e tests", "TLS workaround", "--jitless SSH"]
     },
     {
       "name": "rust",

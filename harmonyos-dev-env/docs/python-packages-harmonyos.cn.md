@@ -84,7 +84,7 @@
 | 软件包 | 版本 | 测试 |
 |---------|---------|------|
 | sqlalchemy | 2.0.49 | create_engine, Session, declarative_base work |
-| greenlet | 3.5.0 | greenlet switching works (sqlalchemy dependency) |
+| greenlet | 3.5.1 | greenlet switching works (sqlalchemy dependency) |
 
 ### Web/HTTP（全部通过）
 
@@ -355,6 +355,7 @@
 | 依赖 Fortran | 0% | scipy | HarmonyOS 没有 Fortran 编译器 |
 | 依赖 libuv | 0% | uvloop | libuv autoconf 无法在 HarmonyOS 上配置 |
 | maturin 构建脚本 | 0% | orjson, tokenizers | Cargo 构建脚本是 ELF 可执行文件，执行前需要签名 — HarmonyOS 上的递归依赖 |
+| 导入时段错误 | 0% | structlog | 导入时段错误（可能是 protobuf/C 扩展冲突） |
 
 ## lxml 的运行时要求
 
@@ -387,3 +388,4 @@ export LD_LIBRARY_PATH=$HOME/.local/lib:/data/service/hnp/ohos-sdk.org/ohos-sdk_
 17. **pycryptodome**：✅ 可用 — abi3 wheel，签名 .so + 重命名后缀。AES 加密/解密已验证。
 18. **cchardet**：✅ 可用 — C++ 扩展，需在 setup.py 中设置 `libraries=['c++_shared']`，签名 .so + 后缀重命名。编码检测已验证。
 19. **新增纯 Python 工具库**：✅ toml、python-dateutil、aiofiles、loguru、docutils、pygments、passlib、python-dotenv、distro、packaging、arrow、schedule、tenacity、python-multipart、wcwidth、pyrsistent、ijson、autopage — 均可直接 pip install，100% 兼容。
+20. **structlog**：❌ 不可用 — 导入时段错误（可能是 protobuf/C 扩展冲突）。可使用 loguru 作为替代日志库。

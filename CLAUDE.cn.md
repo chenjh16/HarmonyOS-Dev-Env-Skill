@@ -118,7 +118,7 @@ HarmonyOS-Dev-Env-Skill/
 27. **Python MCP 包**: mcp 1.27.1 需要 rpds-py (通过 maturin 构建), 然后 pip install mcp --no-deps
 28. **Node.js MCP SDK**: @modelcontextprotocol/sdk 是 ESM-only 包，必须使用子模块导入如 require('@modelcontextprotocol/sdk/server/index.js')
 29. **tiktoken**: Rust/PyO3 BPE 分词器，pip 安装后签名 .so 并重命名后缀
-30. **包计数**: 97/97 Python 包, 61/61 Node.js e2e 测试
+30. **包计数**: 97/97 Python 包, 61 Node.js 包 (66 e2e 测试)
 
 ## 相关文档
 

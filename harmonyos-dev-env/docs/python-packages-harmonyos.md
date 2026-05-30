@@ -84,7 +84,7 @@
 | Package | Version | Test |
 |---------|---------|------|
 | sqlalchemy | 2.0.49 | create_engine, Session, declarative_base work |
-| greenlet | 3.5.0 | greenlet switching works (sqlalchemy dependency) |
+| greenlet | 3.5.1 | greenlet switching works (sqlalchemy dependency) |
 
 ### Web/HTTP (All PASS)
 
@@ -340,12 +340,12 @@
 
 | Category | Works | Example | Notes |
 |----------|-------|---------|-------|
-| Pure Python | 100% | requests, flask, jinja2, django, httpx, rich, pytest, pyparsing, toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson | pip install directly |
+| Pure Python | 100% | requests, flask, jinja2, django, httpx, rich, pytest, pyparsing, toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson, autopage | pip install directly |
 | NumPy-based | 100% | numpy, after signing | Need wheel rename + .so signing |
 | Image processing | 100% | pillow | Compiled libjpeg/libpng from source |
 | XML parsing | 100% | lxml | Compiled libxml2/libxslt from source |
 | Data Visualization | 100% | matplotlib, contourpy, kiwisolver | mesonpy build + sign .so + libc++_shared.so patchelf + suffix rename |
-| C/C++ extensions | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver, hiredis, lz4, zstd, cbor2, msgpack, cchardet, pycryptodome, charset_normalizer, wrapt | Set CC/CXX env; some need libc++_shared.so + suffix rename; psutil needs sockaddr_storage patch |
+| C/C++ extensions | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver, hiredis, lz4, zstd, cbor2, msgpack, cchardet, pycryptodome, charset_normalizer, wrapt | Set CC/CXX env; some need libc++_shared.so + suffix rename; psutil needs sockaddr_storage patch; wrapt is now pure Python wheel |
 | Rust-based | 100% | cryptography, pydantic-core, rpds-py, tiktoken | Need CC env + Rust toolchain; maturin direct build (not pip); tiktoken pip install works directly |
 | Pydantic v2 + fastapi | 100% | pydantic 2.13, fastapi 0.136 | Manual pydantic-core build + .so rename + signing |
 | Meson-based | 100% | pandas 3.0.3, matplotlib 3.10.3 | Auto-sign clang wrapper + mesonpy API build + .so sign+rename; matplotlib also needs libc++_shared.so |
@@ -354,6 +354,7 @@
 | Fortran-dependent | 0% | scipy | No Fortran compiler on HarmonyOS |
 | libuv-dependent | 0% | uvloop | libuv autoconf can't configure on HarmonyOS |
 | maturin build scripts | 0% | orjson, tokenizers | Cargo build scripts are ELF executables that need signing before execution — recursive dependency on HarmonyOS |
+| Segfault on import | 0% | structlog | segfault on import (likely protobuf/C extension conflict) |
 
 ## Runtime Requirements for lxml
 
@@ -367,7 +368,7 @@ This can be added to `~/.zshenv` for persistence.
 
 ## Recommendations
 
-1. **Pure Python packages**: Install directly with pip, 100% compatible (httpx, rich, pytest, pyparsing, toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson all work out of the box)
+1. **Pure Python packages**: Install directly with pip, 100% compatible (httpx, rich, pytest, pyparsing, toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson, autopage all work out of the box)
 2. **numpy**: Use HarmonyOS wheel + sign extension modules
 3. **C/C++ extension packages**: Set `CC=/data/service/hnp/bin/clang` and `CXX=/data/service/hnp/bin/clang++` environment variables before pip install; C++ extensions may need `patchelf --add-needed libc++_shared.so` + suffix rename after signing
 4. **Rust-based packages (maturin)**: Build with `maturin build --release --interpreter $HOME/.local/bin/python3` directly (NOT via pip), then sign + rename .so suffix + fix WHEEL tag (spaces→underscores) + install to site-packages manually. pip's build isolation breaks maturin on HarmonyOS. Works for pydantic-core, cryptography, rpds-py, tiktoken.
@@ -385,4 +386,5 @@ This can be added to `~/.zshenv` for persistence.
 16. **MCP (Model Context Protocol)**: ✅ Available — mcp 1.27.1 works. Requires rpds-py (Rust/PyO3, built via maturin), then install mcp and its dependencies (httpx_sse, pydantic-settings, python-dotenv, jsonschema, etc.) separately. FastMCP server creation, tool/resource/prompt registration, and jsonschema validation all verified — 9/9 e2e tests passed.
 17. **pycryptodome**: ✅ Available — abi3 wheel, sign .so + rename suffix. AES encrypt/decrypt verified.
 18. **cchardet**: ✅ Available — C++ extension, needs `libraries=['c++_shared']` in setup.py, sign .so + suffix rename. Encoding detection verified.
-19. **New pure Python utilities**: ✅ toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson — all pip install directly, 100% compatible.
+19. **New pure Python utilities**: ✅ toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson, autopage — all pip install directly, 100% compatible.
+20. **structlog**: ❌ Not available — segfault on import (likely protobuf/C extension conflict). Use loguru as an alternative logging library.

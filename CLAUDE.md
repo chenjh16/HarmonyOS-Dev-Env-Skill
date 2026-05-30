@@ -119,7 +119,7 @@ When documenting tool adaptations, always cover:
 
 29. **tiktoken**: Rust/PyO3 BPE tokenizer for OpenAI models. pip install works, then sign .so, rename suffix.
 
-30. **Package counts**: 97/97 Python packages, 61/61 Node.js e2e tests
+30. **Package counts**: 97/97 Python packages, 61 Node.js packages (66 e2e tests)
 
 ## Related Documentation
 
