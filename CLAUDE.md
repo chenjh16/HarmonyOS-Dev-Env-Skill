@@ -115,7 +115,11 @@ When documenting tool adaptations, always cover:
 25. **Meson auto-sign clang wrapper**: Create wrapper at `$HOME/Claude/lib/meson_wrapper/clang` that auto-signs ALL ELF outputs (including PIE/DYN type, not just EXEC). Meson's sanity_check is a PIE executable. Use wrapper as CC in meson native.ini. Build with mesonpy Python API: `python3 -c "import mesonpy; mesonpy.build_wheel('...')"`
 26. **Node.js sharp WASM32 fallback**: sharp has no openharmony-arm64 prebuilt. Use WASM32: `npm install --force @img/sharp-wasm32`. Works for all operations (resize, convert, metadata), ~5-10x slower than native.
 27. **Python MCP package**: mcp 1.27.1 requires rpds-py (Rust/PyO3) as dependency. Build rpds-py via maturin first (`maturin build --release --interpreter $HOME/.local/bin/python3`, sign .so, rename suffix). Then install mcp with `pip install mcp --no-deps` and install remaining deps (httpx_sse, pydantic-settings, python-dotenv, jsonschema, jsonschema-specifications, referencing, sse-starlette, starlette, anyio) manually. 9/9 e2e tests pass (FastMCP server, tool/resource/prompt registration, jsonschema validate, rpds-py data structures).
-28. **Node.js MCP SDK sub-module imports**: @modelcontextprotocol/sdk v1.29.0 is an ESM package — cannot import via top-level `require('@modelcontextprotocol/sdk')`. Must use sub-module paths: `require('@modelcontextprotocol/sdk/server/index.js')` for Server, `require('@modelcontextprotocol/sdk/server/stdio.js')` for StdioServerTransport, `require('@modelcontextprotocol/sdk/client/index.js')` for Client. Server requires capabilities declaration: `{ capabilities: { tools: {}, resources: {}, prompts: {} } }`. 6/6 e2e tests pass.
+28. **Node.js MCP SDK sub-module imports**: @modelcontextprotocol/sdk is ESM-only. Must use sub-module imports: `require('@modelcontextprotocol/sdk/server/index.js')`. Server capabilities must be declared: `{ capabilities: { tools: {}, resources: {}, prompts: {} }`. 6/6 e2e tests pass.
+
+29. **tiktoken**: Rust/PyO3 BPE tokenizer for OpenAI models. pip install works, then sign .so, rename suffix.
+
+30. **Package counts**: 74/74 Python packages, 41/41 Node.js e2e tests
 
 ## Related Documentation
 

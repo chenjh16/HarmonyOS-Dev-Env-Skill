@@ -115,6 +115,11 @@ HarmonyOS-Dev-Env-Skill/
 25. **Meson 自动签名 clang wrapper**: 在 `$HOME/Claude/lib/meson_wrapper/clang` 创建包装器，自动签名所有 ELF 输出（包括 PIE/DYN 类型，不仅是 EXEC）。Meson 的 sanity_check 是 PIE 可执行文件。在 meson native.ini 中用 wrapper 作为 CC。使用 mesonpy Python API 构建：`python3 -c "import mesonpy; mesonpy.build_wheel('...')"`
 26. **Node.js sharp WASM32 回退**: sharp 没有 openharmony-arm64 预编译。使用 WASM32：`npm install --force @img/sharp-wasm32`。所有操作（resize、转换、metadata）正常工作，性能比原生慢约 5-10 倍。
 
+27. **Python MCP 包**: mcp 1.27.1 需要 rpds-py (通过 maturin 构建), 然后 pip install mcp --no-deps
+28. **Node.js MCP SDK**: @modelcontextprotocol/sdk 是 ESM-only 包，必须使用子模块导入如 require('@modelcontextprotocol/sdk/server/index.js')
+29. **tiktoken**: Rust/PyO3 BPE 分词器，pip 安装后签名 .so 并重命名后缀
+30. **包计数**: 74/74 Python 包, 41/41 Node.js e2e 测试
+
 ## 相关文档
 
 - Skill 定义: `harmonyos-dev-env/SKILL.md`
