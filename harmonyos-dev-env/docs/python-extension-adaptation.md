@@ -13,7 +13,7 @@ Before starting, identify which category the package falls into:
 | Pure Python | No `.so` in wheel, no `setup.py` compile step | requests, flask | None — pip install directly |
 | C/C++ extension | `setup.py` has `ext_modules`, or wheel contains `.so` | numpy, greenlet, cffi | Medium — set CC/CXX, sign .so |
 | Mixed (C lib + Python binding) | Requires external C library | pillow (libjpeg), lxml (libxml2) | High — compile C deps first |
-| Rust extension (PyO3) | `Cargo.toml` present, uses maturin | bcrypt, cryptography, orjson | Medium-High — Rust toolchain + CC |
+| Rust extension (PyO3) | `Cargo.toml` present, uses maturin | pydantic-core, cryptography, rpds-py, tiktoken | Medium-High — Rust toolchain + CC + build script signing |
 | Meson-based | `meson.build` present, uses meson-python | pandas, matplotlib | High — auto-sign wrapper + mesonpy API |
 
 **Quick check**: Look at the package's PyPI page or GitHub repo. If it has `setup.py` with `Extension()` calls, `Cargo.toml`, or `.so` files in the wheel, it needs adaptation.
@@ -378,28 +378,96 @@ psutil uses `sys.platform.startswith("linux")` to detect Linux. HarmonyOS return
 
 pip's build isolation breaks maturin on HarmonyOS (doesn't inherit CC/RUSTFLAGS). Build pydantic-core directly with maturin instead.
 
-1. Download source and extract
-2. Build with maturin directly: `maturin build --release --interpreter $HOME/.local/bin/python3`
-3. Extract wheel, sign .so, rename suffix: `.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
-4. Fix WHEEL file platform tag (replace spaces with underscores)
-5. Install to site-packages manually (pip can't install HarmonyOS-tagged wheels)
-6. Install pydantic and fastapi: `pip install pydantic fastapi --no-deps`
+**Step-by-step build process:**
 
-**Key insight**: maturin generates `.cpython-312.so` suffix, but HarmonyOS Python expects `.cpython-312-aarch64-linux-gnu.so`. Must rename after signing. Also, maturin wheel filenames contain spaces in the platform tag — pip rejects them. Manual installation is required.
+1. Download pydantic-core source:
+   ```bash
+   pip download pydantic-core --no-binary :all: --dest $HOME/Claude/tmpdir/pydantic-core-src
+   cd $HOME/Claude/tmpdir/pydantic-core-src
+   tar xf pydantic-core-*.tar.gz
+   cd pydantic-core-*
+   ```
 
-### Medium: Rust serialization via maturin direct build (orjson)
+2. Sign any existing cargo build scripts (HarmonyOS requires signed ELF executables):
+   ```bash
+   # Some crates have build scripts already in the cache
+   find ~/.cargo/registry -name "build-script-build" -type f -exec \
+     /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+     -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec \
+     mv {}.signed {} \; -exec chmod +x {} \;
+   ```
 
-orjson is a high-performance JSON serialization library built with Rust/PyO3. The build pattern is the same as pydantic-core.
+3. Build with maturin directly:
+   ```bash
+   RUSTFLAGS="-C linker=/data/service/hnp/bin/clang -C link-args=-B$HOME/Claude/lib/linker_wrapper" \
+     maturin build --release --interpreter $HOME/.local/bin/python3
+   ```
 
-1. Download source: `pip download orjson --no-binary :all:`
-2. Build with maturin directly: `maturin build --release --interpreter $HOME/.local/bin/python3`
-3. Extract wheel, sign .so, rename suffix: `.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
-4. Fix WHEEL file platform tag (replace spaces with underscores)
-5. Install to site-packages manually (pip can't install HarmonyOS-tagged wheels)
+4. If cargo build fails with "Permission denied" on build scripts, sign them and retry:
+   ```bash
+   # Sign newly created build scripts
+   find target/release/build -name "build-script-build" -type f -exec \
+     /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+     -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec \
+     mv {}.signed {} \; -exec chmod +x {} \;
+   # Retry build
+   RUSTFLAGS="-C linker=/data/service/hnp/bin/clang -C link-args=-B$HOME/Claude/lib/linker_wrapper" \
+     maturin build --release --interpreter $HOME/.local/bin/python3
+   ```
 
-**e2e test results (7/7)**: basic serialization, datetime, numpy array, UTF-8, UUID, sort keys+pretty print, performance comparison.
+5. Extract wheel and fix files:
+   ```bash
+   WHEEL_FILE=$(ls target/wheels/*.whl)
+   mkdir -p wheel_extract && cd wheel_extract
+   unzip ../$WHEEL_FILE
+   # Rename .so suffix
+   mv pydantic_core/*.cpython-312.so pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so
+   # Sign .so file
+   /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+     -inFile pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so \
+     -outFile pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.signed.so \
+     -signAlg SHA256withECDSA
+   mv pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.signed.so \
+      pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so
+   chmod +x pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so
+   # Fix WHEEL platform tag (replace spaces with underscores)
+   sed -i 's/harmonyos aarch64/harmonyos_aarch64/g' pydantic_core-*.dist-info/WHEEL
+   ```
 
-**Key insight**: Same maturin pattern as pydantic-core — .so suffix rename + WHEEL tag fix + manual install. No additional C dependencies needed.
+6. Install to site-packages manually:
+   ```bash
+   cp -r pydantic_core/ $HOME/.local/lib/python3.12/site-packages/pydantic_core/
+   cp -r pydantic_core-*.dist-info/ $HOME/.local/lib/python3.12/site-packages/
+   ```
+
+7. Install pydantic and fastapi:
+   ```bash
+   pip install pydantic fastapi --no-deps
+   ```
+
+**e2e test results (5/5)**: BaseModel creation, Field validation (gt=0 constraint), Optional fields (None default), model_dump_json serialization, model_validate deserialization from dict.
+
+**Key insights**:
+- maturin generates `.cpython-312.so` suffix, but HarmonyOS Python expects `.cpython-312-aarch64-linux-gnu.so`. Must rename after signing.
+- maturin wheel filenames contain spaces in the platform tag — pip rejects them. Manual installation is required.
+- Cargo build scripts (ELF executables) must be signed before execution on HarmonyOS. Sign them in the cargo cache AND any newly created ones in `target/release/build/`.
+- **Note**: Some Rust/PyO3 packages (like orjson) have build scripts that cargo rebuilds each time, creating a recursive signing dependency. pydantic-core's build scripts can be signed and reused successfully.
+
+### Cannot build: Rust serialization with maturin build script signing loop (orjson, tokenizers)
+
+orjson and tokenizers are Rust/PyO3 packages that **cannot be built on HarmonyOS** due to a recursive signing dependency.
+
+**The problem**: maturin's `cargo build` creates build scripts (ELF executables) that must be signed before execution on HarmonyOS. However, cargo rebuilds these build scripts each time it runs, creating new unsigned executables. This results in a circular dependency:
+1. Run `maturin build` → cargo creates build scripts → build scripts are unsigned → "Permission denied" → build fails
+2. Sign build scripts → retry build → cargo rebuilds some build scripts → new ones are unsigned → "Permission denied" → build fails again
+
+**Why pydantic-core works but orjson doesn't**: pydantic-core's build scripts can be signed and reused across cargo rebuilds. orjson/tokenizers have build scripts that cargo rebuilds every time, making the signing process infinite.
+
+**Workaround**: Use alternative pure-Python or C-extension packages:
+- Instead of orjson: use `msgpack` (C extension, works), `ijson` (pure Python, works), or `toml` (pure Python, works)
+- Instead of tokenizers: use `tiktoken` (Rust/PyO3, pip install works directly — no build script signing issue)
+
+**Alternative approach (not tested)**: It might be possible to create a cargo wrapper that auto-signs all build outputs, similar to the meson auto-sign wrapper for pandas. This would require intercepting every ELF output from cargo and signing it before cargo tries to execute it.
 
 ### Medium: Meson build with auto-sign wrapper (pandas)
 

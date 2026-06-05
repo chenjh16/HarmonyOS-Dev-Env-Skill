@@ -13,7 +13,7 @@
 | 纯 Python | wheel 中无 `.so`，无编译步骤 | requests, flask | 无——直接 pip install |
 | C/C++ 扩展 | `setup.py` 有 `ext_modules`，或 wheel 包含 `.so` | numpy, greenlet, cffi | 中——设置 CC/CXX，签名 .so |
 | 混合依赖（C 库 + Python 绑定） | 需要外部 C 库 | pillow (libjpeg), lxml (libxml2) | 高——需先编译 C 依赖 |
-| Rust 扩展 (PyO3) | 有 `Cargo.toml`，使用 maturin | bcrypt, cryptography, orjson | 中高——Rust 工具链 + CC |
+| Rust 扩展 (PyO3) | 有 `Cargo.toml`，使用 maturin | pydantic-core, cryptography, rpds-py, tiktoken | 中高——Rust 工具链 + CC + 构建脚本签名 |
 | Meson 构建 | 有 `meson.build`，使用 meson-python | pandas, matplotlib | 高——自动签名 wrapper + mesonpy API |
 
 **快速判断**: 查看 PyPI 页面或 GitHub 仓库。如果有 `setup.py` 的 `Extension()` 调用、`Cargo.toml`，或 wheel 中有 `.so` 文件，就需要适配。
@@ -378,28 +378,94 @@ psutil 使用 `sys.platform.startswith("linux")` 来检测 Linux。HarmonyOS 返
 
 pip 的构建隔离会破坏 HarmonyOS 上的 maturin（不继承 CC/RUSTFLAGS）。直接用 maturin 构建 pydantic-core。
 
-1. 下载源码并解压
-2. 直接用 maturin 构建：`maturin build --release --interpreter $HOME/.local/bin/python3`
-3. 提取 wheel，签名 .so，重命名后缀：`.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
-4. 修复 WHEEL 文件的平台标签（将空格替换为下划线）
-5. 手动安装到 site-packages（pip 无法安装 HarmonyOS 标签的 wheel）
-6. 安装 pydantic 和 fastapi：`pip install pydantic fastapi --no-deps`
+**详细构建步骤：**
 
-**关键洞察**：maturin 生成 `.cpython-312.so` 后缀，但 HarmonyOS Python 期望 `.cpython-312-aarch64-linux-gnu.so`。必须在签名后重命名。另外 maturin wheel 文件名中的平台标签含空格——pip 会拒绝。需要手动安装。
+1. 下载 pydantic-core 源码：
+   ```bash
+   pip download pydantic-core --no-binary :all: --dest $HOME/Claude/tmpdir/pydantic-core-src
+   cd $HOME/Claude/tmpdir/pydantic-core-src
+   tar xf pydantic-core-*.tar.gz
+   cd pydantic-core-*
+   ```
 
-### 中等：Rust 序列化 maturin 直接构建（orjson）
+2. 签名 cargo 缓存中的构建脚本（HarmonyOS 要求签名 ELF 可执行文件）：
+   ```bash
+   find ~/.cargo/registry -name "build-script-build" -type f -exec \
+     /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+     -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec \
+     mv {}.signed {} \; -exec chmod +x {} \;
+   ```
 
-orjson 是高性能 JSON 序列化库，基于 Rust/PyO3 构建。构建模式与 pydantic-core 相同。
+3. 直接用 maturin 构建：
+   ```bash
+   RUSTFLAGS="-C linker=/data/service/hnp/bin/clang -C link-args=-B$HOME/Claude/lib/linker_wrapper" \
+     maturin build --release --interpreter $HOME/.local/bin/python3
+   ```
 
-1. 下载源码：`pip download orjson --no-binary :all:`
-2. 直接用 maturin 构建：`maturin build --release --interpreter $HOME/.local/bin/python3`
-3. 提取 wheel，签名 .so，重命名后缀：`.cpython-312.so` → `.cpython-312-aarch64-linux-gnu.so`
-4. 修复 WHEEL 文件的平台标签（将空格替换为下划线）
-5. 手动安装到 site-packages（pip 无法安装 HarmonyOS 标签的 wheel）
+4. 如果 cargo 构建因 "Permission denied" 失败（构建脚本未签名），签名后重试：
+   ```bash
+   find target/release/build -name "build-script-build" -type f -exec \
+     /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+     -inFile {} -outFile {}.signed -signAlg SHA256withECDSA \; -exec \
+     mv {}.signed {} \; -exec chmod +x {} \;
+   # 重试构建
+   RUSTFLAGS="-C linker=/data/service/hnp/bin/clang -C link-args=-B$HOME/Claude/lib/linker_wrapper" \
+     maturin build --release --interpreter $HOME/.local/bin/python3
+   ```
 
-**e2e 测试结果（7/7）**：基础序列化、datetime、numpy 数组、UTF-8、UUID、排序键+美化打印、性能对比。
+5. 提取 wheel 并修复文件：
+   ```bash
+   WHEEL_FILE=$(ls target/wheels/*.whl)
+   mkdir -p wheel_extract && cd wheel_extract
+   unzip ../$WHEEL_FILE
+   # 重命名 .so 后缀
+   mv pydantic_core/*.cpython-312.so pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so
+   # 签名 .so 文件
+   /data/service/hnp/bin/binary-sign-tool sign -selfSign 1 \
+     -inFile pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so \
+     -outFile pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.signed.so \
+     -signAlg SHA256withECDSA
+   mv pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.signed.so \
+      pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so
+   chmod +x pydantic_core/_pydantic_core.cpython-312-aarch64-linux-gnu.so
+   # 修复 WHEEL 平台标签（将空格替换为下划线）
+   sed -i 's/harmonyos aarch64/harmonyos_aarch64/g' pydantic_core-*.dist-info/WHEEL
+   ```
 
-**关键洞察**：与 pydantic-core 相同的 maturin 模式——.so 后缀重命名 + WHEEL 标签修复 + 手动安装。不需要额外的 C 依赖。
+6. 手动安装到 site-packages：
+   ```bash
+   cp -r pydantic_core/ $HOME/.local/lib/python3.12/site-packages/pydantic_core/
+   cp -r pydantic_core-*.dist-info/ $HOME/.local/lib/python3.12/site-packages/
+   ```
+
+7. 安装 pydantic 和 fastapi：
+   ```bash
+   pip install pydantic fastapi --no-deps
+   ```
+
+**e2e 测试结果（5/5）**：BaseModel 创建、Field 验证 (gt=0 约束)、Optional 字段 (None 默认值)、model_dump_json 序列化、model_validate 反序列化。
+
+**关键洞察**：
+- maturin 生成 `.cpython-312.so` 后缀，但 HarmonyOS Python 期望 `.cpython-312-aarch64-linux-gnu.so`。必须在签名后重命名。
+- maturin wheel 文件名中的平台标签含空格——pip 会拒绝。需要手动安装。
+- Cargo 构建脚本（ELF 可执行文件）必须在 HarmonyOS 上签名才能执行。需要签名 cargo 缓存中的脚本和 `target/release/build/` 中新建的脚本。
+- **注意**：某些 Rust/PyO3 包（如 orjson）的构建脚本每次都会被 cargo 重建，造成递归签名依赖。pydantic-core 的构建脚本可以签名后重复使用。
+
+### 无法构建：Rust 序列化 maturin 构建脚本签名循环（orjson、tokenizers）
+
+orjson 和 tokenizers 是 Rust/PyO3 包，由于递归签名依赖问题，**无法在 HarmonyOS 上构建**。
+
+**问题**：maturin 的 `cargo build` 创建构建脚本（ELF 可执行文件），在 HarmonyOS 上必须签名才能执行。然而 cargo 每次运行时会重建这些构建脚本，创建新的未签名可执行文件。这导致循环依赖：
+1. 运行 `maturin build` → cargo 创建构建脚本 → 脚本未签名 → "Permission denied" → 构建失败
+2. 签名构建脚本 → 重试构建 → cargo 重建部分构建脚本 → 新脚本未签名 → "Permission denied" → 构建再次失败
+
+**为什么 pydantic-core 能工作但 orjson 不能**：pydantic-core 的构建脚本可以签名后在 cargo 重建时重复使用。orjson/tokenizers 的构建脚本每次都被 cargo 重建，使签名过程无限循环。
+
+**替代方案**：使用纯 Python 或 C 扩展的替代包：
+- 替代 orjson：使用 `msgpack`（C 扩展，可用）、`ijson`（纯 Python，可用）或 `toml`（纯 Python，可用）
+- 替代 tokenizers：使用 `tiktoken`（Rust/PyO3，pip 直接安装可用——无构建脚本签名问题）
+
+**可能的方案（未测试）**：可以创建类似 pandas 的 meson 自动签名包装器的 cargo 包装器，自动签名所有构建输出。这需要拦截 cargo 的每个 ELF 输出并在 cargo 执行前签名。
 
 ### 中等：Meson 构建自动签名包装器（pandas）
 

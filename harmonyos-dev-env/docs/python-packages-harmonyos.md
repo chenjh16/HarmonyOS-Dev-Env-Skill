@@ -163,11 +163,11 @@
 
 ### Data/Validation (All PASS)
 
-| Package | Version | Test |
-|---------|---------|------|
-| pydantic v2 | 2.13.4 | BaseModel, model_dump_json, validation all work |
-| fastapi | 0.136.3 | FastAPI(), route definition works |
-| pandas | 3.0.3 | DataFrame, Series, groupby, date_range all work |
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| pydantic v2 | 2.13.4 | BaseModel creation, Field validation (gt=0), Optional fields, model_dump_json serialization, model_validate deserialization — 5/5 e2e tests | Rust/PyO3/maturin build (pydantic-core), sign .so + rename suffix to `.cpython-312-aarch64-linux-gnu.so`, then `pip install pydantic --no-deps` |
+| fastapi | 0.136.3 | FastAPI(), route definition works | Depends on pydantic v2 — install pydantic-core first, then `pip install fastapi --no-deps` |
+| pandas | 3.0.3 | DataFrame, Series, groupby, date_range all work | Meson build with auto-sign wrapper, 45 .so files need sign + rename |
 
 ### Data Visualization (All PASS)
 

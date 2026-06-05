@@ -163,11 +163,11 @@
 
 ### 数据/验证（全部通过）
 
-| 软件包 | 版本 | 测试 |
-|---------|---------|------|
-| pydantic v2 | 2.13.4 | BaseModel、model_dump_json、验证全部正常 |
-| fastapi | 0.136.3 | FastAPI()、路由定义正常 |
-| pandas | 3.0.3 | DataFrame、Series、groupby、date_range 全部正常 |
+| 软件包 | 版本 | 测试 | 备注 |
+|---------|---------|------|-------|
+| pydantic v2 | 2.13.4 | BaseModel 创建、Field 验证 (gt=0)、Optional 字段、model_dump_json 序列化、model_validate 反序列化 — 5/5 e2e 测试 | Rust/PyO3/maturin 构建 (pydantic-core)，签名 .so + 重命名后缀为 `.cpython-312-aarch64-linux-gnu.so`，然后 `pip install pydantic --no-deps` |
+| fastapi | 0.136.3 | FastAPI()、路由定义正常 | 依赖 pydantic v2 — 先安装 pydantic-core，然后 `pip install fastapi --no-deps` |
+| pandas | 3.0.3 | DataFrame、Series、groupby、date_range 全部正常 | Meson 构建 + 自动签名包装器，45 个 .so 文件需要签名 + 重命名 |
 
 ### 数据可视化（全部通过）
 
