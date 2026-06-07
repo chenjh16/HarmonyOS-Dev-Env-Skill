@@ -4,7 +4,7 @@
 
 ## 包兼容性概览
 
-**130/130 Python 包可用**，4 个无法构建（scipy、uvloop、polars、pynacl）。
+**164/164 Python 包可用**，14 个无法构建（详见 [packages-cannot-build.cn.md](packages-cannot-build.cn.md)）。
 
 | 类别 | 通过率 | 典型包 | 适配方法 |
 |------|--------|--------|----------|

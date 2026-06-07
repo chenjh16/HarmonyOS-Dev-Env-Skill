@@ -251,8 +251,126 @@
 | wcwidth | 0.7.0 | wcwidth('A')=1, wcswidth('你好')=4 works (pure Python) |
 | pydantic-settings | 2.14.1 | BaseSettings creation, env variable loading works (pure Python) |
 
+## Serialization/Job (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| joblib | 1.5.3 | Parallel, Memory caching, delayed, dump/load — 4/4 e2e | pure Python |
+| cloudpickle | 3.1.2 | serialize functions, lambda, classes — 4/4 e2e | pure Python |
+| dill | 0.4.1 | serialize closures, lambda, class instances — 4/4 e2e | pure Python |
+
+## File Watch (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| watchdog | 6.0.0 | Observer, file events — 3/3 e2e | pure Python |
+
+## Document Formats (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| openpyxl | 3.1.5 | Workbook create/save/load/formulas — 4/4 e2e | pure Python |
+| xlrd | 2.0.2 | read xls rows/columns/strings/numbers — 4/4 e2e | pure Python |
+| xlwt | 1.3.0 | create xls, write, styles, formulas, save — 5/5 e2e | pure Python |
+| python-docx | 1.2.0 | paragraphs, tables, styles, save — 5/5 e2e | pure Python (lxml dependency) |
+| odfpy | 1.4.1 | Text, Spreadsheet, styles — 3/3 e2e | pure Python |
+| reportlab | 4.5.1 | PDF generation, drawing, save — 4/4 e2e | pure Python (pillow dependency) |
+
+## Markup (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| markdown | 3.10.2 | headings/bold/code blocks/lists to HTML — 4/4 e2e | pure Python |
+
+## Testing/Quality (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| coverage | 7.14.1 | coverage run/report/html/API — 4/4 e2e | pure Python |
+| mock | 5.2.0 | MagicMock, patch, side_effect — 4/4 e2e | pure Python |
+| mypy | 2.1.0 | type checking, error reporting — 4/4 e2e | pure Python + Rust extension (librt) |
+| pylint | 4.0.5 | lint checking, error detection, config — 4/4 e2e | pure Python |
+
+## Config (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| omegaconf | 2.3.0 | create, merge, to_yaml, nested config — 4/4 e2e | pure Python |
+| hydra-core | 1.3.2 | DictConfig, OmegaConf.merge, ConfigStore — 3/3 e2e | pure Python |
+
+## Network/Address (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| netaddr | 1.3.0 | IPAddress, IPNetwork, CIDR, IPRange — 4/4 e2e | pure Python |
+
+## Network/DB (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| redis | 8.0.0 | Redis client, connection pool, command simulation — 5/5 e2e | pure Python |
+| pymongo | 4.17.0 | MongoClient, BSON, ObjectId — 3/3 e2e | pure Python |
+| asyncpg | 0.31.0 | types, connect, connection pool — 3/3 e2e | C extension: CC/CXX + sign .so + rename suffix |
+
+## CLI/TUI (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| rich_click | 1.9.8 | RichGroup, RichCommand — 3/3 e2e | pure Python |
+| textual | 8.2.7 | App creation, widgets — 3/3 e2e | pure Python |
+
+## Web/CORS (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| aiohttp_cors | 0.8.1 | CorsConfig, ResourceOptions — 3/3 e2e | pure Python |
+
+## Task Queue (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| celery | 5.6.3 | App, Task, broker config — 3/3 e2e | pure Python |
+
+## ML/Optimization (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| optuna | 4.9.0 | Study, optimization, best params — 3/3 e2e | pure Python |
+
+## ML/NLP Extended (Partial PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| langchain | 1.3.4 | message types, ChatPromptTemplate — 2/3 e2e | pure Python (missing uuid_utils) |
+| langchain-core | 1.4.1 | messages, serialization — 2/3 e2e | pure Python (missing uuid_utils) |
+
+## Image/IO (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| imageio | 2.37.3 | read/write PNG, array conversion, format — 5/5 e2e | pure Python (numpy/pillow backend) |
+
+## Audio (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| pydub | 0.25.1 | AudioSegment, WAV read/write, slicing — 5/5 e2e | pure Python (ffmpeg optional) |
+
+## Security/XML (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| defusedxml | 0.7.1 | safe XML parsing, entity restrictions — 3/3 e2e | pure Python |
+
+## Process/Daemon (All PASS)
+
+| Package | Version | Test | Notes |
+|---------|---------|------|-------|
+| daemonize | 2.5.0 | Daemon object, config — 3/3 e2e | pure Python |
+| supervisor | 4.3.0 | import, datatypes, ServerOptions — 3/3 e2e | pure Python |
+
 ## RPC/Thrift (All PASS)
 
-| Package | Version | Test |
+| Package | Version | Test | Notes |
 |---------|---------|------|-------|
-| thrift | 0.21.0 | TProtocol import works (pure Python) |
+| thrift | 0.21.0 | TProtocol import works | pure Python |

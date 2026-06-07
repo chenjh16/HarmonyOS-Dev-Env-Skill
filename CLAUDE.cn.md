@@ -122,7 +122,7 @@ HarmonyOS-Dev-Env-Skill/
 
 32. **orjson**: Rust/PyO3 JSON 库。使用 maturin 构建（rustc 自动签名封装器 + 预编译 yyjson.a）。8/8 e2e 测试（dumps、loads、UTF-8、datetime、numpy、dataclass、pretty print、sort keys）。
 
-33. **包计数**: 130/130 Python 包, 61 Node.js 包 (66 e2e 测试)
+33. **包计数**: 164/164 Python 包, 61 Node.js 包 (66 e2e 测试)
 
 34. **structlog/logAsyncioTasks 补丁**: asyncio.current_task() 在 HarmonyOS 上非异步上下文中调用会段错误。修复：修补 `logging/__init__.py`（logAsyncioTasks = False）并在 sitecustomize.py 中添加 `sys._logAsyncioTasks = False`。structlog 在此修复后正常工作（25.5.0, 8/8 e2e 测试）。
 
@@ -131,6 +131,8 @@ HarmonyOS-Dev-Env-Skill/
 36. **safetensors**: Rust/PyO3/maturin 构建，使用 rustc 自动签名包装器。abi3 wheel。签名 .so + 重命名后缀。与 PyTorch/transformers 正常配合。
 
 37. **transformers**: 纯 Python，使用 `pip install transformers --no-deps` 安装。需两个补丁：(1) `dependency_versions_table.py`: tokenizers 版本约束从 `<=0.23.0` 改为 `>=0.22.0`; (2) `finegrained_fp8.py`: `torch.float8_e8m0fnu` → `getattr(torch, "float8_e8m0fnu", torch.float8_e4m3fn)` 回退方案适配 PyTorch 2.5.1。8/8 e2e 测试。
+38. **第4轮新增包（34个）**: 32/34 全部通过，2/34 部分通过。纯Python：joblib, cloudpickle, dill, watchdog, openpyxl, xlrd, xlwt, python-docx, odfpy, reportlab, markdown, coverage, mock, pylint, omegaconf, hydra-core, netaddr, redis, pymongo, rich_click, textual, aiohttp_cors, celery, optuna, imageio, pydub, defusedxml, daemonize, supervisor, langchain (2/3), langchain-core (2/3). C扩展：asyncpg (CC/CXX + 签名 + 后缀重命名, 3/3 e2e). Rust+Python：mypy (librt Rust扩展). 部分功能：langchain/langchain-core 缺 uuid_utils (maturin Rust/PyO3).
+39. **无法构建的包（14个）**: scipy (Fortran), uvloop (libuv), polars (cargo), pynacl (cffi冲突), grpcio (C++构建错误), h5py (需HDF5), pyarrow (C++构建错误), scikit-learn (构建依赖), xgboost (构建错误), lightgbm (构建错误), numcodecs (构建错误), numexpr (构建错误), psycopg2/psycopg (需libpq), soundfile (需libsndfile).
 
 ## 相关文档
 

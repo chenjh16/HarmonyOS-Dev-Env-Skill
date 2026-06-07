@@ -251,8 +251,126 @@
 | wcwidth | 0.7.0 | wcwidth('A')=1, wcswidth('你好')=4 正常工作（纯 Python） |
 | pydantic-settings | 2.14.1 | BaseSettings 创建, 环境变量加载正常工作（纯 Python） |
 
+## 序列化/作业（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| joblib | 1.5.3 | Parallel, Memory缓存, delayed, dump/load — 4/4 e2e | 纯 Python |
+| cloudpickle | 3.1.2 | 序列化函数/lambda/类 — 4/4 e2e | 纯 Python |
+| dill | 0.4.1 | 序列化闭包/lambda/类实例 — 4/4 e2e | 纯 Python |
+
+## 文件监控（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| watchdog | 6.0.0 | Observer, 文件事件 — 3/3 e2e | 纯 Python |
+
+## 文档格式（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| openpyxl | 3.1.5 | Workbook创建/保存/加载/公式 — 4/4 e2e | 纯 Python |
+| xlrd | 2.0.2 | 读取xls行列/字符串/数值 — 4/4 e2e | 纯 Python |
+| xlwt | 1.3.0 | 创建xls/写入/样式/公式/保存 — 5/5 e2e | 纯 Python |
+| python-docx | 1.2.0 | 段落/表格/样式/保存 — 5/5 e2e | 纯 Python（lxml依赖） |
+| odfpy | 1.4.1 | Text/Spreadsheet/样式 — 3/3 e2e | 纯 Python |
+| reportlab | 4.5.1 | PDF生成/绘图/保存 — 4/4 e2e | 纯 Python（pillow依赖） |
+
+## 标记语言（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| markdown | 3.10.2 | 标题/加粗/代码块/列表转HTML — 4/4 e2e | 纯 Python |
+
+## 测试/质量（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| coverage | 7.14.1 | coverage run/report/html/API — 4/4 e2e | 纯 Python |
+| mock | 5.2.0 | MagicMock, patch, side_effect — 4/4 e2e | 纯 Python |
+| mypy | 2.1.0 | 类型检查/错误报告 — 4/4 e2e | 纯 Python + Rust扩展(librt) |
+| pylint | 4.0.5 | lint检查/错误检测/配置 — 4/4 e2e | 纯 Python |
+
+## 配置（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| omegaconf | 2.3.0 | create/merge/to_yaml/嵌套配置 — 4/4 e2e | 纯 Python |
+| hydra-core | 1.3.2 | DictConfig/OmegaConf.merge/ConfigStore — 3/3 e2e | 纯 Python |
+
+## 网络/地址（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| netaddr | 1.3.0 | IPAddress/IPNetwork/CIDR/IPRange — 4/4 e2e | 纯 Python |
+
+## 网络/数据库（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| redis | 8.0.0 | Redis客户端/连接池/命令模拟 — 5/5 e2e | 纯 Python |
+| pymongo | 4.17.0 | MongoClient/BSON/ObjectId — 3/3 e2e | 纯 Python |
+| asyncpg | 0.31.0 | 类型/connect/连接池 — 3/3 e2e | C扩展：CC/CXX + 签名 .so + 后缀重命名 |
+
+## CLI/TUI（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| rich_click | 1.9.8 | RichGroup/RichCommand — 3/3 e2e | 纯 Python |
+| textual | 8.2.7 | App创建/控件 — 3/3 e2e | 纯 Python |
+
+## Web/CORS（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| aiohttp_cors | 0.8.1 | CorsConfig/ResourceOptions — 3/3 e2e | 纯 Python |
+
+## 任务队列（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| celery | 5.6.3 | App/Task/broker配置 — 3/3 e2e | 纯 Python |
+
+## ML/优化（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| optuna | 4.9.0 | Study/优化/best params — 3/3 e2e | 纯 Python |
+
+## ML/NLP扩展（部分通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| langchain | 1.3.4 | 消息类型/ChatPromptTemplate — 2/3 e2e | 纯 Python（缺uuid_utils） |
+| langchain-core | 1.4.1 | 消息/序列化 — 2/3 e2e | 纯 Python（缺uuid_utils） |
+
+## 图像/IO（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| imageio | 2.37.3 | 读写PNG/数组转换/格式 — 5/5 e2e | 纯 Python（numpy/pillow后端） |
+
+## 音频（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| pydub | 0.25.1 | AudioSegment/WAV读写/切片 — 5/5 e2e | 纯 Python（ffmpeg可选） |
+
+## 安全/XML（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| defusedxml | 0.7.1 | 安全XML解析/实体限制 — 3/3 e2e | 纯 Python |
+
+## 进程/守护（全部通过）
+
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| daemonize | 2.5.0 | Daemon对象/配置 — 3/3 e2e | 纯 Python |
+| supervisor | 4.3.0 | 导入/datatypes/ServerOptions — 3/3 e2e | 纯 Python |
+
 ## RPC/Thrift（全部通过）
 
-| 包 | 版本 | 测试 |
-|---------|---------|------|
-| thrift | 0.21.0 | TProtocol import 正常工作（纯 Python） |
+| 包 | 版本 | 测试 | 说明 |
+|---------|---------|------|-------|
+| thrift | 0.21.0 | TProtocol import 正常工作 | 纯 Python |

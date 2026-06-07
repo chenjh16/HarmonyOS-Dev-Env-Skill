@@ -5,7 +5,7 @@
 - Python: `$HOME/.local/bin/python3` (3.12.8)
 - pip: 24.3.1
 - Platform: HarmonyOS HongMeng Kernel 1.12.0, aarch64
-- Test date: 2026-05-30 (Updated)
+- Test date: 2026-06-07 (Updated)
 
 ## Results Summary
 
@@ -24,6 +24,23 @@
 | Security | 8/8 | 0 | itsdangerous, blinker, bcrypt, cryptography, cffi 2.0.0, hiredis, passlib, pycryptodome |
 | Database | 1/1 | 0 | sqlalchemy (with greenlet) |
 | Serialization | 11/11 | 0 | msgpack, lz4, zstd, cbor2, ruamel.yaml, ijson, toml, orjson, python-rapidjson, simplejson, ujson |
+| Serialization/Job | 3/3 | 0 | joblib, cloudpickle, dill |
+| File Watch | 1/1 | 0 | watchdog |
+| Document Formats | 6/6 | 0 | openpyxl, xlrd, xlwt, python-docx, odfpy, reportlab |
+| Markup | 1/1 | 0 | markdown |
+| Testing/Quality | 4/4 | 0 | coverage, mock, mypy, pylint |
+| Config | 2/2 | 0 | omegaconf, hydra-core |
+| Network/Address | 1/1 | 0 | netaddr |
+| Network/DB | 3/3 | 0 | redis, pymongo, asyncpg |
+| CLI/TUI | 2/2 | 0 | rich_click, textual |
+| Web/CORS | 1/1 | 0 | aiohttp_cors |
+| Task Queue | 1/1 | 0 | celery |
+| ML/Optimization | 1/1 | 0 | optuna |
+| ML/NLP Extended | 2/2 | 0 | langchain (2/3 e2e), langchain-core (2/3 e2e) — missing uuid_utils |
+| Image/IO | 1/1 | 0 | imageio |
+| Audio | 1/1 | 0 | pydub |
+| Security/XML | 1/1 | 0 | defusedxml |
+| Process/Daemon | 2/2 | 0 | daemonize, supervisor |
 | RPC/Thrift | 1/1 | 0 | thrift 0.21.0 (pure Python) |
 | Build Tools | 4/4 | 0 | setuptools, wheel, cython, packaging |
 | Logging | 2/2 | 0 | loguru, structlog |
@@ -44,19 +61,19 @@
 | Infrastructure | 1/1 | 0 | docker |
 | MCP/AI SDK | 3/3 | 0 | mcp 1.27.1, rpds-py 2026.5.1, tiktoken 0.13.0 |
 | ML/NLP | 3/3 | 0 | tokenizers 0.23.1, safetensors 0.7.0, transformers 5.10.2 |
-| **Total (working)** | **130/130** | **0** | All tested packages work |
-| **Total (cannot build)** | — | **4** | scipy, uvloop, polars, pynacl |
+| **Total (working)** | **164/164** | **0** | All tested packages work |
+| **Total (cannot build)** | — | **14** | grpcio, h5py, pyarrow, scikit-learn, xgboost, lightgbm, numcodecs, numexpr, psycopg, psycopg2, soundfile, zarr (partial), scipy, uvloop |
 
 ## Package Compatibility Categories
 
 | Category | Works | Example | Notes |
 |----------|-------|---------|-------|
-| Pure Python | 100% | requests, flask, jinja2, django, httpx, rich, pytest, pyparsing, toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson, autopage, starlette, sse-starlette, httpx_sse, jsonschema, jsonschema-specifications, referencing, pydantic-settings, simplejson, autopep8, isort, structlog | pip install directly |
+| Pure Python | 100% | requests, flask, jinja2, django, httpx, rich, pytest, pyparsing, toml, python-dateutil, aiofiles, loguru, docutils, pygments, passlib, python-dotenv, distro, packaging, arrow, schedule, tenacity, python-multipart, wcwidth, pyrsistent, ijson, autopage, starlette, sse-starlette, httpx_sse, jsonschema, jsonschema-specifications, referencing, pydantic-settings, simplejson, autopep8, isort, structlog, joblib, cloudpickle, dill, watchdog, openpyxl, xlrd, xlwt, python-docx, odfpy, reportlab, markdown, coverage, mock, pylint, omegaconf, hydra-core, netaddr, redis, pymongo, rich_click, textual, aiohttp_cors, celery, optuna, langchain, langchain-core, imageio, pydub, defusedxml, daemonize, supervisor | pip install directly |
 | NumPy-based | 100% | numpy, after signing | Need wheel rename + .so signing |
 | Image processing | 100% | pillow | Compiled libjpeg/libpng from source |
 | XML parsing | 100% | lxml | Compiled libxml2/libxslt from source |
 | Data Visualization | 100% | matplotlib, contourpy, kiwisolver | mesonpy build + sign .so + libc++_shared.so patchelf + suffix rename |
-| C/C++ extensions | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver, hiredis, lz4, zstd, cbor2, msgpack, cchardet, pycryptodome, charset_normalizer, wrapt, python-rapidjson, ujson, Levenshtein, rapidfuzz, xxhash, cytoolz | Set CC/CXX env; C++ extensions need libc++_shared.so patchelf + suffix rename; psutil needs sockaddr_storage patch; wrapt is now pure Python wheel |
+| C/C++ extensions | 100% | bcrypt, greenlet, psutil, contourpy, kiwisolver, hiredis, lz4, zstd, cbor2, msgpack, cchardet, pycryptodome, charset_normalizer, wrapt, python-rapidjson, ujson, Levenshtein, rapidfuzz, xxhash, cytoolz, asyncpg | Set CC/CXX env; C++ extensions need libc++_shared.so patchelf + suffix rename; psutil needs sockaddr_storage patch; wrapt is now pure Python wheel; asyncpg: CC/CXX + sign .so + rename suffix |
 | Rust-based | 100% | cryptography, pydantic-core, rpds-py, tiktoken, orjson, tokenizers, safetensors | Need CC env + Rust toolchain; maturin direct build (not pip); tiktoken pip install works directly; orjson needs rustc auto-sign wrapper + pre-compiled yyjson.a; tokenizers needs fancy-regex feature; safetensors simple maturin build |
 | Pydantic v2 + fastapi | 100% | pydantic 2.13, fastapi 0.136 | Manual pydantic-core build + .so rename + signing |
 | Meson-based | 100% | pandas 3.0.3, matplotlib 3.10.3 | Auto-sign clang wrapper + mesonpy API build + .so sign+rename; matplotlib also needs libc++_shared.so |

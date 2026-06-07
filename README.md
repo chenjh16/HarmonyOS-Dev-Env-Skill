@@ -320,7 +320,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [Claude Code 适配](harmonyos-dev-env/docs/claude-code-harmonyos.cn.md) | AI 编程助手、npm 安装、SSH V8 修复 |
 | [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.cn.md) | Node.js 安装、TLS/V8 问题 |
 | [Python 环境](harmonyos-dev-env/docs/python-harmonyos.cn.md) | Python 3.12.8、pip、numpy、扩展模块 |
-| [Python 包适配](harmonyos-dev-env/docs/python-adaptation/index.cn.md) | 130/130 包兼容性总览（渐进式披露） |
+| [Python 包适配](harmonyos-dev-env/docs/python-adaptation/index.cn.md) | 164/164 包兼容性总览（渐进式披露） |
 | [Python 扩展适配](harmonyos-dev-env/docs/python-adaptation/extension-guide.cn.md) | C/Rust/C++/Meson 包通用适配方法论 |
 | [Rust 适配](harmonyos-dev-env/docs/rust-harmonyos.cn.md) | Rust 1.95.0、cargo、FFI |
 | [PyTorch 适配](harmonyos-dev-env/docs/pytorch-harmonyos.cn.md) | PyTorch v2.5.1、15/15 测试、LAPACK |
@@ -651,7 +651,7 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [Claude Code](harmonyos-dev-env/docs/claude-code-harmonyos.md) | AI assistant, npm install, SSH V8 fix |
 | [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.md) | Node.js setup, TLS/V8, 61 packages, 66 e2e tests |
 | [Python Environment](harmonyos-dev-env/docs/python-harmonyos.md) | Python 3.12.8, pip, numpy, extensions |
-| [Python Packages](harmonyos-dev-env/docs/python-adaptation/index.md) | 130/130 packages compatibility overview (progressive disclosure) |
+| [Python Packages](harmonyos-dev-env/docs/python-adaptation/index.md) | 164/164 packages compatibility overview (progressive disclosure) |
 | [Python Extension Adaptation](harmonyos-dev-env/docs/python-adaptation/extension-guide.md) | Methodology for adapting C/Rust/C++/Meson Python packages |
 | [Rust](harmonyos-dev-env/docs/rust-harmonyos.md) | Rust 1.95.0, cargo, FFI |
 | [PyTorch](harmonyos-dev-env/docs/pytorch-harmonyos.md) | PyTorch v2.5.1, 15/15 tests, LAPACK |

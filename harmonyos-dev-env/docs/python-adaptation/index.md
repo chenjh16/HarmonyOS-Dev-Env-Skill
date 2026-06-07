@@ -4,7 +4,7 @@
 
 ## Package Compatibility Overview
 
-**130/130 Python packages working**, 4 cannot build (scipy, uvloop, polars, pynacl).
+**164/164 Python packages working**, 14 cannot build (see [packages-cannot-build.md](packages-cannot-build.md) for details).
 
 | Category | Pass Rate | Typical Packages | Adaptation Method |
 |----------|-----------|------------------|-------------------|

@@ -157,7 +157,7 @@ Use the Read tool with the appropriate path. Available guides:
 | claude-code-harmonyos.md | AI programming assistant, npm package, SSH V8 crash workaround |
 | nodejs-harmonyos.md | **Node.js dlopen fix, native addon signing, libc++_shared.so patchelf, sharp WASM32, MCP SDK, 61 packages, 66 e2e tests** |
 | python-harmonyos.md | Python installation, configuration, numpy/pillow/lxml setup |
-| python-adaptation/index.md | 130 packages tested, progressive disclosure (package index, C/Rust/Meson/C++ extension solutions, extension guide) |
+| python-adaptation/index.md | 164 packages tested, progressive disclosure (package index, C/Rust/Meson/C++ extension solutions, extension guide) |
 | llama-cpp-harmonyos.md | Build, NEON/SVE optimization, ModelScope model download |
 | rust-harmonyos.md | Toolchain install, signing, cargo config, FFI interop |
 | eza-harmonyos.md | Rust build, SELinux/hmdfs attributes |

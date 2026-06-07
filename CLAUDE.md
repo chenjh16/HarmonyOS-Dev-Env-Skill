@@ -123,7 +123,7 @@ When documenting tool adaptations, always cover:
 
 32. **orjson**: Rust/PyO3 JSON library. Build with maturin (rustc auto-sign wrapper + pre-compiled yyjson.a). 8/8 e2e tests (dumps, loads, UTF-8, datetime, numpy, dataclass, pretty print, sort keys).
 
-33. **Package counts**: 130/130 Python packages, 61 Node.js packages (66 e2e tests)
+33. **Package counts**: 164/164 Python packages, 61 Node.js packages (66 e2e tests)
 
 34. **structlog/logAsyncioTasks patch**: asyncio.current_task() segfaults outside async context on HarmonyOS. Fix: patch `logging/__init__.py` (logAsyncioTasks = False) and add `sys._logAsyncioTasks = False` in sitecustomize.py. structlog now works with this fix (25.5.0, 8/8 e2e).
 
@@ -132,6 +132,8 @@ When documenting tool adaptations, always cover:
 36. **safetensors**: Rust/PyO3/maturin build with rustc auto-sign wrapper. abi3 wheel. Sign .so + rename suffix. Works with PyTorch/transformers.
 
 37. **transformers**: pure Python, install with `pip install transformers --no-deps`. Two patches needed: (1) `dependency_versions_table.py`: tokenizers version constraint from `<=0.23.0` to `>=0.22.0`; (2) `finegrained_fp8.py`: `torch.float8_e8m0fnu` → `getattr(torch, "float8_e8m0fnu", torch.float8_e4m3fn)` fallback for PyTorch 2.5.1. 8/8 e2e tests.
+38. **Round 4 packages (34 new)**: 32/34 fully pass, 2/34 partial. Pure Python: joblib, cloudpickle, dill, watchdog, openpyxl, xlrd, xlwt, python-docx, odfpy, reportlab, markdown, coverage, mock, pylint, omegaconf, hydra-core, netaddr, redis, pymongo, rich_click, textual, aiohttp_cors, celery, optuna, imageio, pydub, defusedxml, daemonize, supervisor, langchain (2/3), langchain-core (2/3). C extension: asyncpg (CC/CXX + sign + rename suffix, 3/3 e2e). Rust+Python: mypy (librt Rust extension). Partial: langchain/langchain-core missing uuid_utils (maturin Rust/PyO3).
+39. **Cannot build packages (14)**: scipy (Fortran), uvloop (libuv), polars (cargo), pynacl (cffi conflict), grpcio (C++ build error), h5py (needs HDF5), pyarrow (C++ build error), scikit-learn (build deps), xgboost (build error), lightgbm (build error), numcodecs (build error), numexpr (build error), psycopg2/psycopg (needs libpq), soundfile (needs libsndfile).
 
 ## Related Documentation
 

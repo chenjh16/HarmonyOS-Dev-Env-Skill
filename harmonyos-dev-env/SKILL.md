@@ -83,7 +83,7 @@ Full build guides are in this skill's `docs/` directory. When the user asks abou
 
 - `docs/python-harmonyos.md` — Python 3.12.8 standalone build
 - `docs/python-adaptation/` — **Python package adaptation (progressive disclosure)**
-  - `index.md` — Overview: 130/130 packages, category summary, technique index
+  - `index.md` — Overview: 164/164 packages, category summary, technique index
   - `extension-guide.md` — Step-by-step methodology (5 phases) for C/Rust/C++/Meson extensions
   - `rustc-wrapper.md` — Rust/PyO3 build script signing (orjson, tokenizers, safetensors)
   - `meson-wrapper.md` — Meson auto-sign clang wrapper (pandas, matplotlib)

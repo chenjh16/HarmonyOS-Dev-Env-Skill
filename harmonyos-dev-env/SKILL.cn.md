@@ -83,7 +83,7 @@ always-enable: true
 
 - `docs/python-harmonyos.cn.md` — Python 3.12.8 独立构建
 - `docs/python-adaptation/` — **Python 包适配（渐进式披露）**
-  - `index.cn.md` — 总览：130/130 包，分类摘要，技术索引
+  - `index.cn.md` — 总览：164/164 包，分类摘要，技术索引
   - `extension-guide.cn.md` — C/Rust/C++/Meson 扩展适配的逐步方法论（5阶段）
   - `rustc-wrapper.cn.md` — Rust/PyO3 构建脚本签名（orjson, tokenizers, safetensors）
   - `meson-wrapper.cn.md` — Meson 自动签名 clang 封装器（pandas, matplotlib）
