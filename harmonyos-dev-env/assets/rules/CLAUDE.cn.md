@@ -79,7 +79,7 @@ set(CMAKE_C_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 ```
 - **Rust**: `rustc 1.95.0` (aarch64-unknown-linux-ohos) 位于 `$HOME/.rust/bin/`; `cargo 1.95.0` (musl) 同路径; 必须使用 `-C linker=/data/service/hnp/bin/clang`; 所有 ELF 二进制执行前必须代码签名
-- **Node.js**: v24.13.0; **关键问题**: HNP Node 二进制 (`/data/service/hnp/bin/node`) 没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：使用签名副本 `$HOME/.local/bin/node-harmonyos`（带 .codesign 段）；`$HOME/.local/bin` 必须在 PATH 中优先。原生 addon (bcrypt, better-sqlite3 等): 编译时设置 `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper"`，然后 `patchelf --add-needed libc++_shared.so <.node>` + `binary-sign-tool sign -selfSign 1`; 使用 `sign-node-addon.sh` 脚本自动化。Claude Code SSH 会话因 HarmonyOS PTY + V8 JIT 崩溃，需要 `node --jitless` + node-fetch polyfill。**29/29 端到端测试通过**（better-sqlite3, bcrypt, express, lodash, axios, dayjs, uuid, jsdom, ws, rxjs, socket.io, vitest, typescript, esbuild, prettier, eslint, 所有核心模块）
+- **Node.js**: v24.13.0; **关键问题**: HNP Node 二进制 (`/data/service/hnp/bin/node`) 没有 .codesign 段 → 内核阻止 `process.dlopen()` 加载用户空间 .node/.so 文件。修复：使用签名副本 `$HOME/.local/bin/node-harmonyos`（带 .codesign 段）；`$HOME/.local/bin` 必须在 PATH 中优先。原生 addon (bcrypt, better-sqlite3 等): 编译时设置 `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper"`，然后 `patchelf --add-needed libc++_shared.so <.node>` + `binary-sign-tool sign -selfSign 1`; 使用 `sign-node-addon.sh` 脚本自动化。Claude Code SSH 会话因 HarmonyOS PTY + V8 JIT 崩溃，需要 `node --jitless` + node-fetch polyfill。**61 包, 66 测试**（better-sqlite3, bcrypt, argon2, express, lodash, axios, dayjs, uuid, commander, dotenv, jsdom, ws, rxjs, socket.io, vitest, typescript, esbuild, prettier, eslint, MCP SDK, Anthropic SDK, koa, fastify, cheerio, winston, helmet, cors, nodemailer, node-cron, multer, body-parser, ramda, immutable, date-fns, zod, ajv, chalk@4, cli-table3, nanoid, slugify, debug, handlebars, pug, mocha, marked, ioredis, pg, jsonwebtoken, bcryptjs, mime-types, semver, glob, formidable, openai, execa + 14 个核心模块）
 - **llama.cpp**: 构建于 `$HOME/Claude/llama.cpp/build/bin/`; `llama-cli`, `llama-server`, `llama-quantize` 等可用
 - **eza**: v0.23.4 位于 `$HOME/Claude/eza-build/eza/target/release/`; 现代 `ls` 替代品，带颜色、图标、树视图
 - **bat**: v0.26.1 位于 `$HOME/Claude/bat-build/bat/target/release/`; `cat` 替代品，带语法高亮
@@ -140,6 +140,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 - **pip 镜像**: `pypi.tuna.tsinghua.edu.cn`
 - **扩展模块 (.so) 必须签名** 才能加载
 - **C/C++ 扩展包**: 安装前设置 `CC=/data/service/hnp/bin/clang` 和 `CXX=/data/service/hnp/bin/clang++`
+- **structlog/logAsyncioTasks 补丁**: `asyncio.current_task()` 在 HarmonyOS 上非异步上下文中调用会段错误。修复：修补 `logging/__init__.py`（`logAsyncioTasks = False`）并在 sitecustomize.py 中添加 `sys._logAsyncioTasks = False`。structlog 在此修复后正常工作（25.5.0, 8/8 e2e 测试）。
 
 详见 python-harmonyos.cn.md（位于 skill 的 `docs/` 目录）。
 
@@ -156,8 +157,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 | claude-code-harmonyos.cn.md | AI 编程助手、npm 包安装、SSH V8 崩溃解决方案 |
 | nodejs-harmonyos.cn.md | **Node.js dlopen 修复、原生 addon 签名、libc++_shared.so patchelf、sharp WASM32、61 包、66 测试** |
 | python-harmonyos.cn.md | 安装位置、配置、numpy/pillow/lxml 安装 |
-| python-packages-harmonyos.cn.md | 97 个包测试（cchardet、msgpack、pycryptodome、bcrypt、loguru、pygments、httpx、pytest、**mcp**、**rpds-py**、**tiktoken**、**lz4**、**zstd**、**hiredis** 均可用；scipy/uvloop/polars/orjson/tokenizers 无法构建），C/Rust/Meson 扩展解决方案 |
-| python-extension-adaptation.cn.md | **适配 C/Rust/C++/Meson Python 包的通用指南**（签名、patchelf、supplement.so、.so 后缀、meson 包装器、maturin 直接构建、psutil 补丁） |
+| python-adaptation/index.cn.md | 130 个包，渐进式披露（包索引、C/Rust/Meson/C++ 扩展解决方案、扩展指南） |
 | llama-cpp-harmonyos.cn.md | 构建、NEON/SVE 优化、ModelScope 模型下载 |
 | rust-harmonyos.cn.md | 工具链安装、签名、cargo 配置、FFI 互操作 |
 | eza-harmonyos.cn.md | Rust 项目编译、SELinux/hmdfs 属性显示 |
@@ -165,6 +165,7 @@ set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 | starship-harmonyos.cn.md | Rust 项目编译、errno 补丁、prompt 配置 |
 | mihomo-harmonyos.cn.md | Go 工具链、代理配置、GEOIP/GEOSITE 分流规则 |
 | pytorch-harmonyos.cn.md | PyTorch v2.5.1 编译、15个关键适配、15/15 测试全部通过、MNIST 训练 |
+| cryptography-harmonyos.cn.md | cryptography v48.0.0、libffi→cffi→maturin→OpenSSL→cryptography 依赖链、**12/12 e2e 测试** |
 | dropbear-harmonyos.cn.md | SSH 服务器/客户端、5个源码补丁、V8 JIT 崩溃解决方案 |
 | openssh-harmonyos.cn.md | OpenSSH 9.9p1 完整构建、16个源码补丁、scp/sftp/ssh-agent 全功能可用 |
 | code-signing.cn.md | 详细代码签名说明 |

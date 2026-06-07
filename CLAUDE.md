@@ -21,7 +21,7 @@ HarmonyOS-Dev-Env-Skill/
 │   │   ├── verify-env.sh     ← Environment verification
 │   │   ├── ssh-fetch-polyfill.js
 │   │   └── start-claude.sh
-│   ├── docs/                 ← 19 bilingual adaptation guides (*.md + *.cn.md)
+│   ├── docs/                 ← 25 bilingual adaptation guides (*.md + *.cn.md)
 │   ├── tools/                ← 11 tool build guides + install scripts
 │   └── assets/               ← Installation assets (not skill knowledge per se)
 │       ├── zshenv            ← Shell env template
@@ -119,7 +119,19 @@ When documenting tool adaptations, always cover:
 
 29. **tiktoken**: Rust/PyO3 BPE tokenizer for OpenAI models. pip install works, then sign .so, rename suffix.
 
-30. **Package counts**: 97/97 Python packages, 61 Node.js packages (66 e2e tests)
+31. **rustc auto-sign wrapper**: For Rust/PyO3 packages with cargo build scripts (orjson, etc.), build scripts are ELF executables needing signing, creating a signing loop. Fix: replace `$HOME/.rust/bin/rustc` with wrapper that auto-signs build script outputs after compilation (move real rustc to `rustc.real`). Wrapper must `chmod +x` signed files. Also handles `-o` specified .so outputs. Restore original rustc after build: `mv $HOME/.rust/bin/rustc.real $HOME/.rust/bin/rustc`. For orjson specifically: also pre-compile yyjson.c into libyyjson.a and remove cc crate from build-dependencies.
+
+32. **orjson**: Rust/PyO3 JSON library. Build with maturin (rustc auto-sign wrapper + pre-compiled yyjson.a). 8/8 e2e tests (dumps, loads, UTF-8, datetime, numpy, dataclass, pretty print, sort keys).
+
+33. **Package counts**: 130/130 Python packages, 61 Node.js packages (66 e2e tests)
+
+34. **structlog/logAsyncioTasks patch**: asyncio.current_task() segfaults outside async context on HarmonyOS. Fix: patch `logging/__init__.py` (logAsyncioTasks = False) and add `sys._logAsyncioTasks = False` in sitecustomize.py. structlog now works with this fix (25.5.0, 8/8 e2e).
+
+35. **tokenizers**: Rust/PyO3/maturin build with rustc auto-sign wrapper. Enable `fancy-regex` feature (replacing `onig` which doesn't compile on HarmonyOS). Build: `maturin build --release --interpreter python3 --features fancy-regex`. abi3 wheel. Sign .so + rename suffix. 10/10 e2e tests.
+
+36. **safetensors**: Rust/PyO3/maturin build with rustc auto-sign wrapper. abi3 wheel. Sign .so + rename suffix. Works with PyTorch/transformers.
+
+37. **transformers**: pure Python, install with `pip install transformers --no-deps`. Two patches needed: (1) `dependency_versions_table.py`: tokenizers version constraint from `<=0.23.0` to `>=0.22.0`; (2) `finegrained_fp8.py`: `torch.float8_e8m0fnu` → `getattr(torch, "float8_e8m0fnu", torch.float8_e4m3fn)` fallback for PyTorch 2.5.1. 8/8 e2e tests.
 
 ## Related Documentation
 
@@ -130,3 +142,5 @@ When documenting tool adaptations, always cover:
 - Code signing guide: `harmonyos-dev-env/docs/code-signing.md`
 - LD_LIBRARY_PATH: `harmonyos-dev-env/docs/ld-library-path.md`
 - OpenSSH adaptation: `harmonyos-dev-env/docs/openssh-harmonyos.md`
+- Python Package Adaptation (progressive disclosure): `harmonyos-dev-env/docs/python-adaptation/index.md`
+- Python Extension Module Guide: `harmonyos-dev-env/docs/python-adaptation/extension-guide.md`

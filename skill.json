@@ -25,7 +25,7 @@
       "build_guide": "harmonyos-dev-env/tools/python/build.md",
       "install_script": "harmonyos-dev-env/tools/python/install.sh",
       "install_dir": "$HOME/.local",
-      "features": ["pip", "extension modules", "numpy", "pillow", "lxml", "psutil", "pydantic v2", "pandas", "matplotlib", "httpx", "pytest", "mcp 1.27.1", "rpds-py", "tiktoken", "lz4", "zstd", "hiredis", "cbor2", "ruamel.yaml", "cattrs", "networkx", "cchardet", "msgpack", "pycryptodome", "bcrypt", "loguru", "pygments", "toml", "python-dateutil", "aiofiles", "docutils", "passlib", "python-dotenv", "distro", "packaging", "arrow", "schedule", "tenacity", "python-multipart", "wcwidth", "pyrsistent", "ijson", "charset-normalizer", "wrapt", "97/97 e2e tests"]
+      "features": ["pip", "extension modules", "numpy", "pillow", "lxml", "psutil", "pydantic v2", "pandas", "matplotlib", "httpx", "pytest", "mcp 1.27.1", "rpds-py", "tiktoken", "lz4", "zstd", "hiredis", "cbor2", "ruamel.yaml", "cattrs", "networkx", "cchardet", "msgpack", "pycryptodome", "bcrypt", "loguru", "pygments", "toml", "python-dateutil", "aiofiles", "docutils", "passlib", "python-dotenv", "distro", "packaging", "arrow", "schedule", "tenacity", "python-multipart", "wcwidth", "pyrsistent", "ijson", "charset-normalizer", "wrapt", "orjson", "starlette", "jsonschema", "pydantic-settings", "sse-starlette", "httpx_sse", "structlog", "Levenshtein", "rapidfuzz", "python-rapidjson", "xxhash", "cytoolz", "regex", "ujson", "simplejson", "autopep8", "isort", "cffi", "greenlet", "sympy", "flake8", "black", "tox", "invoke", "thrift", "multidict", "yarl", "frozenlist", "tokenizers", "safetensors", "transformers", "130/130 e2e tests"]
     },
     {
       "name": "nodejs",
@@ -242,17 +242,17 @@
     {
       "name": "psutil-sockaddr-storage",
       "description": "HarmonyOS SDK has struct sockaddr_storage in both sys/socket.h and linux/socket.h, causing redefinition error. Fix: #define guard before #include <linux/if.h>. Also patch LINUX detection to accept sys.platform.startswith('harmonyos')",
-      "guide": "harmonyos-dev-env/docs/python-extension-adaptation.md"
+      "guide": "harmonyos-dev-env/docs/python-adaptation/extension-guide.md"
     },
     {
       "name": "maturin-direct-build",
       "description": "pip build isolation breaks maturin on HarmonyOS (doesn't inherit CC/RUSTFLAGS). Build Rust/PyO3 packages directly with maturin build, then sign .so + rename suffix + manual install to site-packages",
-      "guide": "harmonyos-dev-env/docs/python-extension-adaptation.md"
+      "guide": "harmonyos-dev-env/docs/python-adaptation/extension-guide.md"
     },
     {
       "name": "meson-auto-sign-wrapper",
       "description": "Meson builds need to execute sanity check binaries during configuration. Create auto-sign clang wrapper that signs ALL ELF outputs (including PIE/DYN type). Use as CC in meson native.ini. Build with mesonpy Python API",
-      "guide": "harmonyos-dev-env/docs/python-extension-adaptation.md"
+      "guide": "harmonyos-dev-env/docs/python-adaptation/meson-wrapper.md"
     },
     {
       "name": "sharp-wasm32-fallback",
@@ -262,20 +262,35 @@
     {
       "name": "mcp-python-dependencies",
       "description": "Python MCP (mcp 1.27.1) requires rpds-py (Rust/PyO3, built via maturin) as dependency. Install rpds-py first (maturin build + sign .so + rename suffix), then pip install mcp --no-deps and install remaining deps (httpx_sse, pydantic-settings, python-dotenv, jsonschema, etc.) manually",
-      "guide": "harmonyos-dev-env/docs/python-packages-harmonyos.md"
+      "guide": "harmonyos-dev-env/docs/python-adaptation/packages-detailed.md"
     },
     {
       "name": "node-mcp-sdk-submodule-import",
       "description": "Node.js MCP SDK (@modelcontextprotocol/sdk) cannot be imported via top-level require. Must use submodule imports: require('@modelcontextprotocol/sdk/server/index.js') for Server, require('@modelcontextprotocol/sdk/server/stdio.js') for StdioServerTransport, require('@modelcontextprotocol/sdk/client/index.js') for Client. Requires capabilities declaration: { capabilities: { tools: {}, resources: {}, prompts: {} } }",
       "guide": "harmonyos-dev-env/docs/nodejs-harmonyos.md"
+    },
+    {
+      "name": "rustc-auto-sign-wrapper",
+      "description": "For Rust/PyO3 packages with build scripts (orjson, etc.), cargo build scripts are ELF executables needing signing, creating a signing loop. Fix: replace $HOME/.rust/bin/rustc with a wrapper that auto-signs build script outputs after compilation (move real rustc to rustc.real). Wrapper handles --crate-type bin and -o specified outputs. Must chmod +x signed files. Restore original rustc after build.",
+      "guide": "harmonyos-dev-env/docs/python-adaptation/rustc-wrapper.md"
+    },
+    {
+      "name": "asyncio-current-task-segfault",
+      "description": "asyncio.current_task() segfaults on HarmonyOS when called outside async context. Patch logging/__init__.py: logAsyncioTasks = False. Add sys._logAsyncioTasks = False in sitecustomize.py.",
+      "guide": "harmonyos-dev-env/docs/python-adaptation/extension-guide.md"
     }
   ],
   "documentation": [
     {"name": "Claude Code", "path": "harmonyos-dev-env/docs/claude-code-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/claude-code-harmonyos.cn.md"},
     {"name": "Node.js (DevNode-OH)", "path": "harmonyos-dev-env/docs/nodejs-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/nodejs-harmonyos.cn.md"},
     {"name": "Python Environment", "path": "harmonyos-dev-env/docs/python-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-harmonyos.cn.md"},
-    {"name": "Python Packages", "path": "harmonyos-dev-env/docs/python-packages-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/python-packages-harmonyos.cn.md"},
-    {"name": "Python Extension Adaptation", "path": "harmonyos-dev-env/docs/python-extension-adaptation.md", "path_cn": "harmonyos-dev-env/docs/python-extension-adaptation.cn.md"},
+    {"name": "Python Packages Overview", "path": "harmonyos-dev-env/docs/python-adaptation/index.md", "path_cn": "harmonyos-dev-env/docs/python-adaptation/index.cn.md"},
+    {"name": "Extension Module Adaptation Guide", "path": "harmonyos-dev-env/docs/python-adaptation/extension-guide.md", "path_cn": "harmonyos-dev-env/docs/python-adaptation/extension-guide.cn.md"},
+    {"name": "Rustc Auto-Sign Wrapper", "path": "harmonyos-dev-env/docs/python-adaptation/rustc-wrapper.md", "path_cn": "harmonyos-dev-env/docs/python-adaptation/rustc-wrapper.cn.md"},
+    {"name": "Meson Auto-Sign Wrapper", "path": "harmonyos-dev-env/docs/python-adaptation/meson-wrapper.md", "path_cn": "harmonyos-dev-env/docs/python-adaptation/meson-wrapper.cn.md"},
+    {"name": "Package Compatibility Overview", "path": "harmonyos-dev-env/docs/python-adaptation/packages-overview.md", "path_cn": "harmonyos-dev-env/docs/python-adaptation/packages-overview.cn.md"},
+    {"name": "Per-Package Adaptation Notes", "path": "harmonyos-dev-env/docs/python-adaptation/packages-detailed.md", "path_cn": "harmonyos-dev-env/docs/python-adaptation/packages-detailed.cn.md"},
+    {"name": "Cannot-Build Packages Analysis", "path": "harmonyos-dev-env/docs/python-adaptation/packages-cannot-build.md", "path_cn": "harmonyos-dev-env/docs/python-adaptation/packages-cannot-build.cn.md"},
     {"name": "cryptography", "path": "harmonyos-dev-env/docs/cryptography-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/cryptography-harmonyos.cn.md"},
     {"name": "llama.cpp", "path": "harmonyos-dev-env/docs/llama-cpp-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md"},
     {"name": "Rust", "path": "harmonyos-dev-env/docs/rust-harmonyos.md", "path_cn": "harmonyos-dev-env/docs/rust-harmonyos.cn.md"},

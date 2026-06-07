@@ -21,7 +21,7 @@ HarmonyOS-Dev-Env-Skill/
 │   │   ├── verify-env.sh     ← 环境验证
 │   │   ├── ssh-fetch-polyfill.js
 │   │   └── start-claude.sh
-│   ├── docs/                 ← 19 组双语适配文档（*.md + *.cn.md）
+│   ├── docs/                 ← 25 组双语适配文档（*.md + *.cn.md）
 │   ├── tools/                ← 11 工具构建指南 + install.sh
 │   └── assets/               ← 安装辅助资产（非 skill 知识本体）
 │       ├── zshenv            ← Shell 环境配置模板
@@ -118,7 +118,19 @@ HarmonyOS-Dev-Env-Skill/
 27. **Python MCP 包**: mcp 1.27.1 需要 rpds-py (通过 maturin 构建), 然后 pip install mcp --no-deps
 28. **Node.js MCP SDK**: @modelcontextprotocol/sdk 是 ESM-only 包，必须使用子模块导入如 require('@modelcontextprotocol/sdk/server/index.js')
 29. **tiktoken**: Rust/PyO3 BPE 分词器，pip 安装后签名 .so 并重命名后缀
-30. **包计数**: 97/97 Python 包, 61 Node.js 包 (66 e2e 测试)
+31. **rustc 自动签名封装器**: 对于带 cargo 构建脚本的 Rust/PyO3 包（orjson 等），构建脚本是需要签名的 ELF 可执行文件，形成签名循环。修复：将 `$HOME/.rust/bin/rustc` 替换为封装器，编译后自动签名构建脚本输出（将真实 rustc 移到 `rustc.real`）。封装器必须对签名文件 `chmod +x`。还处理 `-o` 指定的 .so 输出。构建完成后恢复原始 rustc：`mv $HOME/.rust/bin/rustc.real $HOME/.rust/bin/rustc`。对于 orjson：还需预编译 yyjson.c 为 libyyjson.a 并从 build-dependencies 移除 cc crate。
+
+32. **orjson**: Rust/PyO3 JSON 库。使用 maturin 构建（rustc 自动签名封装器 + 预编译 yyjson.a）。8/8 e2e 测试（dumps、loads、UTF-8、datetime、numpy、dataclass、pretty print、sort keys）。
+
+33. **包计数**: 130/130 Python 包, 61 Node.js 包 (66 e2e 测试)
+
+34. **structlog/logAsyncioTasks 补丁**: asyncio.current_task() 在 HarmonyOS 上非异步上下文中调用会段错误。修复：修补 `logging/__init__.py`（logAsyncioTasks = False）并在 sitecustomize.py 中添加 `sys._logAsyncioTasks = False`。structlog 在此修复后正常工作（25.5.0, 8/8 e2e 测试）。
+
+35. **tokenizers**: Rust/PyO3/maturin 构建，使用 rustc 自动签名包装器。启用 `fancy-regex` 特性（替换无法在 HarmonyOS 上编译的 `onig`）。构建命令：`maturin build --release --interpreter python3 --features fancy-regex`。abi3 wheel。签名 .so + 重命名后缀。10/10 e2e 测试。
+
+36. **safetensors**: Rust/PyO3/maturin 构建，使用 rustc 自动签名包装器。abi3 wheel。签名 .so + 重命名后缀。与 PyTorch/transformers 正常配合。
+
+37. **transformers**: 纯 Python，使用 `pip install transformers --no-deps` 安装。需两个补丁：(1) `dependency_versions_table.py`: tokenizers 版本约束从 `<=0.23.0` 改为 `>=0.22.0`; (2) `finegrained_fp8.py`: `torch.float8_e8m0fnu` → `getattr(torch, "float8_e8m0fnu", torch.float8_e4m3fn)` 回退方案适配 PyTorch 2.5.1。8/8 e2e 测试。
 
 ## 相关文档
 
@@ -129,3 +141,5 @@ HarmonyOS-Dev-Env-Skill/
 - 代码签名指南: `harmonyos-dev-env/docs/code-signing.cn.md`
 - LD_LIBRARY_PATH: `harmonyos-dev-env/docs/ld-library-path.cn.md`
 - OpenSSH 适配指南: `harmonyos-dev-env/docs/openssh-harmonyos.cn.md`
+- Python 包适配指南（渐进式披露）: `harmonyos-dev-env/docs/python-adaptation/index.cn.md`
+- Python 扩展模块指南: `harmonyos-dev-env/docs/python-adaptation/extension-guide.cn.md`

@@ -274,7 +274,7 @@ Before running Node.js applications that download binaries:
 
 - [Code Signing](code-signing.md) — Detailed code signing instructions
 - [LD_LIBRARY_PATH](ld-library-path.md) — Dynamic library path configuration
-- [Python Extension Adaptation](python-extension-adaptation.md) — General .so adaptation patterns
+- [Python Extension Adaptation](python-adaptation/extension-guide.md) — General .so adaptation patterns
 - [Dropbear SSH](dropbear-harmonyos.md) — SSH server with V8 crash workaround
 - [SELinux Analysis](selinux-analysis.md) — HarmonyOS security enforcement analysis
 

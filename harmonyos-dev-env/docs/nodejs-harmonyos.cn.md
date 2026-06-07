@@ -274,7 +274,7 @@ node --jitless your-app.js
 
 - [代码签名](code-signing.cn.md) — 详细代码签名说明
 - [LD_LIBRARY_PATH](ld-library-path.cn.md) — 动态库路径配置
-- [Python 扩展适配](python-extension-adaptation.cn.md) — 通用 .so 适配模式
+- [Python 扩展适配](python-adaptation/extension-guide.cn.md) — 通用 .so 适配模式
 - [Dropbear SSH](dropbear-harmonyos.cn.md) — SSH 服务器与 V8 崩溃解决方案
 - [SELinux 分析](selinux-analysis.cn.md) — HarmonyOS 安全执行分析
 

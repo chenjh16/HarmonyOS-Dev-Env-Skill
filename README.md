@@ -63,7 +63,7 @@ sh ~/Claude/HarmonyOS-Dev-Env-Skill/scripts/install-skill.sh
 │   ├── verify-env.sh           ← 环境验证
 │   ├── ssh-fetch-polyfill.js   ← SSH V8 崩溃 workaround
 │   └── start-claude.sh         ← Claude Code 启动脚本
-├── docs/                       ← 19 组双语适配文档
+├── docs/                       ← 25 组双语适配文档
 │   ├── python-harmonyos.md
 │   ├── python-harmonyos.cn.md
 │   ├── openssh-harmonyos.md
@@ -320,8 +320,8 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [Claude Code 适配](harmonyos-dev-env/docs/claude-code-harmonyos.cn.md) | AI 编程助手、npm 安装、SSH V8 修复 |
 | [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.cn.md) | Node.js 安装、TLS/V8 问题 |
 | [Python 环境](harmonyos-dev-env/docs/python-harmonyos.cn.md) | Python 3.12.8、pip、numpy、扩展模块 |
-| [Python 包兼容性](harmonyos-dev-env/docs/python-packages-harmonyos.cn.md) | 97 个包测试报告 |
-| [Python 扩展适配指南](harmonyos-dev-env/docs/python-extension-adaptation.cn.md) | C/Rust/C++/Meson 包通用适配流程 |
+| [Python 包适配](harmonyos-dev-env/docs/python-adaptation/index.cn.md) | 130/130 包兼容性总览（渐进式披露） |
+| [Python 扩展适配](harmonyos-dev-env/docs/python-adaptation/extension-guide.cn.md) | C/Rust/C++/Meson 包通用适配方法论 |
 | [Rust 适配](harmonyos-dev-env/docs/rust-harmonyos.cn.md) | Rust 1.95.0、cargo、FFI |
 | [PyTorch 适配](harmonyos-dev-env/docs/pytorch-harmonyos.cn.md) | PyTorch v2.5.1、15/15 测试、LAPACK |
 | [llama.cpp 适配](harmonyos-dev-env/docs/llama-cpp-harmonyos.cn.md) | NEON/SVE、Qwen3.5 模型 |
@@ -394,7 +394,7 @@ The installed Skill directory structure:
 │   ├── verify-env.sh           ← Environment verification
 │   ├── ssh-fetch-polyfill.js   ← SSH V8 crash workaround
 │   └── start-claude.sh         ← Claude Code startup script
-├── docs/                       ← 19 bilingual adaptation guides
+├── docs/                       ← 25 bilingual adaptation guides
 │   ├── python-harmonyos.md
 │   ├── python-harmonyos.cn.md
 │   ├── openssh-harmonyos.md
@@ -651,8 +651,8 @@ cd ~/Claude/HarmonyOS-Dev-Env-Skill
 | [Claude Code](harmonyos-dev-env/docs/claude-code-harmonyos.md) | AI assistant, npm install, SSH V8 fix |
 | [Node.js (DevNode-OH)](harmonyos-dev-env/docs/nodejs-harmonyos.md) | Node.js setup, TLS/V8, 61 packages, 66 e2e tests |
 | [Python Environment](harmonyos-dev-env/docs/python-harmonyos.md) | Python 3.12.8, pip, numpy, extensions |
-| [Python Packages](harmonyos-dev-env/docs/python-packages-harmonyos.md) | 97 packages compatibility report |
-| [Python Extension Adaptation](harmonyos-dev-env/docs/python-extension-adaptation.md) | General guide for adapting C/Rust/C++ Python packages |
+| [Python Packages](harmonyos-dev-env/docs/python-adaptation/index.md) | 130/130 packages compatibility overview (progressive disclosure) |
+| [Python Extension Adaptation](harmonyos-dev-env/docs/python-adaptation/extension-guide.md) | Methodology for adapting C/Rust/C++/Meson Python packages |
 | [Rust](harmonyos-dev-env/docs/rust-harmonyos.md) | Rust 1.95.0, cargo, FFI |
 | [PyTorch](harmonyos-dev-env/docs/pytorch-harmonyos.md) | PyTorch v2.5.1, 15/15 tests, LAPACK |
 | [llama.cpp](harmonyos-dev-env/docs/llama-cpp-harmonyos.md) | NEON/SVE, Qwen3.5 model |

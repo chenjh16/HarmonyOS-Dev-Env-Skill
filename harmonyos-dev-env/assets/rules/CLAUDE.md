@@ -79,7 +79,7 @@ set(CMAKE_C_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 set(CMAKE_CXX_FLAGS "-B$HOME/Claude/lib/linker_wrapper")
 ```
 - **Rust**: `rustc 1.95.0` (aarch64-unknown-linux-ohos) at `$HOME/.rust/bin/`; `cargo 1.95.0` (musl) at same path; must use `-C linker=/data/service/hnp/bin/clang`; all ELF binaries must be code-signed before execution
-- **Node.js**: v24.13.0; **CRITICAL**: HNP Node binary (`/data/service/hnp/bin/node`) has NO .codesign section → kernel blocks `process.dlopen()` for user-space .node/.so files. Fix: use signed copy at `$HOME/.local/bin/node-harmonyos` (with .codesign section); `$HOME/.local/bin` must come first in PATH. For native addons (bcrypt, better-sqlite3, etc.): compile with `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper"`, then `patchelf --add-needed libc++_shared.so <.node>` + `binary-sign-tool sign -selfSign 1`; use `sign-node-addon.sh` script for automation. Claude Code SSH sessions require `node --jitless` + node-fetch polyfill due to HarmonyOS PTY + V8 JIT crash. **29/29 e2e tests passed** (better-sqlite3, bcrypt, express, lodash, axios, dayjs, uuid, jsdom, ws, rxjs, socket.io, vitest, typescript, esbuild, prettier, eslint, all core modules)
+- **Node.js**: v24.13.0; **CRITICAL**: HNP Node binary (`/data/service/hnp/bin/node`) has NO .codesign section → kernel blocks `process.dlopen()` for user-space .node/.so files. Fix: use signed copy at `$HOME/.local/bin/node-harmonyos` (with .codesign section); `$HOME/.local/bin` must come first in PATH. For native addons (bcrypt, better-sqlite3, etc.): compile with `CC=/data/service/hnp/bin/clang CXX=/data/service/hnp/bin/clang++ CFLAGS="-B$HOME/Claude/lib/linker_wrapper"`, then `patchelf --add-needed libc++_shared.so <.node>` + `binary-sign-tool sign -selfSign 1`; use `sign-node-addon.sh` script for automation. Claude Code SSH sessions require `node --jitless` + node-fetch polyfill due to HarmonyOS PTY + V8 JIT crash. **61 packages, 66 e2e tests** (better-sqlite3, bcrypt, argon2, express, lodash, axios, dayjs, uuid, commander, dotenv, jsdom, ws, rxjs, socket.io, vitest, typescript, esbuild, prettier, eslint, MCP SDK, Anthropic SDK, koa, fastify, cheerio, winston, helmet, cors, nodemailer, node-cron, multer, body-parser, ramda, immutable, date-fns, zod, ajv, chalk@4, cli-table3, nanoid, slugify, debug, handlebars, pug, mocha, marked, ioredis, pg, jsonwebtoken, bcryptjs, mime-types, semver, glob, formidable, openai, execa + 14 core modules)
 - **llama.cpp**: built at `$HOME/Claude/llama.cpp/build/bin/`; `llama-cli`, `llama-server`, `llama-quantize` etc. available
 - **eza**: v0.23.4 at `$HOME/Claude/eza-build/eza/target/release/`; modern `ls` replacement with colors, icons, tree view
 - **bat**: v0.26.1 at `$HOME/Claude/bat-build/bat/target/release/`; `cat` clone with syntax highlighting
@@ -140,6 +140,7 @@ All third-party toolchains are configured in `$HOME/.zshenv` and auto-loaded on 
 - **pip mirror**: `pypi.tuna.tsinghua.edu.cn`
 - **Extension modules (.so) must be code-signed** before loading
 - **C/C++ extensions**: Set `CC=/data/service/hnp/bin/clang` and `CXX=/data/service/hnp/bin/clang++` before pip install
+- **structlog/logAsyncioTasks patch**: `asyncio.current_task()` segfaults outside async context on HarmonyOS. Fix: patch `logging/__init__.py` (`logAsyncioTasks = False`) and add `sys._logAsyncioTasks = False` in sitecustomize.py. structlog now works with this fix (25.5.0, 8/8 e2e).
 
 See python-harmonyos.md for details (in skill's `docs/` directory).
 
@@ -156,8 +157,7 @@ Use the Read tool with the appropriate path. Available guides:
 | claude-code-harmonyos.md | AI programming assistant, npm package, SSH V8 crash workaround |
 | nodejs-harmonyos.md | **Node.js dlopen fix, native addon signing, libc++_shared.so patchelf, sharp WASM32, MCP SDK, 61 packages, 66 e2e tests** |
 | python-harmonyos.md | Python installation, configuration, numpy/pillow/lxml setup |
-| python-packages-harmonyos.md | 97 packages tested (cchardet, msgpack, pycryptodome, bcrypt, loguru, pygments, httpx, pytest, **mcp**, **rpds-py**, **tiktoken**, **lz4**, **zstd**, **hiredis** all work; scipy/uvloop/polars/orjson/tokenizers cannot build), solutions for C/Rust/Meson extensions |
-| python-extension-adaptation.md | **General guide for adapting C/Rust/C++/Meson Python packages** (signing, patchelf, supplement.so, .so suffix, meson wrapper, maturin direct build, psutil patch) |
+| python-adaptation/index.md | 130 packages tested, progressive disclosure (package index, C/Rust/Meson/C++ extension solutions, extension guide) |
 | llama-cpp-harmonyos.md | Build, NEON/SVE optimization, ModelScope model download |
 | rust-harmonyos.md | Toolchain install, signing, cargo config, FFI interop |
 | eza-harmonyos.md | Rust build, SELinux/hmdfs attributes |
@@ -165,6 +165,7 @@ Use the Read tool with the appropriate path. Available guides:
 | starship-harmonyos.md | Rust build, errno patch, prompt config |
 | mihomo-harmonyos.md | Go toolchain, proxy config, GEOIP/GEOSITE rules |
 | pytorch-harmonyos.md | PyTorch v2.5.1, 15 key adaptations, **15/15 e2e tests all passed**, MNIST training |
+| cryptography-harmonyos.md | cryptography v48.0.0, libffi→cffi→maturin→OpenSSL→cryptography dependency chain, **12/12 e2e tests** |
 | dropbear-harmonyos.md | SSH server/client, 5 source patches, V8 JIT crash workaround |
 | openssh-harmonyos.md | OpenSSH 9.9p1, 16 source patches, scp/sftp/ssh-agent all working |
 | code-signing.md | Detailed code signing instructions |

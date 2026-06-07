@@ -55,12 +55,16 @@ always-enable: true
 
 19. **sharp WASM32 回退**: `npm install --force @img/sharp-wasm32`。所有操作正常工作，比原生慢约 5-10 倍。
 
+20. **rustc 自动签名封装器**: 对于带构建脚本的 Rust/PyO3 包（orjson 等），cargo 构建脚本是 ELF 可执行文件，需签名后才能执行，形成签名循环。修复：将 `$HOME/.rust/bin/rustc` 替换为封装器，在编译后自动签名构建脚本输出（将真实 rustc 移到 `rustc.real`）。封装器还处理 `-o` 指定的 .so 输出。必须对签名文件 `chmod +x`（cargo 创建构建脚本时无执行权限）。构建完成后恢复原始 rustc：`mv $HOME/.rust/bin/rustc.real $HOME/.rust/bin/rustc`。
+
+21. **asyncio.current_task 崩溃**: `asyncio.current_task()` 在 HarmonyOS 上非异步上下文中调用会段错误。修补 `logging/__init__.py`：将 `logAsyncioTasks = True` 改为 `logAsyncioTasks = False`。同时在 sitecustomize.py 中添加 `sys._logAsyncioTasks = False`。
+
 ### 工具链快速参考
 
 | 工具 | 版本 | 安装路径 | 关键特性 |
 |------|------|----------|----------|
-| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas |
-| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, sharp WASM32, MCP SDK, 61 包, 66 测试 |
+| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas, orjson, starlette, rapidjson, Levenshtein, rapidfuzz, xxhash, cytoolz, regex, ujson, structlog, jsonschema, tokenizers, safetensors, transformers |
+| Node.js | 24.13.0 | `$HOME/.local/bin` | 签名二进制, 原生 addon, sharp WASM32, MCP SDK + Anthropic SDK, ramda/zod/ajv/ioredis/pg/jsonwebtoken, 61 包, 66 e2e 测试 |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos 目标 |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
 | PyTorch | 2.5.1 | `$HOME/.local/lib/.../torch` | LAPACK, NumPy, 15/15 测试 |
@@ -78,15 +82,22 @@ always-enable: true
 完整构建指南在本 skill 的 `docs/` 目录中。当用户询问特定工具时，使用 Read 工具从本 SKILL.cn.md 目录的相对路径读取对应指南：
 
 - `docs/python-harmonyos.cn.md` — Python 3.12.8 独立构建
-- `docs/python-packages-harmonyos.cn.md` — 97 个包测试（cchardet、msgpack、pycryptodome、bcrypt、loguru、pygments、httpx、pytest、mcp、rpds-py、tiktoken、lz4、zstd、hiredis 均可用；scipy/uvloop/polars/orjson/tokenizers 无法构建），C/Rust/Meson 扩展解决方案
-- `docs/python-extension-adaptation.cn.md` — **适配 C/Rust/C++/Meson Python 包的通用指南**
+- `docs/python-adaptation/` — **Python 包适配（渐进式披露）**
+  - `index.cn.md` — 总览：130/130 包，分类摘要，技术索引
+  - `extension-guide.cn.md` — C/Rust/C++/Meson 扩展适配的逐步方法论（5阶段）
+  - `rustc-wrapper.cn.md` — Rust/PyO3 构建脚本签名（orjson, tokenizers, safetensors）
+  - `meson-wrapper.cn.md` — Meson 自动签名 clang 封装器（pandas, matplotlib）
+  - `packages-overview.cn.md` — 分类概览和兼容性表
+  - `packages-detailed.cn.md` — 逐包测试结果和适配说明
+  - `packages-cannot-build.cn.md` — 无法构建的包分析（scipy, uvloop, polars, pynacl）
+- `docs/cryptography-harmonyos.cn.md` — cryptography v48.0.0：libffi→cffi→maturin→OpenSSL→cryptography 依赖链，12/12 e2e 测试
 - `docs/rust-harmonyos.cn.md` — Rust ohos 目标安装
 - `docs/pytorch-harmonyos.cn.md` — PyTorch v2.5.1, 15/15 测试
 - `docs/openssh-harmonyos.cn.md` — OpenSSH 9.9p1, 16 补丁
 - `docs/dropbear-harmonyos.cn.md` — Dropbear, 5 补丁, V8 崩溃
 - `docs/llama-cpp-harmonyos.cn.md` — NEON/SVE 优化, Qwen3.5
 - `docs/claude-code-harmonyos.cn.md` — Claude Code ohos 适配
-- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, sharp WASM32, MCP SDK, 61 包, 66 测试**
+- `docs/nodejs-harmonyos.cn.md` — **Node.js dlopen 修复, 原生 addon 签名, sharp WASM32, MCP SDK + Anthropic SDK, ramda/zod/ajv/ioredis/pg/jsonwebtoken, 61 包, 66 测试**
 - `docs/mihomo-harmonyos.cn.md` — HTTP/SOCKS5, GEOIP/GEOSITE
 - `docs/eza-harmonyos.cn.md` — 现代 ls
 - `docs/bat-harmonyos.cn.md` — 语法高亮 cat

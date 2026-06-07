@@ -287,7 +287,7 @@ export HTTP_PROXY=http://127.0.0.1:7890
 pip install <package>
 ```
 
-**Full Guide**: [python-packages-harmonyos.md](python-packages-harmonyos.md)
+**Full Guide**: [python-adaptation/packages-detailed.md](python-adaptation/packages-detailed.md)
 
 ---
 

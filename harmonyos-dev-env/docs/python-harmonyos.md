@@ -147,7 +147,7 @@ lxml requires compiling libxml2, libxslt and libexslt first:
 
 ## Extension Module Compilation Template
 
-> **For a comprehensive, step-by-step methodology for adapting any C/Rust/C++ Python package**, see [python-extension-adaptation.md](python-extension-adaptation.md) — it covers package type classification, build environment setup, 4 compilation strategies, code signing & patchelf repair, and common error diagnosis.
+> **For a comprehensive, step-by-step methodology for adapting any C/Rust/C++ Python package**, see [python-adaptation/extension-guide.md](python-adaptation/extension-guide.md) — it covers package type classification, build environment setup, 4 compilation strategies, code signing & patchelf repair, and common error diagnosis.
 
 ```bash
 SYSROOT=/data/service/hnp/ohos-sdk.org/ohos-sdk_26.0.0.18/ohos/native/sysroot
@@ -213,4 +213,4 @@ No. ncurses's configure script doesn't recognize the HarmonyOS (ohos) target tri
 
 ## Related Documentation
 
-- [python-packages-harmonyos.md](python-packages-harmonyos.md) — Complete package compatibility report
+- [python-adaptation/packages-detailed.md](python-adaptation/packages-detailed.md) — Complete package compatibility report

@@ -55,11 +55,15 @@ always-enable: true
 
 19. **sharp WASM32 fallback**: `npm install --force @img/sharp-wasm32`. Works for all operations, ~5-10x slower than native.
 
+20. **rustc auto-sign wrapper**: For Rust/PyO3 packages with build scripts (orjson, etc.), cargo build scripts are ELF executables needing signing before execution, creating a signing loop. Fix: replace `$HOME/.rust/bin/rustc` with a wrapper that auto-signs build script outputs after compilation (move real rustc to `rustc.real`). Wrapper also handles `-o` specified .so outputs. Must `chmod +x` signed files (cargo creates build scripts without execute permission). Restore original rustc after build: `mv $HOME/.rust/bin/rustc.real $HOME/.rust/bin/rustc`.
+
+21. **asyncio.current_task segfault**: `asyncio.current_task()` segfaults on HarmonyOS when called outside async context. Patch `logging/__init__.py`: change `logAsyncioTasks = True` to `logAsyncioTasks = False`. Also add `sys._logAsyncioTasks = False` in sitecustomize.py.
+
 ### Toolchain Quick Reference
 
 | Tool | Version | Install Path | Key Feature |
 |------|---------|-------------|-------------|
-| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas |
+| Python | 3.12.8 | `$HOME/.local` | pip, -rdynamic, numpy, pillow, lxml, psutil, pydantic v2, pandas, orjson, starlette, rapidjson, Levenshtein, rapidfuzz, xxhash, cytoolz, regex, ujson, structlog, jsonschema, tokenizers, safetensors, transformers |
 | Node.js | 24.13.0 | `$HOME/.local/bin` | Signed binary, native addons, sharp WASM32, MCP SDK, 61 packages, 66 e2e tests |
 | Rust | 1.95.0 | `$HOME/.rust` | aarch64-unknown-linux-ohos target |
 | Go | 1.22.5 | `$HOME/Claude/go-build/go` | GOPROXY=goproxy.cn |
@@ -78,8 +82,15 @@ always-enable: true
 Full build guides are in this skill's `docs/` directory. When the user asks about a specific tool, read the corresponding guide using the Read tool with relative path from this SKILL.md's directory:
 
 - `docs/python-harmonyos.md` — Python 3.12.8 standalone build
-- `docs/python-packages-harmonyos.md` — 97 packages tested (cchardet, msgpack, pycryptodome, bcrypt, loguru, pygments, httpx, pytest, mcp, rpds-py, tiktoken, lz4, zstd, hiredis all work; scipy/uvloop/polars/orjson/tokenizers cannot build), solutions for C/Rust/Meson extensions
-- `docs/python-extension-adaptation.md` — **General guide for adapting C/Rust/C++/Meson Python packages**
+- `docs/python-adaptation/` — **Python package adaptation (progressive disclosure)**
+  - `index.md` — Overview: 130/130 packages, category summary, technique index
+  - `extension-guide.md` — Step-by-step methodology (5 phases) for C/Rust/C++/Meson extensions
+  - `rustc-wrapper.md` — Rust/PyO3 build script signing (orjson, tokenizers, safetensors)
+  - `meson-wrapper.md` — Meson auto-sign clang wrapper (pandas, matplotlib)
+  - `packages-overview.md` — Category breakdown and compatibility table
+  - `packages-detailed.md` — Per-package test results and adaptation notes
+  - `packages-cannot-build.md` — Failed packages analysis (scipy, uvloop, polars, pynacl)
+- `docs/cryptography-harmonyos.md` — cryptography v48.0.0: libffi→cffi→maturin→OpenSSL→cryptography dependency chain, 12/12 e2e tests
 - `docs/rust-harmonyos.md` — Rust ohos target installation
 - `docs/pytorch-harmonyos.md` — PyTorch v2.5.1, 15/15 e2e tests
 - `docs/openssh-harmonyos.md` — OpenSSH 9.9p1, 16 patches
