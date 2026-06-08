@@ -4,14 +4,14 @@
 
 ## Package Compatibility Overview
 
-**164/164 Python packages working**, 14 cannot build (see [packages-cannot-build.md](packages-cannot-build.md) for details).
+**169/169 Python packages working**, 9 cannot build (see [packages-cannot-build.md](packages-cannot-build.md) for details).
 
 | Category | Pass Rate | Typical Packages | Adaptation Method |
 |----------|-----------|------------------|-------------------|
 | Pure Python | 100% | requests, flask, jinja2, httpx, pytest, structlog | pip install directly |
 | C/C++ extensions | 100% | bcrypt, greenlet, hiredis, lz4, zstd, xxhash | CC/CXX + sign .so + suffix rename |
 | C++ extensions (libc++_shared.so) | 100% | python-rapidjson, ujson, cytoolz, contourpy, kiwisolver, matplotlib | CC/CXX + sign + patchelf --add-needed libc++_shared.so + suffix rename |
-| Mixed (C lib + Python binding) | 100% | pillow (libjpeg), lxml (libxml2) | Compile C deps first → pip install → sign .so |
+| Mixed (C lib + Python binding) | 100% | pillow (libjpeg), lxml (libxml2), h5py (HDF5), psycopg2 (libpq), soundfile (libsndfile) | Compile C deps first → pip install → sign .so |
 | Rust/PyO3 (maturin) | 100% | cryptography, pydantic-core, rpds-py, tiktoken, orjson, tokenizers, safetensors | maturin build + sign + rename suffix |
 | Meson-based | 100% | pandas, matplotlib | Auto-sign clang wrapper + mesonpy API |
 | Platform detection patches | 100% | psutil | Patch _common.py + net.c |
@@ -56,7 +56,12 @@ These techniques apply to specific categories of packages:
 | scipy | Needs gfortran (Fortran compiler) | None — hardware limitation |
 | uvloop | libuv autoconf can't configure | None — platform limitation |
 | polars | cargo metadata too complex | Consider alternative (pandas works) |
-| pynacl | cffi version conflict | Consider alternatives (cryptography works) |
+| pynacl | libsodium configure fails (read-only /tmp, test executables need signing) | Consider alternatives (cryptography works) |
+| grpcio | C++ build too complex | Consider alternative (pure Python grpcio-io) |
+| scikit-learn | needs scipy | Consider alternative (optuna for optimization) |
+| xgboost | git submodules can't be fetched + OpenMP | Consider alternative (optuna for optimization) |
+| lightgbm | import fails (needs scipy.sparse) | Consider alternative (optuna for optimization) |
+| pyarrow | Apache Arrow C++ build too complex | Consider alternative (pandas CSV) |
 
 See [packages-cannot-build.md](packages-cannot-build.md) for detailed error analysis.
 
@@ -70,6 +75,9 @@ See [packages-cannot-build.md](packages-cannot-build.md) for detailed error anal
 | libxslt | 1.1.42 | lxml |
 | libffi | 8 | cffi/cryptography |
 | libopenblas | 0.3.28 | PyTorch/numpy |
+| libhdf5 | 1.14.6 | h5py |
+| libpq | 5.17 | psycopg2 |
+| libsndfile | 1.2.2 | soundfile |
 
 See [packages-overview.md](packages-overview.md) Compiled Native Libraries section.
 

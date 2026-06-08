@@ -4,14 +4,14 @@
 
 ## 包兼容性概览
 
-**164/164 Python 包可用**，14 个无法构建（详见 [packages-cannot-build.cn.md](packages-cannot-build.cn.md)）。
+**169/169 Python 包可用**，9 个无法构建（详见 [packages-cannot-build.cn.md](packages-cannot-build.cn.md)）。
 
 | 类别 | 通过率 | 典型包 | 适配方法 |
 |------|--------|--------|----------|
 | 纯 Python | 100% | requests, flask, jinja2, httpx, pytest, structlog | 直接 pip install |
 | C/C++ 扩展 | 100% | bcrypt, greenlet, hiredis, lz4, zstd, xxhash | CC/CXX + 签名 .so + 后缀重命名 |
 | C++ 扩展 (libc++_shared.so) | 100% | python-rapidjson, ujson, cytoolz, contourpy, kiwisolver, matplotlib | CC/CXX + 签名 + patchelf --add-needed libc++_shared.so + 后缀重命名 |
-| 混合型 (C 库 + Python 绑定) | 100% | pillow (libjpeg), lxml (libxml2) | 先编译 C 依赖 → pip install → 签名 .so |
+| 混合型 (C 库 + Python 绑定) | 100% | pillow (libjpeg), lxml (libxml2), h5py (HDF5), psycopg2 (libpq), soundfile (libsndfile) | 先编译 C 依赖 → pip install → 签名 .so |
 | Rust/PyO3 (maturin) | 100% | cryptography, pydantic-core, rpds-py, tiktoken, orjson, tokenizers, safetensors | maturin build + 签名 + 后缀重命名 |
 | Meson 构建 | 100% | pandas, matplotlib | 自动签名 clang 包装器 + mesonpy API |
 | 平台检测补丁 | 100% | psutil | 补丁 _common.py + net.c |
@@ -56,7 +56,12 @@
 | scipy | 需要 gfortran（Fortran 编译器） | 无 — 硬件限制 |
 | uvloop | libuv autoconf 无法配置 | 无 — 平台限制 |
 | polars | cargo metadata 过于复杂 | 考虑替代方案（pandas 可用） |
-| pynacl | cffi 版本冲突 | 考虑替代方案（cryptography 可用） |
+| pynacl | libsodium configure 失败（/tmp只读，测试可执行文件需签名） | 考虑替代方案（cryptography 可用） |
+| grpcio | C++ 构建过于复杂 | 考虑替代方案（纯 Python grpcio-io） |
+| scikit-learn | 需要 scipy | 考虑替代方案（optuna） |
+| xgboost | git 子模块无法获取 + OpenMP | 考虑替代方案（optuna） |
+| lightgbm | 导入失败（需要 scipy.sparse） | 考虑替代方案（optuna） |
+| pyarrow | Apache Arrow C++ 构建过于复杂 | 考虑替代方案（pandas CSV） |
 
 详细错误分析见 [packages-cannot-build.md](packages-cannot-build.md)。
 
@@ -70,6 +75,9 @@
 | libxslt | 1.1.42 | lxml |
 | libffi | 8 | cffi/cryptography |
 | libopenblas | 0.3.28 | PyTorch/numpy |
+| libhdf5 | 1.14.6 | h5py |
+| libpq | 5.17 | psycopg2 |
+| libsndfile | 1.2.2 | soundfile |
 
 详见 [packages-overview.md](packages-overview.md) 已编译原生库章节。
 
